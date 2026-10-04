@@ -1,0 +1,63 @@
+---
+import Footer from '@/components/Footer.astro';
+import Nav from '@/components/Nav.astro';
+import { inspirations, researchSources, type Inspiration } from '@/data/inspirations';
+import Layout from '@/layouts/Layout.astro';
+
+export function getStaticPaths() {
+  return inspirations.map((item, index) => ({ params: { slug: item.slug }, props: { item, index } }));
+}
+
+const { item, index } = Astro.props as { item: Inspiration; index: number };
+const next = inspirations[(index + 1) % inspirations.length];
+const research = researchSources[item.research];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: `${item.name} — tools that shaped CodeVetter`,
+  description: item.idea,
+  url: `https://codevetter.com/inspiration/${item.slug}`,
+  author: { '@type': 'Organization', name: 'CodeVetter' },
+  isPartOf: { '@type': 'CollectionPage', name: 'CodeVetter inspiration', url: 'https://codevetter.com/inspiration' },
+  citation: [item.source.url, research.url],
+};
+---
+
+<Layout
+  title={`${item.name} — Inspiration — CodeVetter`}
+  description={`${item.name}: ${item.idea} Read what CodeVetter learned and where our own implementation begins and ends.`}
+  path={`/inspiration/${item.slug}`}
+>
+  <main class="inspiration-shell">
+    <Nav />
+    <div class="note-wrap">
+      <a href="/inspiration" class="back-link">← ALL INSPIRATIONS</a>
+      <div class="note-meta"><span>REFERENCE NOTE / {String(index + 1).padStart(2, '0')}</span><span>{item.category.toUpperCase()}</span></div>
+      <header class="note-header">
+        <p class="eyebrow">A TOOL WE STUDIED</p>
+        <h1>{item.name}</h1>
+        <p class="note-idea">{item.idea}</p>
+        <div class="relation"><span class="relation-dot"></span>{item.relation}</div>
+      </header>
+      <div class="note-grid">
+        <article class="note-body">
+          <section aria-labelledby="admiration"><p class="section-number">01 / THE WORK</p><h2 id="admiration">What we admire</h2><p>{item.admiration}</p></section>
+          <section aria-labelledby="lesson"><p class="section-number">02 / THE LESSON</p><h2 id="lesson">The principle that stayed</h2><p>{item.lesson}</p></section>
+          <section aria-labelledby="boundary"><p class="section-number">03 / OUR BOUNDARY</p><h2 id="boundary">Where CodeVetter stands</h2><p>{item.codevetter}</p></section>
+        </article>
+        <aside class="source-rail" aria-label="Sources and disclosure">
+          <div class="rail-block"><span class="rail-label">PRIMARY SOURCE</span><a href={item.source.url} target="_blank" rel="noopener noreferrer">{item.source.label} ↗</a><p>The creator’s own documentation or source.</p></div>
+          <div class="rail-block"><span class="rail-label">WHY IT'S HERE</span><a href={research.url} target="_blank" rel="noopener noreferrer">{research.label} ↗</a><p>Where this tool was named in the CodeVetter project record.</p></div>
+          <div class="rail-block disclosure"><span class="rail-label">A NOTE ON CREDIT</span><p>This is an independent appreciation. Inclusion does not imply endorsement, partnership, code reuse, or feature parity.</p></div>
+        </aside>
+      </div>
+      <nav class="note-next" aria-label="Next inspiration"><span>CONTINUE THE LEDGER</span><a href={`/inspiration/${next.slug}`}>{next.name} <span aria-hidden="true">↗</span></a></nav>
+    </div>
+    <Footer />
+  </main>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+</Layout>
+
+<style>
+  .inspiration-shell{min-height:100vh;background:#090a0b;color:#e9e5de}.note-wrap{max-width:1130px;margin:auto;padding:149px 28px 105px}.back-link,.note-meta,.eyebrow,.relation,.section-number,.rail-label,.source-rail,.note-next>span{font-family:var(--font-mono)}.back-link{color:#bda57d;font-size:11px;letter-spacing:.1em;text-decoration:none}.back-link:hover,.back-link:focus-visible{text-decoration:underline;text-underline-offset:5px}.note-meta{display:flex;justify-content:space-between;margin-top:36px;padding:14px 0;border-top:1px solid #4a4035;border-bottom:1px solid #38312a;color:#a89474;font-size:10px;letter-spacing:.13em}.note-header{padding:67px 0 64px;border-bottom:1px solid #38312a}.eyebrow{color:#ba9f77;font-size:11px;letter-spacing:.17em}.note-header h1{margin:17px 0 20px;font-size:clamp(51px,8vw,102px);font-weight:560;line-height:1.02;letter-spacing:-.065em}.note-idea{max-width:780px;color:#d4d0c9;font-size:clamp(20px,2.6vw,31px);line-height:1.42;letter-spacing:-.02em}.relation{display:inline-flex;align-items:center;gap:9px;margin-top:32px;padding:9px 12px;border:1px solid #5d4d36;color:#dfc394;background:#211b15;font-size:10px;letter-spacing:.08em}.relation-dot{width:6px;height:6px;background:#c9a36b;border-radius:50%}.note-grid{display:grid;grid-template-columns:minmax(0,1fr) 255px;gap:92px;padding-top:69px}.note-body section{max-width:670px;margin-bottom:70px}.section-number,.rail-label{color:#b69c77;font-size:10px;letter-spacing:.17em}.note-body h2{margin:17px 0 18px;font-size:clamp(27px,3vw,37px);font-weight:520;letter-spacing:-.045em}.note-body section p:last-child{color:#bdb9b2;font-size:18px;line-height:1.8}.source-rail{align-self:start;position:sticky;top:115px;border-top:1px solid #5d503e;font-size:12px}.rail-block{padding:24px 0;border-bottom:1px solid #35302b}.rail-block a{display:block;margin-top:14px;color:#e9d0ac;line-height:1.5;text-underline-offset:4px}.rail-block p{margin-top:9px;color:#92908a;line-height:1.6}.rail-block.disclosure p{margin-top:15px}.note-next{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:28px 0;border-top:1px solid #544736;color:#a99678;font-size:10px;letter-spacing:.14em}.note-next a{color:#e9d0ac;font-size:21px;letter-spacing:-.02em;text-decoration:none}.note-next a:hover{text-decoration:underline;text-underline-offset:5px}@media(max-width:760px){.note-grid{grid-template-columns:1fr;gap:10px}.source-rail{position:static;display:grid;grid-template-columns:repeat(2,1fr);gap:20px}.rail-block.disclosure{grid-column:1/-1}.note-body section{margin-bottom:54px}.note-header{padding:52px 0}}@media(max-width:520px){.note-wrap{padding:124px 19px 70px}.note-meta{font-size:9px;gap:10px}.note-header h1{overflow-wrap:anywhere}.note-body section p:last-child{font-size:16px}.source-rail{grid-template-columns:1fr;gap:0}.rail-block.disclosure{grid-column:auto}.note-next{align-items:flex-start;flex-direction:column}}
+</style>

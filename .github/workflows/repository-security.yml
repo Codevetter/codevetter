@@ -158,7 +158,7 @@ jobs:
         id: scan
         continue-on-error: true
         run: >-
-          gitleaks git --no-banner --redact=100 --report-format sarif
+          gitleaks git --no-banner --redact=100 --log-opts="--full-history HEAD --diff-filter=tuxdb" --report-format sarif
           --report-path "$RUNNER_TEMP/gitleaks.sarif" .
       - name: Upload Gitleaks SARIF
         if: always()

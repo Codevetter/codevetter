@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeVetter Performance"
+  short_description: "Measure workloads and verify paired improvements"
+  default_prompt: "Use $codevetter-performance for this repository and preserve the evidence and limitations."
+policy:
+  allow_implicit_invocation: true

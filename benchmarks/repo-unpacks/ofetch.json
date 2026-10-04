@@ -1,0 +1,2916 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "unjs/ofetch",
+  "slug": "ofetch",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T17:20:55.177Z",
+  "last_commit": {
+    "sha": "1dbc37fd1ceab832fc7c90cad81b1091c95ba563",
+    "date": "2026-07-08",
+    "subject": "chore: fix typos in readme (#608)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "8272933d-ad1e-46cb-9bd1-bacbe1452299",
+    "status": "scan_only",
+    "created_at": "2026-10-02T17:20:55.170388+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "ofetch",
+      "commit_sha": "1dbc37fd1ceab832fc7c90cad81b1091c95ba563",
+      "branch": "main",
+      "remote_url": "https://github.com/unjs/ofetch.git",
+      "files_scanned": 32,
+      "files_skipped": 1,
+      "bytes_scanned": 360906,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Markdown",
+          "files": 3,
+          "bytes": 40844
+        },
+        {
+          "language": "TypeScript",
+          "files": 11,
+          "bytes": 37971
+        },
+        {
+          "language": "JavaScript",
+          "files": 8,
+          "bytes": 2401
+        },
+        {
+          "language": "JSON",
+          "files": 3,
+          "bytes": 1742
+        },
+        {
+          "language": "YAML",
+          "files": 2,
+          "bytes": 1053
+        }
+      ],
+      "manifests": [
+        {
+          "path": "package.json",
+          "kind": "package.json",
+          "name": "ofetch",
+          "version": "2.0.0-alpha.3",
+          "dependencies": [
+            "@types/node",
+            "@vitest/coverage-v8",
+            "automd",
+            "changelogen",
+            "eslint",
+            "eslint-config-unjs",
+            "h3",
+            "obuild",
+            "prettier",
+            "typescript",
+            "undici",
+            "vitest"
+          ],
+          "scripts": [
+            "build",
+            "dev",
+            "lint",
+            "lint:fix",
+            "prepack",
+            "release",
+            "test"
+          ]
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": "src/index.ts",
+          "kind": "web",
+          "reason": "TS entrypoint"
+        },
+        {
+          "path": ".github/workflows/autofix.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/ci.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": "package.json",
+          "kind": "config",
+          "reason": "npm scripts: build, dev, lint, lint:fix, prepack, release, test"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "examples",
+          "file_count": 9,
+          "bytes": 2801
+        },
+        {
+          "path": "src",
+          "file_count": 7,
+          "bytes": 21765
+        },
+        {
+          "path": ".github",
+          "file_count": 3,
+          "bytes": 276526
+        },
+        {
+          "path": "test",
+          "file_count": 2,
+          "bytes": 15548
+        }
+      ],
+      "docs": [
+        {
+          "path": "README.md",
+          "bytes": 10347,
+          "preview": "# ofetch\n\n<!-- automd:badges -->\n\n[![npm version](https://img.shields.io/npm/v/ofetch)](https://npmjs.com/package/ofetch)\n[![npm downloads](https://img.shields.io/npm/dm/ofetch)](https://npm.chart.dev/ofetch)\n\n<!-- /automd -->\n\nA better fetch API. Works on node, browser, and workers.\n\n> [!IMPORTANT]\n> You are on v2 (alpha) development branch. See [v1](https://github.com/unjs/ofetch/tree/v1) for v1 docs.\n\n<details>\n  <summary>Spoiler</summary>\n  <img src=\"https://media.giphy.com/media/Dn1QRA9hqMcoMz9zVZ/giphy.gif\">\n</details>\n\n## 🚀 Quick Start\n\nInstall:\n\n```bash\nnpx nypm i ofetch\n```\n\nImport:\n\n```js\nimport { ofetch } from \"ofetch\";\n```\n\n## ✔️ Parsing Response\n\n`ofetch` smartly parse JSON responses.\n\n```js\nconst { users } = await ofetch(\"/api/users\");\n```\n\nFor binary content types, `ofetch` will instead return a `Blob` object.\n\nYou can optionally provide a different parser than `JSON.parse`, or specify `blob`, `arrayBuffer`, `text` or `stream` to force parsing the body with the respective `FetchResponse` method.\n\n```js\n// Return text as is\nawait ofetch(\"/movie?lang=en\", { parseResponse: (txt) => txt });\n\n// Get the blob version of the response\nawait ofetch(\"/api/generate-image\", { responseType: \"blob\" });\n\n// Get the stream version of the response\nawait ofetch(\"/api/generate-image\", { responseType: \"stream\" });\n```\n\n## ✔️ JSON Body\n\nIf an object or a class with a `.toJSON()` method is passed to the `body` option, `ofetch` automatically stringifies it.\n\n`ofetch` utilizes `JSON.stringify()` to convert the passed object. Classes without a `.toJSON()` method have to be converted into a string value in advance before being passed to the `body` option.\n\nFor `PUT`, `PATCH`, and `POST` request methods, when a string or object body is set, `ofetch` adds the default `\"content-type\": \"application/json\"` and `accept: \"application/json\"` headers (which you can always override).\n\nAdditionally, `ofetch` supports binary responses with `Buffer`, `ReadableStream`, `Stream`, and [compatible body types](https://developer.mozilla.org/en-US/docs/Web/API/fetch#body). `ofetch` will automatically set the `duplex: \"half\"` option for streaming support!\n\n**Example:**\n\n```js\nconst { users } = await ofetch(\"/api/users\", {\n  method: \"POST\",\n  body: { some: \"json\" },\n});\n```\n\n## ✔️ Handling Errors\n\n`ofetch` Automatically throws errors when `response.ok` is `false` with a friendly error message and compact stack (hiding internals).\n\nA parsed error body is available with `error.data`. You may also use `FetchError` type.\n\n```ts\nawait ofetch(\"https://google.com/404\");\n// FetchError: [GET] \"https://google/404\": 404 Not Found\n//     at async main (/project/playground.ts:4:3)\n```\n\nTo catch error response:\n\n```ts\nawait ofetch(\"/url\").catch((error) => error.data);\n```\n\nTo bypass status error catching you can set `ignoreResponseError` option:\n\n```ts\nawait ofetch(\"/url\", { ignoreResponseError: true });\n```\n\n## ✔️ Auto Retry\n\n`ofetch` Automatically retries the request if an error happens and if the response status code is included in `retryStatusCodes` list:\n\n**Retry status codes:**\n\n- `408` - Request Timeout\n- `409` - Conflict\n- `425` - Too Early ([Experimental](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Early-Data))\n- `429` - Too Many Requests\n- `500` - Internal Server Error\n- `502` - Bad Gateway\n- `503` - Service Unavailable\n- `504` - Gateway Timeout\n\nYou can specify the amount of retry and delay between them using `retry` and `retryDelay` options and also pass a custom array of codes using `retryStatusCodes` option.\n\nThe default for `retry` is `1` retry, except for `POST`, `PUT`, `PATCH`, and `DELETE` methods where `ofetch` does not retry by default to avoid introducing side effects. If you set a custom value for `retry` it will **always retry** for all requests.\n\nThe default for `retryDelay` is `0` ms.\n\n```ts\nawait ofetch(\"http://google.com/404\", {\n  retry: 3,\n  retryDelay: 500, // ms\n  retryStatusCodes: [404, 500], // response status codes to retry\n});\n```\n\n## ✔️ Timeout\n\nYou can specify `timeout` in milliseconds to automatically abort a request after a timeout (default is disabled).\n\n```ts\nawait ofetch(\"http://google.com/404\", {\n  timeout: 3000, // Timeout after 3 seconds\n});\n```\n\n## ✔️ Type Friendly\n\nThe response can be type assisted:\n\n```ts\nconst article = await ofetch<Article>(`/api/article/${id}`);\n// Auto complete working with article.id\n```\n\n## ✔️ Adding `baseURL`\n\nBy using `baseURL` option, `ofetch` prepends it for trailing/leading slashes and query search params for baseURL using [ufo](https://github.com/unjs/ufo):\n\n```js\nawait ofetch(\"/config\", { baseURL });\n```\n\n## ✔️ Adding Query Search Params\n\nBy using `query` option (or `params` as alias), `ofetch` adds query search params to the URL by preserving the query in the request itself using [ufo](https://github.com/unjs/ufo):\n\n```js\nawait ofetch(\"/movie?lang=en\", { query: { id: 123 } });\n```\n\n## ✔️ Interceptors\n\nProviding async interceptors to hook into lifecycle events of `ofetch` call is possible.\n\nYou might want to use `ofetch.create` to set shared interceptors.\n\n### `onRequest({ request, options })`\n\n`onRequest` is called as soon as `ofetch` is called, allowing you to modify options or do simple logging.\n\n```js\nawait ofetch(\"/api\", {\n  async onRequest({ request, options }) {\n    // Log request\n    console.log(\"[fetch request]\", request, options);\n\n    // Add `?t=1640125211170` to query search params\n    options.query = options.query || {};\n    options.query.t = new Date();\n  },\n});\n```\n\n### `onRequestError({ request, options, error })`\n\n`onRequestError` will be called when the fetch request fails.\n\n```js\nawait ofetch(\"/api\", {\n  async onRequestError({ request, options, error }) {\n    // Log error\n    console.log(\"[fetch request error]\", request, error);\n  },\n});\n```\n\n### `onResponse({ request, options, response })`\n\n`onResponse` will be called after `fetch` call and parsing body.\n\n```js\nawait ofetch(\"/api\", {\n  async onResponse({ request, response, options }) {\n    // Log response\n    console.log(\"[fetch response]\", request, response.status, response.body);\n  },\n});\n```\n\n### `onResponseError({ request, options, response })`\n\n`onResponseError` is the same as `onResponse` but will be called when fetch happens but `response.ok` is not `true`.\n\n```js\nawait ofetch(\"/api\", {\n  async onResponseError({ request, response, options }) {\n    // Log error\n    console.log(\n      \"[fetch response error]\",\n      request,\n      response.status,\n      response.body\n    );\n  },\n});\n```\n\n### Passing array of interceptors\n\nIf necessary, it's also possible to pass an array of function that will be called sequentially.\n\n```js\nawait ofetch(\"/api\", {\n  onRequest: [\n    () => {\n      /* Do something */\n    },\n    () => {\n      /* Do something else */\n    },\n  ],\n});\n```\n\n## ✔️ Create fetch with default options\n\nThis utility is useful if you need to use common options across several fetch calls.\n\n**Note:** Defaults will be cloned at one level and inherited. Be careful about nested options like `headers`.\n\n```js\nconst apiFetch = ofetch.create({ baseURL: \"/api\" });\n\napiFetch(\"/test\"); // Same as ofetch('/test', { baseURL: '/api' })\n```\n\n## 💡 Adding headers\n\nBy using `headers` option, `ofetch` adds extra headers in addition to the request default headers:\n\n```js\nawait ofetch(\"/movies\", {\n  headers: {\n    Accept: \"application/json\",\n    \"Cache-Control\": \"no-cache\",\n  },\n});\n```\n\n## 🍣 Access to Raw Response\n\nIf you need to access raw response (for headers, etc), you can use `ofetch.raw`:\n\n```js\nconst response = await ofetch.raw(\"/sushi\");\n\n// response._data\n// response.headers\n// ...\n```\n\n## 🌿 Using Native Fetch\n\nAs a shortcut, you can use `ofetch.native` that provides native `fetch` API\n\n```js\nconst json = await ofetch.native(\"/sushi\").then((r) => r.json());\n```\n\n## 📡 SSE\n\n**Example:** Handle SSE response:\n\n```js\nconst stream = await ofetch(\"/sse\");\nconst reader = stream.getReader();\nconst decoder = new TextDecoder();\nwhile (true) {\n  const { done, value } = await reader.read();\n  if (done) break;\n  // Here is the chunked text of the SSE response.\n  const text = decoder.decod"
+        }
+      ],
+      "config_files": [
+        "renovate.json",
+        ".prettierrc",
+        "tsconfig.json",
+        "vitest.config.ts"
+      ],
+      "stack_tags": [
+        "GitHub Actions",
+        "Vitest"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "ofetch",
+          "kind": "workspace",
+          "manifest_path": "package.json",
+          "build_system": "package.json",
+          "file_count": 32,
+          "languages": [
+            {
+              "language": "TypeScript",
+              "files": 11,
+              "bytes": 37971
+            },
+            {
+              "language": "JavaScript",
+              "files": 8,
+              "bytes": 2401
+            },
+            {
+              "language": "Markdown",
+              "files": 3,
+              "bytes": 40844
+            },
+            {
+              "language": "JSON",
+              "files": 3,
+              "bytes": 1742
+            },
+            {
+              "language": "YAML",
+              "files": 2,
+              "bytes": 1053
+            }
+          ],
+          "scripts": [
+            "build",
+            "dev",
+            "lint",
+            "lint:fix",
+            "prepack",
+            "release",
+            "test"
+          ],
+          "entrypoints": [
+            ".github/workflows/autofix.yml",
+            ".github/workflows/ci.yml",
+            "README.md",
+            "package.json",
+            "src/index.ts"
+          ],
+          "test_files": [
+            "test/index.test.ts"
+          ],
+          "tags": [
+            "JavaScript",
+            "Markdown",
+            "TypeScript",
+            "tests"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 20,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "ready",
+            "detail": "Package scripts expose a local dev/start/preview command.",
+            "sources": [
+              "package.json"
+            ]
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "ready",
+            "detail": "Web entrypoints or pages give Synthetic QA candidate surfaces.",
+            "sources": [
+              "src/index.ts"
+            ]
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-autofix-yml",
+            "kind": "file",
+            "label": ".github/workflows/autofix.yml",
+            "path": ".github/workflows/autofix.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/autofix.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-ci-yml",
+            "kind": "file",
+            "label": ".github/workflows/ci.yml",
+            "path": ".github/workflows/ci.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:changelog-md",
+            "kind": "file",
+            "label": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CHANGELOG.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:examples-readme-md",
+            "kind": "file",
+            "label": "examples/README.md",
+            "path": "examples/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "examples/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:examples-type-safety-ts",
+            "kind": "file",
+            "label": "examples/type-safety.ts",
+            "path": "examples/type-safety.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "examples/type-safety.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:package-json",
+            "kind": "file",
+            "label": "package.json",
+            "path": "package.json",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-base-ts",
+            "kind": "file",
+            "label": "src/base.ts",
+            "path": "src/base.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/base.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-error-ts",
+            "kind": "file",
+            "label": "src/error.ts",
+            "path": "src/error.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/error.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-fetch-ts",
+            "kind": "file",
+            "label": "src/fetch.ts",
+            "path": "src/fetch.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/fetch.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-index-ts",
+            "kind": "file",
+            "label": "src/index.ts",
+            "path": "src/index.ts",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "src/index.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-types-ts",
+            "kind": "file",
+            "label": "src/types.ts",
+            "path": "src/types.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/types.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-utils-ts",
+            "kind": "file",
+            "label": "src/utils.ts",
+            "path": "src/utils.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/utils.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:src-utils-url-ts",
+            "kind": "file",
+            "label": "src/utils.url.ts",
+            "path": "src/utils.url.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "src/utils.url.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-index-test-ts",
+            "kind": "file",
+            "label": "test/index.test.ts",
+            "path": "test/index.test.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/index.test.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-playground-ts",
+            "kind": "file",
+            "label": "test/playground.ts",
+            "path": "test/playground.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/playground.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:vitest-config-ts",
+            "kind": "file",
+            "label": "vitest.config.ts",
+            "path": "vitest.config.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "vitest.config.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:package-json",
+            "kind": "package",
+            "label": "ofetch",
+            "path": "package.json",
+            "detail": "package.json manifest",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-build",
+            "kind": "script",
+            "label": "build",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-dev",
+            "kind": "script",
+            "label": "dev",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint",
+            "kind": "script",
+            "label": "lint",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-fix",
+            "kind": "script",
+            "label": "lint:fix",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-prepack",
+            "kind": "script",
+            "label": "prepack",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-release",
+            "kind": "script",
+            "label": "release",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test",
+            "kind": "script",
+            "label": "test",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:test-index-test-ts",
+            "kind": "test",
+            "label": "test/index.test.ts",
+            "path": "test/index.test.ts",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "test/index.test.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "ofetch",
+            "path": null,
+            "detail": "workspace | 32 files | 11 TypeScript, 8 JavaScript, 3 Markdown",
+            "sources": [
+              ".github/workflows/autofix.yml",
+              ".github/workflows/ci.yml",
+              "package.json",
+              "test/index.test.ts"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-build",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `build`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-dev",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `dev`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-fix",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:fix`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-prepack",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `prepack`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-release",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `release`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "package:package-json",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-autofix-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/autofix.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-ci-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/ci.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:package-json",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:src-index-ts",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "src/index.ts"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:test-index-test-ts",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "test/index.test.ts"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 4 test hints, and 8 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "1dbc37fd1cea",
+            "date": "2026-07-08",
+            "subject": "chore: fix typos in readme (#608)",
+            "files": [
+              "README.md",
+              "src/utils.ts"
+            ]
+          },
+          {
+            "sha": "9102908aeeca",
+            "date": "2026-06-28",
+            "subject": "docs: fix license link in readme (#601)",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "dfbe3ca4ef8a",
+            "date": "2026-03-11",
+            "subject": "chore(deps): update autofix-ci/action digest to 7a166d7 (#540)",
+            "files": [
+              ".github/workflows/autofix.yml"
+            ]
+          },
+          {
+            "sha": "d50a2047d431",
+            "date": "2026-02-04",
+            "subject": "docs: add proxy configuration for Bun and Deno (#539)",
+            "files": [
+              "README.md"
+            ]
+          },
+          {
+            "sha": "d61b2fcf7755",
+            "date": "2025-10-31",
+            "subject": "chore(deps): update all non-major dependencies (#509)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "4111ad9e34be",
+            "date": "2025-10-28",
+            "subject": "chore(release): v2.0.0-alpha.3",
+            "files": [
+              "CHANGELOG.md",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "07403b34218b",
+            "date": "2025-10-28",
+            "subject": "build: fix exports field",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "0a0a30c5ea77",
+            "date": "2025-10-28",
+            "subject": "chore(release): v2.0.0-alpha.2",
+            "files": [
+              "CHANGELOG.md",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "98bda7531f40",
+            "date": "2025-10-28",
+            "subject": "build: add `main` field",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "ccfc10b931df",
+            "date": "2025-10-28",
+            "subject": "chore(release): v2.0.0-alpha.1",
+            "files": [
+              "CHANGELOG.md",
+              "package.json"
+            ]
+          },
+          {
+            "sha": "8912da8babe4",
+            "date": "2025-10-28",
+            "subject": "chore: fix version",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "d0440f08d485",
+            "date": "2025-10-28",
+            "subject": "chore: simplify readme",
+            "files": [
+              "README.md",
+              "package.json"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "package.json",
+            "reason": "package script `lint` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:fix` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test` is a likely verification command"
+          },
+          {
+            "path": "test/index.test.ts",
+            "reason": "test/spec file anchors expected behavior"
+          }
+        ],
+        "temporal_couplings": [
+          {
+            "files": [
+              "README.md",
+              "package.json"
+            ],
+            "commit_count": 6,
+            "last_commit": "d0440f08d485",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "src/fetch.ts",
+              "test/index.test.ts"
+            ],
+            "commit_count": 6,
+            "last_commit": "5f17585adc35",
+            "reason": "These files changed together in 6 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "package.json",
+              "test/index.test.ts"
+            ],
+            "commit_count": 5,
+            "last_commit": "5f17585adc35",
+            "reason": "These files changed together in 5 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "CHANGELOG.md",
+              "package.json"
+            ],
+            "commit_count": 4,
+            "last_commit": "4111ad9e34be",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "test/index.test.ts"
+            ],
+            "commit_count": 4,
+            "last_commit": "5f17585adc35",
+            "reason": "These files changed together in 4 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "build.config.ts"
+            ],
+            "commit_count": 3,
+            "last_commit": "47ab1dcf17c8",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "src/fetch.ts"
+            ],
+            "commit_count": 3,
+            "last_commit": "5f17585adc35",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "README.md",
+              "src/utils.ts"
+            ],
+            "commit_count": 3,
+            "last_commit": "1dbc37fd1cea",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:07403b34218b",
+              "kind": "commit",
+              "label": "build: fix exports field",
+              "path": null,
+              "detail": "2025-10-28",
+              "citations": [
+                "git:07403b34218b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:0a0a30c5ea77",
+              "kind": "commit",
+              "label": "chore(release): v2.0.0-alpha.2",
+              "path": null,
+              "detail": "2025-10-28",
+              "citations": [
+                "git:0a0a30c5ea77"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:1dbc37fd1cea",
+              "kind": "commit",
+              "label": "chore: fix typos in readme (#608)",
+              "path": null,
+              "detail": "2026-07-08",
+              "citations": [
+                "git:1dbc37fd1cea"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:4111ad9e34be",
+              "kind": "commit",
+              "label": "chore(release): v2.0.0-alpha.3",
+              "path": null,
+              "detail": "2025-10-28",
+              "citations": [
+                "git:4111ad9e34be"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:8912da8babe4",
+              "kind": "commit",
+              "label": "chore: fix version",
+              "path": null,
+              "detail": "2025-10-28",
+              "citations": [
+                "git:8912da8babe4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9102908aeeca",
+              "kind": "commit",
+              "label": "docs: fix license link in readme (#601)",
+              "path": null,
+              "detail": "2026-06-28",
+              "citations": [
+                "git:9102908aeeca"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:98bda7531f40",
+              "kind": "commit",
+              "label": "build: add `main` field",
+              "path": null,
+              "detail": "2025-10-28",
+              "citations": [
+                "git:98bda7531f40"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ccfc10b931df",
+              "kind": "commit",
+              "label": "chore(release): v2.0.0-alpha.1",
+              "path": null,
+              "detail": "2025-10-28",
+              "citations": [
+                "git:ccfc10b931df"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d0440f08d485",
+              "kind": "commit",
+              "label": "chore: simplify readme",
+              "path": null,
+              "detail": "2025-10-28",
+              "citations": [
+                "git:d0440f08d485"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d50a2047d431",
+              "kind": "commit",
+              "label": "docs: add proxy configuration for Bun and Deno (#539)",
+              "path": null,
+              "detail": "2026-02-04",
+              "citations": [
+                "git:d50a2047d431"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:d61b2fcf7755",
+              "kind": "commit",
+              "label": "chore(deps): update all non-major dependencies (#509)",
+              "path": null,
+              "detail": "2025-10-31",
+              "citations": [
+                "git:d61b2fcf7755"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:dfbe3ca4ef8a",
+              "kind": "commit",
+              "label": "chore(deps): update autofix-ci/action digest to 7a166d7 (#540)",
+              "path": null,
+              "detail": "2026-03-11",
+              "citations": [
+                "git:dfbe3ca4ef8a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-autofix-yml",
+              "kind": "file",
+              "label": ".github/workflows/autofix.yml",
+              "path": ".github/workflows/autofix.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/autofix.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:build-config-ts",
+              "kind": "file",
+              "label": "build.config.ts",
+              "path": "build.config.ts",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "build.config.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:changelog-md",
+              "kind": "file",
+              "label": "CHANGELOG.md",
+              "path": "CHANGELOG.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:package-json",
+              "kind": "file",
+              "label": "package.json",
+              "path": "package.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:readme-md",
+              "kind": "file",
+              "label": "README.md",
+              "path": "README.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-fetch-ts",
+              "kind": "file",
+              "label": "src/fetch.ts",
+              "path": "src/fetch.ts",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "src/fetch.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:src-utils-ts",
+              "kind": "file",
+              "label": "src/utils.ts",
+              "path": "src/utils.ts",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "src/utils.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-index-test-ts",
+              "kind": "file",
+              "label": "test/index.test.ts",
+              "path": "test/index.test.ts",
+              "detail": "Verification source",
+              "citations": [
+                "test/index.test.ts"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-fix--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:fix` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:test-index-test-ts-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "test/index.test.ts",
+              "detail": "Likely verification lead",
+              "citations": [
+                "test/index.test.ts"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:07403b34218b",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "07403b34218b changed this file",
+              "citations": [
+                "git:07403b34218b",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0a0a30c5ea77",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "0a0a30c5ea77 changed this file",
+              "citations": [
+                "git:0a0a30c5ea77",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:0a0a30c5ea77",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "0a0a30c5ea77 changed this file",
+              "citations": [
+                "git:0a0a30c5ea77",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:1dbc37fd1cea",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "1dbc37fd1cea changed this file",
+              "citations": [
+                "git:1dbc37fd1cea",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:1dbc37fd1cea",
+              "to": "file:src-utils-ts",
+              "kind": "changed",
+              "evidence": "1dbc37fd1cea changed this file",
+              "citations": [
+                "git:1dbc37fd1cea",
+                "src/utils.ts"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:4111ad9e34be",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "4111ad9e34be changed this file",
+              "citations": [
+                "git:4111ad9e34be",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:4111ad9e34be",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "4111ad9e34be changed this file",
+              "citations": [
+                "git:4111ad9e34be",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8912da8babe4",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "8912da8babe4 changed this file",
+              "citations": [
+                "git:8912da8babe4",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:9102908aeeca",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "9102908aeeca changed this file",
+              "citations": [
+                "git:9102908aeeca",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:98bda7531f40",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "98bda7531f40 changed this file",
+              "citations": [
+                "git:98bda7531f40",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ccfc10b931df",
+              "to": "file:changelog-md",
+              "kind": "changed",
+              "evidence": "ccfc10b931df changed this file",
+              "citations": [
+                "git:ccfc10b931df",
+                "CHANGELOG.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ccfc10b931df",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "ccfc10b931df changed this file",
+              "citations": [
+                "git:ccfc10b931df",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d0440f08d485",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "d0440f08d485 changed this file",
+              "citations": [
+                "git:d0440f08d485",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d0440f08d485",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "d0440f08d485 changed this file",
+              "citations": [
+                "git:d0440f08d485",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d50a2047d431",
+              "to": "file:readme-md",
+              "kind": "changed",
+              "evidence": "d50a2047d431 changed this file",
+              "citations": [
+                "git:d50a2047d431",
+                "README.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:d61b2fcf7755",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "d61b2fcf7755 changed this file",
+              "citations": [
+                "git:d61b2fcf7755",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:dfbe3ca4ef8a",
+              "to": "file:-github-workflows-autofix-yml",
+              "kind": "changed",
+              "evidence": "dfbe3ca4ef8a changed this file",
+              "citations": [
+                "git:dfbe3ca4ef8a",
+                ".github/workflows/autofix.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:changelog-md",
+              "to": "file:package-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:4111ad9e34be"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "file:test-index-test-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 5 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5f17585adc35"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-fix--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:fix` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:build-config-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:47ab1dcf17c8"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:package-json",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:d0440f08d485"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:src-fetch-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5f17585adc35"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:src-utils-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:1dbc37fd1cea"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:readme-md",
+              "to": "file:test-index-test-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 4 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5f17585adc35"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:src-fetch-ts",
+              "to": "file:test-index-test-ts",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 6 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:5f17585adc35"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:test-index-test-ts",
+              "to": "test:test-index-test-ts-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "test/index.test.ts"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "package.json",
+          "test/index.test.ts",
+          "README.md",
+          "src/fetch.ts",
+          "CHANGELOG.md",
+          "build.config.ts",
+          "src/utils.ts"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 10 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 8.9/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.9,
+        "hotspot_count": 1,
+        "files_analyzed": 10,
+        "files_with_test_signal": 1,
+        "top_files": [
+          {
+            "path": "src/fetch.ts",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 280,
+            "bytes": 8674,
+            "churn": 344,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 9; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "src/fetch.ts"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 245 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "src/fetch.ts"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 344 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "src/fetch.ts"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/fetch.ts"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "src/fetch.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "src/types.ts",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 166,
+            "bytes": 4042,
+            "churn": 170,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 170 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/types.ts"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/types.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/utils.ts",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 153,
+            "bytes": 3626,
+            "churn": 161,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 161 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/utils.ts"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/utils.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/utils.url.ts",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 119,
+            "bytes": 2986,
+            "churn": 119,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 119 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/utils.url.ts"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/utils.url.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/error.ts",
+            "score": 8.6,
+            "bucket": "healthy",
+            "lines": 67,
+            "bytes": 1883,
+            "churn": 69,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 69 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/error.ts"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "src/error.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/index.ts",
+            "score": 9,
+            "bucket": "healthy",
+            "lines": 15,
+            "bytes": 498,
+            "churn": 83,
+            "has_test_signal": true,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 83 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "src/index.ts"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "src/index.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "examples/type-safety.ts",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 21,
+            "bytes": 471,
+            "churn": 21,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "vitest.config.ts",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 10,
+            "bytes": 187,
+            "churn": 10,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "src/base.ts",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 2,
+            "bytes": 56,
+            "churn": 6,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          },
+          {
+            "path": "test/playground.ts",
+            "score": 10,
+            "bucket": "healthy",
+            "lines": 16,
+            "bytes": 455,
+            "churn": 0,
+            "has_test_signal": false,
+            "findings": [],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 32,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "TypeScript",
+            "files": 11,
+            "bytes": 37971
+          },
+          {
+            "language": "JavaScript",
+            "files": 8,
+            "bytes": 2401
+          },
+          {
+            "language": "JSON",
+            "files": 3,
+            "bytes": 1742
+          },
+          {
+            "language": "Markdown",
+            "files": 3,
+            "bytes": 40844
+          },
+          {
+            "language": "YAML",
+            "files": 2,
+            "bytes": 1053
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "examples",
+            "file_count": 9,
+            "bytes": 2801
+          },
+          {
+            "path": "src",
+            "file_count": 7,
+            "bytes": 21765
+          },
+          {
+            "path": ".github",
+            "file_count": 3,
+            "bytes": 276526
+          },
+          {
+            "path": "test",
+            "file_count": 2,
+            "bytes": 15548
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 32,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 3,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "autofix.yml",
+                    "path": ".github/workflows/autofix.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "ci.yml",
+                    "path": ".github/workflows/ci.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "banner.svg",
+                "path": ".github/banner.svg",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "examples",
+            "path": "examples",
+            "is_dir": true,
+            "file_count": 9,
+            "children": [
+              {
+                "name": "README.md",
+                "path": "examples/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "body.mjs",
+                "path": "examples/body.mjs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "error-handling.mjs",
+                "path": "examples/error-handling.mjs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "first-request.mjs",
+                "path": "examples/first-request.mjs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "headers.mjs",
+                "path": "examples/headers.mjs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "methods.mjs",
+                "path": "examples/methods.mjs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "proxy.mjs",
+                "path": "examples/proxy.mjs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "query-string.mjs",
+                "path": "examples/query-string.mjs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "type-safety.ts",
+                "path": "examples/type-safety.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "src",
+            "path": "src",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "base.ts",
+                "path": "src/base.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "error.ts",
+                "path": "src/error.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "fetch.ts",
+                "path": "src/fetch.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "index.ts",
+                "path": "src/index.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "types.ts",
+                "path": "src/types.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utils.ts",
+                "path": "src/utils.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utils.url.ts",
+                "path": "src/utils.url.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 2,
+            "children": [
+              {
+                "name": "index.test.ts",
+                "path": "test/index.test.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "playground.ts",
+                "path": "test/playground.ts",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".editorconfig",
+            "path": ".editorconfig",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".prettierrc",
+            "path": ".prettierrc",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CHANGELOG.md",
+            "path": "CHANGELOG.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "eslint.config.mjs",
+            "path": "eslint.config.mjs",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package.json",
+            "path": "package.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "renovate.json",
+            "path": "renovate.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "tsconfig.json",
+            "path": "tsconfig.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "vitest.config.ts",
+            "path": "vitest.config.ts",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 38927,
+        "peak_rss_bytes": 28180480,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 9,
+            "pct": 0.0231201993474966
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 1,
+            "pct": 0.0025689110386107328
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 771,
+            "pct": 1.980630410768875
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 38143,
+            "pct": 97.98597374572918
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 2,
+        "peak_rss_bytes": 28590080,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 1,
+            "pct": 50
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "ofetch is a TypeScript HTTP client library for applications using native fetch in Node.js, browsers, and workers. At commit 1dbc37fd1ceab832fc7c90cad81b1091c95ba563, its v2 alpha implementation adds response decoding, request serialization, lifecycle hooks, configurable retries, timeouts, and reusable defaults. Its central abstraction is a callable client with raw, native, and create variants; transport remains delegated to the host runtime or an injected fetch implementation.",
+    "agent_prompt": "Onboard to unjs/ofetch at commit 1dbc37fd1ceab832fc7c90cad81b1091c95ba563. This checkout represents version 2.0.0-alpha.3, an ESM TypeScript library wrapping native fetch. Verify the checkout before relying on this brief. Read package.json, src/index.ts, src/base.ts, src/fetch.ts, src/utils.ts, src/utils.url.ts, src/error.ts, src/types.ts, test/index.test.ts, vitest.config.ts, and both GitHub workflows. Use README.md for intended usage, but resolve implementation details against source: its URL sections still mention ufo although the current implementation uses local helpers.\n\nStart with the runtime boundaries. src/index.ts exports a wrapper that dynamically calls globalThis.fetch when fetch existed at import time, creates ofetch, and aliases it as $fetch. createFetch captures an injected transport or the current global fetch. Each call allocates a FetchContext and resolves defaults, input options, headers, and query aliases. Methods are uppercased before onRequest. Hooks execute sequentially and can mutate context. String requests then receive baseURL and query transformations; Request objects skip that URL rewriting.\n\nTrace serialization and decoding before changing behavior. Truthy bodies on PATCH, POST, PUT, and DELETE enter payload handling. Serializable non-string bodies become JSON, except the exact application/x-www-form-urlencoded content type selects URLSearchParams. FormData, URLSearchParams, and buffer-backed objects bypass JSON conversion. Streams receive duplex half unless already configured. Timeout uses AbortSignal.timeout and may combine with a caller signal through AbortSignal.any. Fetch execution alone is inside the transport catch; serialization, hooks, and response parsing can throw outside normalization.\n\nResponses store decoded data in _data. parseResponse forces the JSON/text-reading branch; otherwise responseType or content-type detection selects JSON, text, blob, arrayBuffer, or stream. HEAD and designated empty-body statuses skip decoding. onResponse runs before the 400–599 status check. Error hooks precede retry handling; retry recursively re-enters the raw pipeline with a decremented budget. Payload methods default to zero retries, other methods to one, and AbortError suppression depends on timeout being absent. FetchError retains context through getters and embeds the request URL in its message.\n\nKeep changes small and update public types with runtime behavior. Factory defaults merge shallowly; per-call headers and query receive specialized merging. Review retry replay, consumed streams, timeout signals, URL fragments, malformed JSON, and hook failures when relevant. These are source-derived investigation targets, not confirmed vulnerabilities.\n\nTests and CI were inspected, not executed for this brief. The Vitest suite uses a local H3 server and a global fetch spy, but its final options test also contacts jsonplaceholder. CI declares Node 20, 22, and 24, lint, build, coverage, and Codecov. Under an execution-authorized task, start with relevant focused Vitest cases, then repository checks as appropriate. Preserve pnpm and the lockfile. Do not run examples casually: the headers example reads GH_TOKEN and creates a public GitHub gist. Never invoke release without explicit authorization; it publishes and pushes. For read-only investigations, use rtk proxy commands, avoid secrets and network calls, and report coverage limits honestly.",
+    "system_map": {
+      "summary": "The system is a library consumed through an ESM package entrypoint. Seven source modules divide client creation, request execution, helpers, errors, and public types. State lives in factory closures and per-request contexts, while network behavior belongs to native or injected fetch. Build and CI configuration describe npm distribution and Node validation.",
+      "claims": [
+        {
+          "claim": "The package identifies version 2.0.0-alpha.3, exports dist/index.mjs with dist/index.d.mts types, publishes only dist, and declares sideEffects false.",
+          "sources": [
+            "package.json#L2-L14"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "src/index.ts re-exports runtime APIs through base.ts and public types, creates ofetch with its fetch wrapper, and exports $fetch as the same client.",
+          "sources": [
+            "src/index.ts#L1-L15",
+            "src/base.ts#L1-L2"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The entrypoint wrapper allows later global fetch patching when fetch existed at import time; otherwise it installs a rejecting fallback.",
+          "sources": [
+            "src/index.ts#L8-L11"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "createFetch captures the transport, owns nested error/raw functions, and attaches raw, native, and create methods to the callable client.",
+          "sources": [
+            "src/fetch.ts#L36-L39",
+            "src/fetch.ts#L259-L279"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "fetch.ts orchestrates transport, utils.ts handles option resolution and hooks, utils.url.ts handles string URLs, and error.ts constructs contextual failures.",
+          "sources": [
+            "src/fetch.ts#L1-L19",
+            "src/utils.ts#L85-L119",
+            "src/utils.url.ts#L40-L51",
+            "src/error.ts#L21-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The inspected request pipeline stores transient state in FetchContext and response._data; transport is the external output boundary rather than a repository persistence layer.",
+          "sources": [
+            "src/fetch.ts#L93-L103",
+            "src/fetch.ts#L180-L184",
+            "src/types.ts#L94-L99",
+            "src/types.ts#L137-L139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pnpm 10.20.0 drives obuild, Vitest, ESLint, and Prettier scripts; release additionally invokes changelogen with alpha publishing and push flags.",
+          "sources": [
+            "package.json#L15-L38",
+            "pnpm-lock.yaml#L9-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI declares Ubuntu jobs across Node 20, 22, and 24; autofix separately runs lint:fix with read-only contents permission and a pinned autofix action.",
+          "sources": [
+            ".github/workflows/ci.yml#L5-L19",
+            ".github/workflows/autofix.yml#L5-L18"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The user-facing surface is an HTTP client API with typed options and results. Automatic serialization and decoding remove common fetch boilerplate. Factories and hooks support shared application behavior, while retry and timeout options control failures. Raw responses, streams, and transport dispatchers expose lower-level capabilities.",
+      "claims": [
+        {
+          "claim": "$fetch returns decoded _data, raw returns the augmented Response, and native delegates directly to the captured fetch transport.",
+          "sources": [
+            "src/fetch.ts#L259-L266",
+            "src/types.ts#L5-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response decoding supports JSON, text, blob, arrayBuffer, and stream; parseResponse supplies a custom synchronous parser of response text.",
+          "sources": [
+            "src/types.ts#L38-L40",
+            "src/types.ts#L123-L135",
+            "src/fetch.ts#L208-L232"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Payload handling serializes eligible objects, preserves strings, selects URL-encoded serialization for the exact form content type, and supplies missing JSON headers.",
+          "sources": [
+            "src/fetch.ts#L130-L153",
+            "examples/body.mjs#L3-L9"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FormData and URLSearchParams bypass JSON classification, while web and Node stream bodies automatically receive duplex half unless explicitly configured.",
+          "sources": [
+            "src/utils.ts#L31-L42",
+            "src/fetch.ts#L154-L165"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "String requests support baseURL and query parameters; params remains a deprecated alias, with values merged from defaults and individual calls.",
+          "sources": [
+            "src/types.ts#L25-L36",
+            "src/utils.ts#L101-L109",
+            "src/fetch.ts#L114-L127",
+            "examples/query-string.mjs#L3-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Users can configure retry count, eligible status codes, fixed or contextual delay, timeout milliseconds, and suppression of HTTP status errors.",
+          "sources": [
+            "src/types.ts#L29-L29",
+            "src/types.ts#L61-L70",
+            "src/fetch.ts#L49-L75",
+            "src/fetch.ts#L242-L254"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Four lifecycle hooks accept functions or arrays, and create builds reusable clients with shared options and optional custom transport.",
+          "sources": [
+            "src/types.ts#L80-L83",
+            "src/types.ts#L108-L117",
+            "src/fetch.ts#L268-L277",
+            "src/utils.ts#L140-L152"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Node transport customization includes an undici dispatcher option; documentation demonstrates ProxyAgent, SSE stream consumption, and FetchOptions augmentation.",
+          "sources": [
+            "src/types.ts#L49-L59",
+            "README.md#L293-L307",
+            "README.md#L314-L324",
+            "README.md#L356-L383"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Inputs enter as FetchRequest and FetchOptions, then become a mutable FetchContext. Resolution merges shared defaults with call-specific headers and query values before hooks and normalization. Fetch produces a Response whose body becomes _data, which hooks can inspect before return or rejection. Retries carry transformed context back through the same pipeline.",
+      "claims": [
+        {
+          "claim": "Each raw call allocates a context containing the original request, resolved options, and initially undefined response and error fields.",
+          "sources": [
+            "src/fetch.ts#L89-L103",
+            "src/types.ts#L94-L99"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Header resolution chooses explicit input headers over Request headers, then overlays them on defaults using Headers.set; it does not merge Request headers when explicit headers are supplied.",
+          "sources": [
+            "src/utils.ts#L94-L99",
+            "src/utils.ts#L121-L137",
+            "test/index.test.ts#L385-L397"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Query precedence is default params, default query, input params, then input query; other options use shallow defaults/input spread.",
+          "sources": [
+            "src/utils.ts#L101-L118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Method capitalization precedes onRequest; that hook can change the request or options before string URL transformation and body serialization.",
+          "sources": [
+            "src/fetch.ts#L105-L130",
+            "src/types.ts#L104-L110"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "withQuery omits undefined values in new queries; in existing queries it deletes undefined keys, appends array elements, and replaces scalar values.",
+          "sources": [
+            "src/utils.url.ts#L64-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Query normalization turns null into an empty string, numbers and booleans into strings, and objects into JSON; serialization uses URLSearchParams.",
+          "sources": [
+            "src/utils.url.ts#L72-L83",
+            "src/utils.url.ts#L105-L118"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Truthy timeout adds a generated AbortSignal, optionally combined with the caller signal, before resolved options cross the fetch boundary as RequestInit.",
+          "sources": [
+            "src/fetch.ts#L171-L184"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Decoded data belongs to response._data; the normal client returns that value, while FetchError getters retain access to context and parsed error data.",
+          "sources": [
+            "src/fetch.ts#L215-L230",
+            "src/fetch.ts#L259-L262",
+            "src/error.ts#L44-L63"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Source reading followed initialization, a JSON POST, and HTTP failure with retry through their complete call chains. Additional branches cover custom clients, streaming, and transport rejection. The same raw function owns preprocessing, fetch, decoding, hooks, and status handling. These are static execution traces rather than observed runs.",
+      "claims": [
+        {
+          "claim": "Initialization proceeds index.ts → base.ts exports → entrypoint fetch wrapper → createFetch({ fetch }) → ofetch/$fetch aliases; unsupported global fetch uses the rejecting wrapper.",
+          "sources": [
+            "src/index.ts#L1-L15",
+            "src/base.ts#L1-L2",
+            "src/fetch.ts#L36-L37",
+            "src/fetch.ts#L259-L279"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A JSON POST proceeds $fetch → $fetchRaw → resolveFetchOptions → uppercase method → onRequest → withBase/withQuery → isJSONSerializable → JSON.stringify and default headers.",
+          "sources": [
+            "examples/body.mjs#L3-L9",
+            "src/fetch.ts#L93-L153",
+            "src/fetch.ts#L259-L262",
+            "src/utils.ts#L17-L42"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "After POST preparation, fetch runs → response type is selected → response text is parsed into _data → onResponse runs → status is checked → $fetch returns _data.",
+          "sources": [
+            "src/fetch.ts#L180-L184",
+            "src/fetch.ts#L200-L221",
+            "src/fetch.ts#L235-L262"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A qualifying 408 response is decoded first → onResponse → onResponseError → onError → retry budget/status check → optional retryDelay → recursive $fetchRaw with retry decremented.",
+          "sources": [
+            "src/fetch.ts#L49-L75",
+            "src/fetch.ts#L208-L221",
+            "src/fetch.ts#L235-L254",
+            "test/index.test.ts#L270-L295"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "When retry is unavailable or exhausted, onError calls createFetchError, optionally trims the V8 stack, and throws an error exposing URL, status, context, and decoded body.",
+          "sources": [
+            "src/fetch.ts#L79-L86",
+            "src/error.ts#L24-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A transport rejection sets context.error → awaits onRequestError → enters onError; AbortError suppresses automatic retry only when timeout is absent.",
+          "sources": [
+            "src/fetch.ts#L39-L49",
+            "src/fetch.ts#L185-L193",
+            "test/index.test.ts#L298-L310"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Client creation proceeds $fetch.create → shallow global/default merging → createFetch; later calls independently merge headers and query through resolveFetchOptions.",
+          "sources": [
+            "src/fetch.ts#L268-L277",
+            "src/utils.ts#L94-L118",
+            "test/index.test.ts#L347-L382"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "An SSE response follows content-type detection → stream branch → response.body or _bodyInit assigned to _data → caller receives the stream and reads chunks itself.",
+          "sources": [
+            "src/utils.ts#L72-L76",
+            "src/fetch.ts#L224-L227",
+            "src/fetch.ts#L259-L262",
+            "README.md#L297-L306"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; no passing result or measured coverage is established. The inspected Vitest suite primarily exercises native fetch against a local H3 server. Coverage spans serialization, decoding, headers, errors, hooks, retries, and timeout behavior, with some assertions narrower than their titles imply. This is a bounded inventory rather than exhaustive behavioral assurance.",
+      "claims": [
+        {
+          "claim": "test/index.test.ts uses Vitest, a global fetch spy, and an H3 server bound to an ephemeral localhost port, with lifecycle setup and teardown.",
+          "sources": [
+            "test/index.test.ts#L1-L22",
+            "test/index.test.ts#L67-L76"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Decoding tests cover custom parseResponse, explicit JSON/blob/text/arrayBuffer selection, binary Blob detection, 204, and HEAD.",
+          "sources": [
+            "test/index.test.ts#L82-L111",
+            "test/index.test.ts#L253-L261"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Payload tests cover object/array serialization, header representations, string and Buffer bodies, web/Node streams, FormData, and URLSearchParams.",
+          "sources": [
+            "test/index.test.ts#L119-L159",
+            "test/index.test.ts#L161-L231"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error/default tests assert 404 error context and parsed body, ignoreResponseError, header/query precedence, and Request header overrides.",
+          "sources": [
+            "test/index.test.ts#L234-L250",
+            "test/index.test.ts#L347-L397"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Retry-delay tests compare competing requests by Promise.race; abort tests assert rejection, and timeout tests assert relative completion and timeout cause fields rather than exact retry counts.",
+          "sources": [
+            "test/index.test.ts#L270-L310",
+            "test/index.test.ts#L324-L344"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hook tests assert propagation of exceptions from all four hooks and callback counts for successful/error responses with single hooks and arrays.",
+          "sources": [
+            "test/index.test.ts#L400-L435",
+            "test/index.test.ts#L438-L505"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The inspected suite's final options test contacts jsonplaceholder; it does not establish SSE, proxy/TLS, malformed-JSON, fragment handling, or streamed-body replay coverage.",
+          "sources": [
+            "test/index.test.ts#L508-L525",
+            "src/fetch.ts#L72-L75",
+            "src/fetch.ts#L215-L230",
+            "src/utils.url.ts#L69-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected configuration enables V8 coverage with src inclusion and text/clover/json reporters; CI declares Node 20/22/24 lint, build, coverage, and Codecov without a browser or worker job.",
+          "sources": [
+            "vitest.config.ts#L3-L9",
+            "package.json#L22-L26",
+            ".github/workflows/ci.yml#L7-L19"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "The main review hotspots are URL rewriting, retry replay, abort composition, and error exposure. Several observable boundaries bypass normalized FetchError handling. Documentation also contains compatibility descriptions that differ from this alpha implementation. The following are source observations or explicitly marked hypotheses, not confirmed vulnerabilities.",
+      "claims": [
+        {
+          "claim": "FetchError messages include the full request URL, and getters expose request/options/response; logging these objects can expose sensitive query or header data supplied by callers.",
+          "sources": [
+            "src/error.ts#L26-L49",
+            "examples/error-handling.mjs#L7-L12",
+            "examples/headers.mjs#L5-L6"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "withBase uses a string prefix check and slash joining rather than origin-aware URL resolution; withQuery splits only at '?', with no explicit fragment handling.",
+          "sources": [
+            "src/utils.url.ts#L40-L50",
+            "src/utils.url.ts#L69-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Explicit numeric retries can replay payload methods and reuse transformed bodies; consumed streams and non-idempotent operations therefore need targeted replay validation.",
+          "sources": [
+            "src/fetch.ts#L49-L75",
+            "src/fetch.ts#L154-L165",
+            "src/utils.ts#L10-L14"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "Retries retain context.options.signal, then compose another timeout signal; AbortError retry suppression is disabled whenever a timeout option is present.",
+          "sources": [
+            "src/fetch.ts#L43-L47",
+            "src/fetch.ts#L72-L75",
+            "src/fetch.ts#L171-L177"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Serialization, timeout construction, JSON parsing, and most hooks lie outside the fetch try/catch, so their exceptions can bypass onRequestError and normalized retry/error handling.",
+          "sources": [
+            "src/fetch.ts#L110-L177",
+            "src/fetch.ts#L180-L198",
+            "src/fetch.ts#L215-L253"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "isJSONSerializable accesses value.buffer after checking typeof object; its earlier 't === null' condition cannot recognize null, although top-level falsy bodies skip the caller's payload branch.",
+          "sources": [
+            "src/utils.ts#L17-L32",
+            "src/fetch.ts#L130-L131"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "README names ufo for URL handling and describes response.ok-based failures, while current source uses local URL helpers and specifically rejects statuses 400–599.",
+          "sources": [
+            "README.md#L78-L80",
+            "README.md#L148-L158",
+            "src/fetch.ts#L1-L3",
+            "src/fetch.ts#L242-L246"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Network-sensitive examples include GH_TOKEN authentication and public gist creation; README demonstrates disabling TLS verification, and the release script publishes and pushes.",
+          "sources": [
+            "examples/headers.mjs#L3-L17",
+            "README.md#L334-L342",
+            "package.json#L21-L21"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension primarily happens through factories, typed options, and lifecycle hooks. Transport injection permits alternative fetch implementations without changing the request pipeline. Parsers and response mappings offer decoding customization, while dispatchers expose runtime-specific networking. Source-level helper tables define the narrower places where core behavior can be extended.",
+      "claims": [
+        {
+          "claim": "CreateFetchOptions.fetch injects a fetch-compatible transport into createFetch, allowing tests or adapters to replace network execution.",
+          "sources": [
+            "src/types.ts#L80-L83",
+            "src/fetch.ts#L36-L37",
+            "src/fetch.ts#L180-L184"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "$fetch.create accepts shared defaults and custom global options, preserving inherited globals while new defaultOptions have final shallow precedence.",
+          "sources": [
+            "src/types.ts#L15-L15",
+            "src/fetch.ts#L268-L277"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FetchHooks defines four typed lifecycle interfaces; callHooks awaits array members sequentially using the same mutable context.",
+          "sources": [
+            "src/types.ts#L94-L117",
+            "src/utils.ts#L140-L152"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "parseResponse replaces JSON.parse after text consumption and takes precedence over responseType by selecting the JSON branch.",
+          "sources": [
+            "src/types.ts#L38-L40",
+            "src/fetch.ts#L209-L220"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ResponseMap and MappedResponseType centralize compile-time result mapping; adding response types requires coordinating these types with runtime decoding.",
+          "sources": [
+            "src/types.ts#L123-L135",
+            "src/fetch.ts#L215-L230"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "retryStatusCodes and retryDelay permit application-specific retry selection and contextual delay calculation without modifying the built-in status set.",
+          "sources": [
+            "src/types.ts#L64-L70",
+            "src/fetch.ts#L57-L69"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "FetchOptions can be augmented through TypeScript module declaration merging, with custom fields available to shared onRequest hooks.",
+          "sources": [
+            "README.md#L356-L383",
+            "src/types.ts#L22-L24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "dispatcher and legacy agent options expose transport configuration; core payload-method and content-type sets are localized in utils.ts for source-level extensions.",
+          "sources": [
+            "src/types.ts#L49-L59",
+            "src/utils.ts#L10-L14",
+            "src/utils.ts#L45-L82",
+            "examples/proxy.mjs#L3-L16"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start with the public factory and raw pipeline, then follow the helper or type implicated by the task. Preserve option precedence and lifecycle ordering, which affect every client call. Tests and CI were inspected, not executed; their existence supplies investigation targets rather than passing evidence. The report inspected 17 source/example/test files plus documentation and configuration, but remains bounded rather than exhaustive.",
+      "claims": [
+        {
+          "claim": "Read index.ts, base.ts, fetch.ts, and types.ts first to distinguish exported client aliases, runtime factories, and generic response contracts.",
+          "sources": [
+            "src/index.ts#L1-L15",
+            "src/base.ts#L1-L2",
+            "src/fetch.ts#L259-L279",
+            "src/types.ts#L5-L16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve explicit header replacement and query precedence when editing resolution; the defaults test exercises specialized merging rather than arbitrary recursive deep merging.",
+          "sources": [
+            "src/utils.ts#L94-L118",
+            "test/index.test.ts#L347-L397"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Treat fetch.ts as a broad-impact edit boundary: onRequest precedes normalization, decoding precedes onResponse, and onResponse precedes status failure handling.",
+          "sources": [
+            "src/fetch.ts#L105-L130",
+            "src/fetch.ts#L208-L254"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use local URL helper behavior as authority despite README's ufo references; query array append/delete rules and base prefix logic deserve explicit regression cases.",
+          "sources": [
+            "README.md#L148-L158",
+            "src/utils.url.ts#L40-L50",
+            "src/utils.url.ts#L89-L102"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Keep .ts import extensions and explicit public declarations consistent with strict NodeNext, isolatedDeclarations, and noEmit configuration.",
+          "sources": [
+            "tsconfig.json#L2-L20",
+            "src/fetch.ts#L1-L19",
+            "src/types.ts#L123-L139"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve pnpm and repository lint conventions: ESLint extends unjs, Prettier specifies es5 trailing commas, and Renovate extends the shared unjs configuration.",
+          "sources": [
+            "package.json#L18-L19",
+            "package.json#L38-L38",
+            "eslint.config.mjs#L1-L12",
+            ".prettierrc#L1-L3",
+            "renovate.json#L1-L3"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests and CI were inspected, not executed. In a future execution-authorized task, use focused Vitest cases first, then pnpm test/build as appropriate; account for the suite's external jsonplaceholder calls.",
+          "sources": [
+            "package.json#L16-L22",
+            "test/index.test.ts#L508-L525",
+            ".github/workflows/ci.yml#L15-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Avoid running examples or release as routine validation: headers.mjs reads GH_TOKEN and posts a public gist, playground contacts httpstat.us, and release publishes an alpha package and pushes.",
+          "sources": [
+            "examples/headers.mjs#L3-L17",
+            "test/playground.ts#L3-L15",
+            "package.json#L21-L21"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 235424,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T17:24:51.214530+00:00",
+    "source_commit_sha": "1dbc37fd1ceab832fc7c90cad81b1091c95ba563",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 25,
+      "private_review_receipt_sha256": "e736eb76cf74ea73eb5f00ec6c86aaa288d40e2bb2f4a4a94ccc49c7ad3a0ca5",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "03a785f03afd4c45284d7195cc34916b4c135743144eefdcc1a272249917789a",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

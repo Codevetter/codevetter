@@ -37,6 +37,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build static landing page and verified docs
+        env:
+          PUBLIC_SAASMAKER_NEWSLETTER_KEY: ${{ vars.PUBLIC_SAASMAKER_NEWSLETTER_KEY }}
         run: pnpm run build:landing
 
       - name: Verify required static routes

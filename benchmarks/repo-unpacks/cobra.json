@@ -1,0 +1,3112 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "spf13/cobra",
+  "slug": "cobra",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T18:15:14.106Z",
+  "last_commit": {
+    "sha": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+    "date": "2026-07-10",
+    "subject": "fix: resolve macOS test link failure and update lint rules (#2429)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "03e3420f-e909-475f-aca2-732281e94b5d",
+    "status": "scan_only",
+    "created_at": "2026-10-02T18:15:14.097141+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "cobra",
+      "commit_sha": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+      "branch": "main",
+      "remote_url": "https://github.com/spf13/cobra.git",
+      "files_scanned": 65,
+      "files_skipped": 1,
+      "bytes_scanned": 631792,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Go",
+          "files": 36,
+          "bytes": 512600
+        },
+        {
+          "language": "Markdown",
+          "files": 17,
+          "bytes": 99775
+        },
+        {
+          "language": "YAML",
+          "files": 5,
+          "bytes": 6259
+        }
+      ],
+      "manifests": [
+        {
+          "path": "go.mod",
+          "kind": "go.mod",
+          "name": "github.com/spf13/cobra",
+          "version": null,
+          "dependencies": [],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/labeler.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/test.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "site",
+          "file_count": 13,
+          "bytes": 84498
+        },
+        {
+          "path": "doc",
+          "file_count": 11,
+          "bytes": 44480
+        },
+        {
+          "path": ".github",
+          "file_count": 4,
+          "bytes": 4137
+        }
+      ],
+      "docs": [
+        {
+          "path": "CONTRIBUTING.md",
+          "bytes": 2097,
+          "preview": "# Contributing to Cobra\n\nThank you so much for contributing to Cobra. We appreciate your time and help.\nHere are some guidelines to help you get started.\n\n## Code of Conduct\n\nBe kind and respectful to the members of the community. Take time to educate\nothers who are seeking help. Harassment of any kind will not be tolerated.\n\n## Questions\n\nIf you have questions regarding Cobra, feel free to ask it in the community\n[#cobra Slack channel][cobra-slack]\n\n## Filing a bug or feature\n\n1. Before filing an issue, please check the existing issues to see if a\n   similar one was already opened. If there is one already opened, feel free\n   to comment on it.\n1. If you believe you've found a bug, please provide detailed steps of\n   reproduction, the version of Cobra and anything else you believe will be\n   useful to help troubleshoot it (e.g. OS environment, environment variables,\n   etc...). Also state the current behavior vs. the expected behavior.\n1. If you'd like to see a feature or an enhancement please open an issue with\n   a clear title and description of what the feature is and why it would be\n   beneficial to the project and its users.\n\n## Submitting changes\n\n1. CLA: Upon submitting a Pull Request (PR), contributors will be prompted to\n   sign a CLA. Please sign the CLA :slightly_smiling_face:\n1. Tests: If you are submitting code, please ensure you have adequate tests\n   for the feature. Tests can be run via `go test ./...` or `make test`.\n1. Since this is golang project, ensure the new code is properly formatted to\n   ensure code consistency. Run `make all`.\n\n### Quick steps to contribute\n\n1. Fork the project.\n1. Download your fork to your PC (`git clone https://github.com/your_username/cobra && cd cobra`)\n1. Create your feature branch (`git checkout -b my-new-feature`)\n1. Make changes and run tests (`make test`)\n1. Add them to staging (`git add .`)\n1. Commit your changes (`git commit -m 'Add some feature'`)\n1. Push to the branch (`git push origin my-new-feature`)\n1. Create new pull request\n\n<!-- Links -->\n[cobra-slack]: https://gophers.slack.com/archives/CD3LP1199\n"
+        },
+        {
+          "path": "README.md",
+          "bytes": 4949,
+          "preview": "<div align=\"center\">\n<a href=\"https://cobra.dev\">\n<img width=\"512\" height=\"535\" alt=\"cobra-logo\" src=\"https://github.com/user-attachments/assets/c8bf9aad-b5ae-41d3-8899-d83baec10af8\" />\n</a>\n</div>\n\nCobra is a library for creating powerful modern CLI applications.\n\n<a href=\"https://cobra.dev\">Visit Cobra.dev for extensive documentation</a> \n\n\nCobra is used in many Go projects such as [Kubernetes](https://kubernetes.io/),\n[Hugo](https://gohugo.io), and [GitHub CLI](https://github.com/cli/cli) to\nname a few. [This list](site/content/projects_using_cobra.md) contains a more extensive list of projects using Cobra.\n\n[![](https://img.shields.io/github/actions/workflow/status/spf13/cobra/test.yml?branch=main&longCache=true&label=Test&logo=github%20actions&logoColor=fff)](https://github.com/spf13/cobra/actions?query=workflow%3ATest)\n[![Go Reference](https://pkg.go.dev/badge/github.com/spf13/cobra.svg)](https://pkg.go.dev/github.com/spf13/cobra)\n[![Go Report Card](https://goreportcard.com/badge/github.com/spf13/cobra)](https://goreportcard.com/report/github.com/spf13/cobra)\n[![Slack](https://img.shields.io/badge/Slack-cobra-brightgreen)](https://gophers.slack.com/archives/CD3LP1199)\n<hr>\n<div align=\"center\" markdown=\"1\">\n   <sup>Supported by:</sup>\n   <br>\n   <br>\n   <a href=\"https://www.warp.dev/cobra\">\n      <img alt=\"Warp sponsorship\" width=\"400\" src=\"https://github.com/user-attachments/assets/ab8dd143-b0fd-4904-bdc5-dd7ecac94eae\">\n   </a>\n\n### [Warp, the AI terminal for devs](https://www.warp.dev/cobra)\n[Try Cobra in Warp today](https://www.warp.dev/cobra)<br>\n\n</div>\n<hr>\n\n# Overview\n\nCobra is a library providing a simple interface to create powerful modern CLI\ninterfaces similar to git & go tools.\n\nCobra provides:\n* Easy subcommand-based CLIs: `app server`, `app fetch`, etc.\n* Fully POSIX-compliant flags (including short & long versions)\n* Nested subcommands\n* Global, local and cascading flags\n* Intelligent suggestions (`app srver`... did you mean `app server`?)\n* Automatic help generation for commands and flags\n* Grouping help for subcommands\n* Automatic help flag recognition of `-h`, `--help`, etc.\n* Automatically generated shell autocomplete for your application (bash, zsh, fish, powershell)\n* Automatically generated man pages for your application\n* Command aliases so you can change things without breaking them\n* The flexibility to define your own help, usage, etc.\n* Optional seamless integration with [viper](https://github.com/spf13/viper) for 12-factor apps\n\n# Concepts\n\nCobra is built on a structure of commands, arguments & flags.\n\n**Commands** represent actions, **Args** are things and **Flags** are modifiers for those actions.\n\nThe best applications read like sentences when used, and as a result, users\nintuitively know how to interact with them.\n\nThe pattern to follow is\n`APPNAME VERB NOUN --ADJECTIVE`\n    or\n`APPNAME COMMAND ARG --FLAG`.\n\nA few good real world examples may better illustrate this point.\n\nIn the following example, 'server' is a command, and 'port' is a flag:\n\n    hugo server --port=1313\n\nIn this command we are telling Git to clone the url bare.\n\n    git clone URL --bare\n\n## Commands\n\nCommand is the central point of the application. Each interaction that\nthe application supports will be contained in a Command. A command can\nhave children commands and optionally run an action.\n\nIn the example above, 'server' is the command.\n\n[More about cobra.Command](https://pkg.go.dev/github.com/spf13/cobra#Command)\n\n## Flags\n\nA flag is a way to modify the behavior of a command. Cobra supports\nfully POSIX-compliant flags as well as the Go [flag package](https://golang.org/pkg/flag/).\nA Cobra command can define flags that persist through to children commands\nand flags that are only available to that command.\n\nIn the example above, 'port' is the flag.\n\nFlag functionality is provided by the [pflag\nlibrary](https://github.com/spf13/pflag), a fork of the flag standard library\nwhich maintains the same interface while adding POSIX compliance.\n\n# Installing\nUsing Cobra is easy. First, use `go get` to install the latest version\nof the library.\n\n```\ngo get -u github.com/spf13/cobra@latest\n```\n\nNext, include Cobra in your application:\n\n```go\nimport \"github.com/spf13/cobra\"\n```\n\n# Usage\n`cobra-cli` is a command line program to generate cobra applications and command files.\nIt will bootstrap your application scaffolding to rapidly\ndevelop a Cobra-based application. It is the easiest way to incorporate Cobra into your application.\n\nIt can be installed by running:\n\n```\ngo install github.com/spf13/cobra-cli@latest\n```\n\nFor complete details on using the Cobra-CLI generator, please read [The Cobra Generator README](https://github.com/spf13/cobra-cli/blob/main/README.md)\n\nFor complete details on using the Cobra library, please read [The Cobra User Guide](site/content/user_guide.md).\n\n# License\n\nCobra is released under the Apache 2.0 license. See [LICENSE.txt](LICENSE.txt)\n"
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions",
+        "Go"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "github.com/spf13/cobra",
+          "kind": "workspace",
+          "manifest_path": "go.mod",
+          "build_system": "go.mod",
+          "file_count": 65,
+          "languages": [
+            {
+              "language": "Go",
+              "files": 36,
+              "bytes": 512600
+            },
+            {
+              "language": "Markdown",
+              "files": 17,
+              "bytes": 99775
+            },
+            {
+              "language": "YAML",
+              "files": 5,
+              "bytes": 6259
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/labeler.yml",
+            ".github/workflows/test.yml",
+            "README.md"
+          ],
+          "test_files": [
+            "active_help_test.go",
+            "args_test.go",
+            "bash_completionsV2_test.go",
+            "bash_completions_test.go",
+            "cobra_test.go",
+            "command_test.go",
+            "completions_test.go",
+            "doc/cmd_test.go"
+          ],
+          "tags": [
+            "Go",
+            "Markdown",
+            "YAML",
+            "tests"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-labeler-yml",
+            "kind": "file",
+            "label": ".github/workflows/labeler.yml",
+            "path": ".github/workflows/labeler.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/labeler.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-test-yml",
+            "kind": "file",
+            "label": ".github/workflows/test.yml",
+            "path": ".github/workflows/test.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:conduct-md",
+            "kind": "file",
+            "label": "CONDUCT.md",
+            "path": "CONDUCT.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CONDUCT.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:contributing-md",
+            "kind": "file",
+            "label": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:makefile",
+            "kind": "file",
+            "label": "Makefile",
+            "path": "Makefile",
+            "detail": "source marker candidate",
+            "sources": [
+              "Makefile"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:security-md",
+            "kind": "file",
+            "label": "SECURITY.md",
+            "path": "SECURITY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "SECURITY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-active-help-md",
+            "kind": "file",
+            "label": "site/content/active_help.md",
+            "path": "site/content/active_help.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/active_help.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-completions-index-md",
+            "kind": "file",
+            "label": "site/content/completions/_index.md",
+            "path": "site/content/completions/_index.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/completions/_index.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-completions-bash-md",
+            "kind": "file",
+            "label": "site/content/completions/bash.md",
+            "path": "site/content/completions/bash.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/completions/bash.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-completions-fish-md",
+            "kind": "file",
+            "label": "site/content/completions/fish.md",
+            "path": "site/content/completions/fish.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/completions/fish.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-completions-powershell-md",
+            "kind": "file",
+            "label": "site/content/completions/powershell.md",
+            "path": "site/content/completions/powershell.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/completions/powershell.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-completions-zsh-md",
+            "kind": "file",
+            "label": "site/content/completions/zsh.md",
+            "path": "site/content/completions/zsh.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/completions/zsh.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-docgen-index-md",
+            "kind": "file",
+            "label": "site/content/docgen/_index.md",
+            "path": "site/content/docgen/_index.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/docgen/_index.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-docgen-man-md",
+            "kind": "file",
+            "label": "site/content/docgen/man.md",
+            "path": "site/content/docgen/man.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/docgen/man.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-docgen-md-md",
+            "kind": "file",
+            "label": "site/content/docgen/md.md",
+            "path": "site/content/docgen/md.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/docgen/md.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-docgen-rest-md",
+            "kind": "file",
+            "label": "site/content/docgen/rest.md",
+            "path": "site/content/docgen/rest.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/docgen/rest.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-docgen-yaml-md",
+            "kind": "file",
+            "label": "site/content/docgen/yaml.md",
+            "path": "site/content/docgen/yaml.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/docgen/yaml.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-projects-using-cobra-md",
+            "kind": "file",
+            "label": "site/content/projects_using_cobra.md",
+            "path": "site/content/projects_using_cobra.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/projects_using_cobra.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:site-content-user-guide-md",
+            "kind": "file",
+            "label": "site/content/user_guide.md",
+            "path": "site/content/user_guide.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "site/content/user_guide.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:go-mod",
+            "kind": "package",
+            "label": "github.com/spf13/cobra",
+            "path": "go.mod",
+            "detail": "go.mod manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:active-help-test-go",
+            "kind": "test",
+            "label": "active_help_test.go",
+            "path": "active_help_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "active_help_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:args-test-go",
+            "kind": "test",
+            "label": "args_test.go",
+            "path": "args_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "args_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:bash-completionsv2-test-go",
+            "kind": "test",
+            "label": "bash_completionsV2_test.go",
+            "path": "bash_completionsV2_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "bash_completionsV2_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:bash-completions-test-go",
+            "kind": "test",
+            "label": "bash_completions_test.go",
+            "path": "bash_completions_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "bash_completions_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:cobra-test-go",
+            "kind": "test",
+            "label": "cobra_test.go",
+            "path": "cobra_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "cobra_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:command-test-go",
+            "kind": "test",
+            "label": "command_test.go",
+            "path": "command_test.go",
+            "detail": "workspace test/spec file",
+            "sources": [
+              "command_test.go"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "github.com/spf13/cobra",
+            "path": null,
+            "detail": "workspace | 65 files | 36 Go, 17 Markdown, 5 YAML",
+            "sources": [
+              ".github/workflows/labeler.yml",
+              ".github/workflows/test.yml",
+              "active_help_test.go",
+              "args_test.go",
+              "go.mod"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:go-mod",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "go.mod"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-labeler-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/labeler.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-test-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:active-help-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "active_help_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:args-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "args_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:bash-completions-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "bash_completions_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:bash-completionsv2-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "bash_completionsV2_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:cobra-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "cobra_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "test:command-test-go",
+            "kind": "tests",
+            "evidence": "test file belongs to this workspace unit",
+            "sources": [
+              "command_test.go"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 0 test hints, and 4 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "adbc8813901b",
+            "date": "2026-07-11",
+            "subject": "fix: resolve macOS test link failure and update lint rules (#2429)",
+            "files": [
+              ".github/workflows/test.yml",
+              ".golangci.yml",
+              "Makefile"
+            ]
+          },
+          {
+            "sha": "ad460ea8f249",
+            "date": "2026-04-25",
+            "subject": "Add cobra unique args validator (#2397)",
+            "files": [
+              "site/content/user_guide.md"
+            ]
+          },
+          {
+            "sha": "746ef0715872",
+            "date": "2026-04-24",
+            "subject": "fix: prevent completions from mutating os.Args via append side effect (#2356)",
+            "files": []
+          },
+          {
+            "sha": "f2878bab8c96",
+            "date": "2026-04-15",
+            "subject": "Ignore the linter error (#2390)",
+            "files": []
+          },
+          {
+            "sha": "85c12c2201a7",
+            "date": "2026-04-16",
+            "subject": "projects_using_cobra: add Ollama (#2389)",
+            "files": [
+              "site/content/projects_using_cobra.md"
+            ]
+          },
+          {
+            "sha": "61968e893eee",
+            "date": "2025-12-10",
+            "subject": "fix: quote args in fish shell completion (#2285)",
+            "files": []
+          },
+          {
+            "sha": "10d4b48a79be",
+            "date": "2025-12-06",
+            "subject": "perf: Loop over the bash variable directly instead of starting subprocesses. (#2333)",
+            "files": []
+          },
+          {
+            "sha": "88b30ab89da2",
+            "date": "2025-12-03",
+            "subject": "chore: Migrate from gopkg.in/yaml.v3 to go.yaml.in/yaml/v3 (#2336)",
+            "files": []
+          },
+          {
+            "sha": "346d408fe7d4",
+            "date": "2025-12-03",
+            "subject": "fix: actions/setup-go v6 (#2337)",
+            "files": [
+              ".github/workflows/test.yml"
+            ]
+          },
+          {
+            "sha": "fc81d2003469",
+            "date": "2025-11-17",
+            "subject": "refactor: change minUsagePadding from var to const (#2325)",
+            "files": []
+          },
+          {
+            "sha": "117698a604b6",
+            "date": "2025-11-17",
+            "subject": "refactor: replace several vars with consts (#2328)",
+            "files": []
+          },
+          {
+            "sha": "e2dd29ddc39a",
+            "date": "2025-11-17",
+            "subject": "Add documentation for repeated flags functionality (#2316)",
+            "files": [
+              "site/content/user_guide.md"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/test.yml",
+              ".golangci.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "adbc8813901b",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/test.yml",
+              "Makefile"
+            ],
+            "commit_count": 2,
+            "last_commit": "adbc8813901b",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".golangci.yml",
+              "Makefile"
+            ],
+            "commit_count": 2,
+            "last_commit": "adbc8813901b",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "site/content/active_help.md",
+              "site/content/completions/_index.md"
+            ],
+            "commit_count": 2,
+            "last_commit": "8cb30f9ca53a",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:10d4b48a79be",
+              "kind": "commit",
+              "label": "perf: Loop over the bash variable directly instead of starting subprocesses. (#2333)",
+              "path": null,
+              "detail": "2025-12-06",
+              "citations": [
+                "git:10d4b48a79be"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:117698a604b6",
+              "kind": "commit",
+              "label": "refactor: replace several vars with consts (#2328)",
+              "path": null,
+              "detail": "2025-11-17",
+              "citations": [
+                "git:117698a604b6"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:346d408fe7d4",
+              "kind": "commit",
+              "label": "fix: actions/setup-go v6 (#2337)",
+              "path": null,
+              "detail": "2025-12-03",
+              "citations": [
+                "git:346d408fe7d4"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:61968e893eee",
+              "kind": "commit",
+              "label": "fix: quote args in fish shell completion (#2285)",
+              "path": null,
+              "detail": "2025-12-10",
+              "citations": [
+                "git:61968e893eee"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:746ef0715872",
+              "kind": "commit",
+              "label": "fix: prevent completions from mutating os.Args via append side effect (#2356)",
+              "path": null,
+              "detail": "2026-04-24",
+              "citations": [
+                "git:746ef0715872"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:85c12c2201a7",
+              "kind": "commit",
+              "label": "projects_using_cobra: add Ollama (#2389)",
+              "path": null,
+              "detail": "2026-04-16",
+              "citations": [
+                "git:85c12c2201a7"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:88b30ab89da2",
+              "kind": "commit",
+              "label": "chore: Migrate from gopkg.in/yaml.v3 to go.yaml.in/yaml/v3 (#2336)",
+              "path": null,
+              "detail": "2025-12-03",
+              "citations": [
+                "git:88b30ab89da2"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ad460ea8f249",
+              "kind": "commit",
+              "label": "Add cobra unique args validator (#2397)",
+              "path": null,
+              "detail": "2026-04-25",
+              "citations": [
+                "git:ad460ea8f249"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:adbc8813901b",
+              "kind": "commit",
+              "label": "fix: resolve macOS test link failure and update lint rules (#2429)",
+              "path": null,
+              "detail": "2026-07-11",
+              "citations": [
+                "git:adbc8813901b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e2dd29ddc39a",
+              "kind": "commit",
+              "label": "Add documentation for repeated flags functionality (#2316)",
+              "path": null,
+              "detail": "2025-11-17",
+              "citations": [
+                "git:e2dd29ddc39a"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f2878bab8c96",
+              "kind": "commit",
+              "label": "Ignore the linter error (#2390)",
+              "path": null,
+              "detail": "2026-04-15",
+              "citations": [
+                "git:f2878bab8c96"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:fc81d2003469",
+              "kind": "commit",
+              "label": "refactor: change minUsagePadding from var to const (#2325)",
+              "path": null,
+              "detail": "2025-11-17",
+              "citations": [
+                "git:fc81d2003469"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-test-yml",
+              "kind": "file",
+              "label": ".github/workflows/test.yml",
+              "path": ".github/workflows/test.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-golangci-yml",
+              "kind": "file",
+              "label": ".golangci.yml",
+              "path": ".golangci.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".golangci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:makefile",
+              "kind": "file",
+              "label": "Makefile",
+              "path": "Makefile",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:site-content-active-help-md",
+              "kind": "file",
+              "label": "site/content/active_help.md",
+              "path": "site/content/active_help.md",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "site/content/active_help.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:site-content-completions--index-md",
+              "kind": "file",
+              "label": "site/content/completions/_index.md",
+              "path": "site/content/completions/_index.md",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "site/content/completions/_index.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:site-content-projects-using-cobra-md",
+              "kind": "file",
+              "label": "site/content/projects_using_cobra.md",
+              "path": "site/content/projects_using_cobra.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "site/content/projects_using_cobra.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:site-content-user-guide-md",
+              "kind": "file",
+              "label": "site/content/user_guide.md",
+              "path": "site/content/user_guide.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "site/content/user_guide.md"
+              ],
+              "trust": "git_observed"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:346d408fe7d4",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "changed",
+              "evidence": "346d408fe7d4 changed this file",
+              "citations": [
+                "git:346d408fe7d4",
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:85c12c2201a7",
+              "to": "file:site-content-projects-using-cobra-md",
+              "kind": "changed",
+              "evidence": "85c12c2201a7 changed this file",
+              "citations": [
+                "git:85c12c2201a7",
+                "site/content/projects_using_cobra.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ad460ea8f249",
+              "to": "file:site-content-user-guide-md",
+              "kind": "changed",
+              "evidence": "ad460ea8f249 changed this file",
+              "citations": [
+                "git:ad460ea8f249",
+                "site/content/user_guide.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:adbc8813901b",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "changed",
+              "evidence": "adbc8813901b changed this file",
+              "citations": [
+                "git:adbc8813901b",
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:adbc8813901b",
+              "to": "file:-golangci-yml",
+              "kind": "changed",
+              "evidence": "adbc8813901b changed this file",
+              "citations": [
+                "git:adbc8813901b",
+                ".golangci.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:adbc8813901b",
+              "to": "file:makefile",
+              "kind": "changed",
+              "evidence": "adbc8813901b changed this file",
+              "citations": [
+                "git:adbc8813901b",
+                "Makefile"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:e2dd29ddc39a",
+              "to": "file:site-content-user-guide-md",
+              "kind": "changed",
+              "evidence": "e2dd29ddc39a changed this file",
+              "citations": [
+                "git:e2dd29ddc39a",
+                "site/content/user_guide.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-test-yml",
+              "to": "file:-golangci-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:adbc8813901b"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-test-yml",
+              "to": "file:makefile",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:adbc8813901b"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-golangci-yml",
+              "to": "file:makefile",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:adbc8813901b"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:site-content-active-help-md",
+              "to": "file:site-content-completions--index-md",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:8cb30f9ca53a"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          ".github/workflows/test.yml",
+          ".golangci.yml",
+          "Makefile",
+          "site/content/active_help.md",
+          "site/content/completions/_index.md",
+          "go.mod"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 36 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 8 hotspots surfaced; average score is 8.0/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8,
+        "hotspot_count": 8,
+        "files_analyzed": 36,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "command.go",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 1700,
+            "bytes": 61142,
+            "churn": 2238,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1700 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "command.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 207 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "command.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2238 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "command.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "command.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "command.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "bash_completions.go",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 709,
+            "bytes": 23022,
+            "churn": 709,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "709 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "bash_completions.go"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "bash_completions.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 367 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "bash_completions.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 709 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "bash_completions.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "bash_completions.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "bash_completionsV2.go",
+            "score": 5.5,
+            "bucket": "hotspot",
+            "lines": 484,
+            "bytes": 17853,
+            "churn": 552,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "484 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "bash_completionsV2.go"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "bash_completionsV2.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 437 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "bash_completionsV2.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 552 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "bash_completionsV2.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "bash_completionsV2.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "completions.go",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 1024,
+            "bytes": 39065,
+            "churn": 1094,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1024 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "completions.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 270 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "completions.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 1094 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "completions.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "completions.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "completions.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "completions_test.go",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 1776,
+            "bytes": 119057,
+            "churn": 4153,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1776 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "completions_test.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 193 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "completions_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 4153 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "completions_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "completions_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "powershell_completions.go",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 350,
+            "bytes": 13611,
+            "churn": 360,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "powershell_completions.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 284 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "powershell_completions.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 360 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "powershell_completions.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "powershell_completions.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "zsh_completions.go",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 308,
+            "bytes": 11020,
+            "churn": 308,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "zsh_completions.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 222 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "zsh_completions.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 308 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "zsh_completions.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "zsh_completions.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "fish_completions.go",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 292,
+            "bytes": 11534,
+            "churn": 296,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "fish_completions.go"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 249 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "fish_completions.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 296 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "fish_completions.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "fish_completions.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "command_test.go",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 1808,
+            "bytes": 80115,
+            "churn": 2984,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "1808 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "command_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2984 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "command_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "command_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "flag_groups_test.go",
+            "score": 7.1,
+            "bucket": "watch",
+            "lines": 195,
+            "bytes": 8893,
+            "churn": 195,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 195 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "flag_groups_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "flag_groups_test.go"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "flag_groups_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "flag_groups_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "args_test.go",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 578,
+            "bytes": 15941,
+            "churn": 578,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "578 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "args_test.go"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 578 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "args_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "args_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "cobra_test.go",
+            "score": 7.8,
+            "bucket": "watch",
+            "lines": 301,
+            "bytes": 7056,
+            "churn": 301,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 301 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "cobra_test.go"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "cobra_test.go"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "cobra_test.go"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 65,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Go",
+            "files": 36,
+            "bytes": 512600
+          },
+          {
+            "language": "Markdown",
+            "files": 17,
+            "bytes": 99775
+          },
+          {
+            "language": "YAML",
+            "files": 5,
+            "bytes": 6259
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "site",
+            "file_count": 13,
+            "bytes": 84498
+          },
+          {
+            "path": "doc",
+            "file_count": 11,
+            "bytes": 44480
+          },
+          {
+            "path": ".github",
+            "file_count": 4,
+            "bytes": 4137
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 65,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 4,
+            "children": [
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "labeler.yml",
+                    "path": ".github/workflows/labeler.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test.yml",
+                    "path": ".github/workflows/test.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "dependabot.yml",
+                "path": ".github/dependabot.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "labeler.yml",
+                "path": ".github/labeler.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "doc",
+            "path": "doc",
+            "is_dir": true,
+            "file_count": 11,
+            "children": [
+              {
+                "name": "cmd_test.go",
+                "path": "doc/cmd_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "man_docs.go",
+                "path": "doc/man_docs.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "man_docs_test.go",
+                "path": "doc/man_docs_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "man_examples_test.go",
+                "path": "doc/man_examples_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "md_docs.go",
+                "path": "doc/md_docs.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "md_docs_test.go",
+                "path": "doc/md_docs_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rest_docs.go",
+                "path": "doc/rest_docs.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "rest_docs_test.go",
+                "path": "doc/rest_docs_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "util.go",
+                "path": "doc/util.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "yaml_docs.go",
+                "path": "doc/yaml_docs.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "yaml_docs_test.go",
+                "path": "doc/yaml_docs_test.go",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "site",
+            "path": "site",
+            "is_dir": true,
+            "file_count": 13,
+            "children": [
+              {
+                "name": "content",
+                "path": "site/content",
+                "is_dir": true,
+                "file_count": 13,
+                "children": [
+                  {
+                    "name": "completions",
+                    "path": "site/content/completions",
+                    "is_dir": true,
+                    "file_count": 5,
+                    "children": [
+                      {
+                        "name": "_index.md",
+                        "path": "site/content/completions/_index.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "bash.md",
+                        "path": "site/content/completions/bash.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "fish.md",
+                        "path": "site/content/completions/fish.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "powershell.md",
+                        "path": "site/content/completions/powershell.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "zsh.md",
+                        "path": "site/content/completions/zsh.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "docgen",
+                    "path": "site/content/docgen",
+                    "is_dir": true,
+                    "file_count": 5,
+                    "children": [
+                      {
+                        "name": "_index.md",
+                        "path": "site/content/docgen/_index.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "man.md",
+                        "path": "site/content/docgen/man.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "md.md",
+                        "path": "site/content/docgen/md.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "rest.md",
+                        "path": "site/content/docgen/rest.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "yaml.md",
+                        "path": "site/content/docgen/yaml.md",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "active_help.md",
+                    "path": "site/content/active_help.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "projects_using_cobra.md",
+                    "path": "site/content/projects_using_cobra.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "user_guide.md",
+                    "path": "site/content/user_guide.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".golangci.yml",
+            "path": ".golangci.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".mailmap",
+            "path": ".mailmap",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CONDUCT.md",
+            "path": "CONDUCT.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE.txt",
+            "path": "LICENSE.txt",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "MAINTAINERS",
+            "path": "MAINTAINERS",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "Makefile",
+            "path": "Makefile",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "SECURITY.md",
+            "path": "SECURITY.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "active_help.go",
+            "path": "active_help.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "active_help_test.go",
+            "path": "active_help_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "args.go",
+            "path": "args.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "args_test.go",
+            "path": "args_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bash_completions.go",
+            "path": "bash_completions.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bash_completionsV2.go",
+            "path": "bash_completionsV2.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bash_completionsV2_test.go",
+            "path": "bash_completionsV2_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "bash_completions_test.go",
+            "path": "bash_completions_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "cobra.go",
+            "path": "cobra.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "cobra_test.go",
+            "path": "cobra_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "command.go",
+            "path": "command.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "command_notwin.go",
+            "path": "command_notwin.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "command_test.go",
+            "path": "command_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "command_win.go",
+            "path": "command_win.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "completions.go",
+            "path": "completions.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "completions_test.go",
+            "path": "completions_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "fish_completions.go",
+            "path": "fish_completions.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "fish_completions_test.go",
+            "path": "fish_completions_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "flag_groups.go",
+            "path": "flag_groups.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "flag_groups_test.go",
+            "path": "flag_groups_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.mod",
+            "path": "go.mod",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "go.sum",
+            "path": "go.sum",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "powershell_completions.go",
+            "path": "powershell_completions.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "powershell_completions_test.go",
+            "path": "powershell_completions_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "shell_completions.go",
+            "path": "shell_completions.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "zsh_completions.go",
+            "path": "zsh_completions.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "zsh_completions_test.go",
+            "path": "zsh_completions_test.go",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 48048,
+        "peak_rss_bytes": 28639232,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 25,
+            "pct": 0.05203130203130204
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 27,
+            "pct": 0.0561938061938062
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 47993,
+            "pct": 99.88553113553114
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 1,
+        "peak_rss_bytes": 28901376,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 1,
+            "pct": 100
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "Cobra is a Go library for developers building command-line applications with nested commands, POSIX-style flags, validation, lifecycle hooks, and generated help. A shared Command tree drives execution, completion for four shells, and reference documentation in Markdown, man, ReST, and YAML formats. This brief examines commit adbc8813901bba65827259daa8e22ff94ec1f30e through public-source reads; tests and CI were inspected, not executed.",
+    "agent_prompt": "Onboard to github.com/spf13/cobra at commit adbc8813901bba65827259daa8e22ff94ec1f30e. Cobra is an embedded Go CLI library: consuming applications construct Command values, connect them with AddCommand, define pflag flags and callbacks, and call Execute or ExecuteContext. The README points to cobra-cli as a separate scaffolding project; do not assume this checkout contains that executable.\n\nRead go.mod, README.md, CONTRIBUTING.md, command.go, cobra.go, args.go, completions.go, flag_groups.go, shell_completions.go, and the relevant generator before proposing changes. The module declares Go 1.15 compatibility. Dependencies provide pflag parsing, Windows Explorer detection, Markdown-to-man rendering, and YAML serialization. Consult .golangci.yml and .github/workflows/test.yml for compatibility and validation constraints.\n\nTrace execution through ExecuteC: it supplies a default context, redirects child execution to the root, invokes the platform hook, initializes help and completion commands, selects explicit arguments or os.Args, validates command groups, and resolves the target through Find or Traverse. The selected command's execute method initializes flags and parses them. Help, version, and non-runnable branches return before normal initializers and callbacks. Runnable execution invokes initializers, defers finalizers, validates positional arguments, runs persistent and local pre-hooks, validates required flags and groups, runs the action, and then runs post-hooks. Error-returning callbacks take precedence over their non-error variants. Persistent hooks normally stop at the nearest definition; EnableTraverseRunHooks changes ancestor traversal.\n\nTreat completion as a separate protocol. Generated shell scripts invoke the application through __complete or __completeNoDesc. getCompletions resolves the target and parses its flags without executing its action, then uses annotations, static arguments, or registered completion callbacks. Output consists of completion lines followed by :<directive>; diagnostics belong on stderr. Preserve description tabs, newline handling, Active Help markers, environment-variable precedence, and single-command compatibility branches. Preserve the copied argument slice that protects os.Args from mutation.\n\nDocumentation generators consume the same command metadata. Writer APIs emit content; tree APIs create files under a caller-supplied directory and can overwrite existing files. Man generation supports SOURCE_DATE_EPOCH. Generators also mutate command or flag state, so avoid assuming they are pure readers. Shell eval boundaries, debug-file writes, process exits, and template panics warrant focused review; source observations do not establish vulnerabilities.\n\nTests use Go's testing package, root-level helpers that capture output with SetOut/SetErr and inject SetArgs, and documentation tests under doc/. Existing coverage includes hooks, grouped flags, concurrent completion registration, generated script content, filesystem output, and an os.Args regression. Some shell checks are conditional on installed tools. This investigation inspected tests and CI without executing them, and its inventory is bounded. For a separately authorized implementation task, start with the smallest relevant test, then go test ./... and repository formatting/lint checks as appropriate. Note that make test and make richtest first run go get; respect any continuing read-only or network restrictions. Prefer small compatibility-preserving diffs and report actual execution evidence separately from test existence.",
+    "system_map": {
+      "summary": "The runtime is a library embedded in a consuming application's executable. Command owns the tree, flags, callbacks, context, and streams; separate generators consume that model. Persistent artifacts are explicitly generated files, while execution state lives in memory. Repository automation supplies testing, linting, license checking, dependency updates, and PR labeling.",
+      "claims": [
+        {
+          "claim": "The public application entrypoints are Command.Execute, ExecuteC, ExecuteContext, and ExecuteContextC; the user guide places the application's main function outside the library.",
+          "sources": [
+            "command.go#L1062-1084",
+            "site/content/user_guide.md#L3-24"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Command combines command metadata, argument validation, lifecycle callbacks, pflag sets, parent/child links, context, and configurable IO streams.",
+          "sources": [
+            "command.go#L54-151",
+            "command.go#L156-229"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "go.mod declares github.com/spf13/cobra with Go 1.15 and dependencies on pflag, mousetrap, go-md2man/v2, and YAML v3.",
+          "sources": [
+            "go.mod#L1-10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The doc package renders the Command model through writer APIs and directory-based tree generators; Markdown uses os.Create, man uses md2man.Render, and YAML uses yaml.Marshal.",
+          "sources": [
+            "doc/md_docs.go#L133-157",
+            "doc/man_docs.go#L100-112",
+            "doc/yaml_docs.go#L137-146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Platform build tags select an unset pre-execution hook on non-Windows and an Explorer-launch detection hook using mousetrap on Windows.",
+          "sources": [
+            "command_notwin.go#L15-20",
+            "command_win.go#L15-40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Makefile exposes formatting, lint, go test, and richgo test targets; both test targets depend on install_deps, which runs go get -v ./....",
+          "sources": [
+            "Makefile#L12-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test CI defines license and lint jobs, Ubuntu/macOS matrices for Go 1.17–1.24, and a Windows MSYS2 job; Unix and Windows jobs invoke make richtest.",
+          "sources": [
+            ".github/workflows/test.yml#L17-53",
+            ".github/workflows/test.yml#L56-93",
+            ".github/workflows/test.yml#L96-130"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PR labeling runs actions/labeler on pull_request_target with PR-write permission, while Dependabot schedules weekly Go-module and GitHub Actions updates.",
+          "sources": [
+            ".github/workflows/labeler.yml#L1-17",
+            ".github/labeler.yml#L1-24",
+            ".github/dependabot.yml#L1-12"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Cobra exposes developer APIs that become end-user CLI behavior. Its features cover command resolution, flag and argument handling, help, validation, lifecycle callbacks, and shell assistance. The same command descriptions can produce distributable reference documentation. Most behavior is configurable through Command fields or registration methods.",
+      "claims": [
+        {
+          "claim": "Nested commands resolve by name or alias; optional prefix matching accepts a unique match, and failed lookup can produce distance-based suggestions.",
+          "sources": [
+            "command.go#L757-819",
+            "cobra.go#L52-62"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Local and persistent flags use pflag; persistent flags merge into descendants, and TraverseChildren additionally parses parent flags while walking the command path.",
+          "sources": [
+            "command.go#L821-860",
+            "command.go#L1868-1923"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Positional validation includes NoArgs, OnlyValidArgs, NoDuplicateArgs, minimum/maximum/exact/range counts, and MatchAll composition.",
+          "sources": [
+            "args.go#L41-79",
+            "args.go#L86-143"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Required flags and required-together, one-required, and mutually-exclusive groups produce execution errors; group marking annotates existing flags.",
+          "sources": [
+            "shell_completions.go#L21-39",
+            "flag_groups.go#L31-108",
+            "command.go#L1180-1202"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Automatic help provides a help command and -h/--help flag; a nonempty Version enables --version and adds -v only when that shorthand is free.",
+          "sources": [
+            "command.go#L1219-1257",
+            "command.go#L1263-1314"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Applications can define persistent/local pre- and post-hooks plus Run or RunE, use command deprecation messages, and silence default error or usage output.",
+          "sources": [
+            "command.go#L103-151",
+            "command.go#L905-911",
+            "command.go#L1148-1169"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The default completion command generates Bash V2, Zsh, Fish, and PowerShell scripts, with configurable descriptions; callbacks can return descriptive choices, file filters, and Active Help.",
+          "sources": [
+            "completions.go#L107-160",
+            "completions.go#L805-930",
+            "active_help.go#L31-52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Reference generation supports Markdown, man, ReST, and YAML; custom link/prepend handlers and man headers tailor generated output.",
+          "sources": [
+            "doc/md_docs.go#L131-157",
+            "doc/man_docs.go#L81-112",
+            "doc/rest_docs.go#L143-168",
+            "doc/yaml_docs.go#L59-84"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Execution starts with an argument slice and a caller-built command graph. Resolution selects a stateful Command, pflag separates flags from positional arguments, and validators gate its action. Completion exchanges a textual protocol with a separate shell process. Documentation and completion-file APIs form the explicit filesystem output boundary.",
+      "claims": [
+        {
+          "claim": "ExecuteC selects c.args when supplied; otherwise it reads os.Args[1:], except for the cobra.test executable-name guard.",
+          "sources": [
+            "command.go#L281-283",
+            "command.go#L1101-1107"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Find strips flags to identify successive subcommands while preserving remaining input for execution; with nil Args it applies legacyArgs, whose root/subcommand rules differ.",
+          "sources": [
+            "command.go#L757-778",
+            "args.go#L24-38"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "ParseFlags merges local persistent and ancestor flag sets, transfers FParseErrWhitelist into pflag's allowlist, parses input, and emits buffered warnings only when parsing succeeds.",
+          "sources": [
+            "command.go#L1868-1902"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The action receives pflag's remaining arguments, or the untouched argument slice under DisableFlagParsing; positional validation runs before pre-hooks, while required/group validation runs after them.",
+          "sources": [
+            "command.go#L963-1005",
+            "command.go#L1007-1019"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Output, error, and input stream lookup walks parent commands before falling back to stdout, stderr, or stdin, allowing root-level stream injection to serve descendants.",
+          "sources": [
+            "command.go#L393-440"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getCompletions extracts the incomplete final token, copies preceding tokens, resolves the target, propagates context, and parses flags before choosing completion results.",
+          "sources": [
+            "completions.go#L316-349",
+            "completions.go#L361-402"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Completion responses filter disabled Active Help, optionally remove tab-delimited descriptions, truncate embedded newlines, trim choices, and append :<directive>; diagnostics use the error stream.",
+          "sources": [
+            "completions.go#L251-296"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Markdown tree generation maps CommandPath spaces to underscores, joins the basename to a supplied directory, creates the file, writes a custom prefix, and streams rendered command metadata into it.",
+          "sources": [
+            "doc/md_docs.go#L57-80",
+            "doc/md_docs.go#L133-157"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "Three concrete flows were followed through source: normal command execution, dynamic shell completion, and documentation persistence. Help and script generation provide additional branches through the same command tree. The traces describe source execution order rather than observed runtime results. Early returns and option-dependent branches materially change which callbacks run.",
+      "claims": [
+        {
+          "claim": "Startup: Execute → ExecuteC supplies context, redirects to Root when necessary, invokes preExecHookFn, initializes help and completion commands, checks groups, then selects Find or Traverse.",
+          "sources": [
+            "command.go#L1070-1084",
+            "command.go#L1085-1127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Primary action: cmd.execute initializes help/version flags → ParseFlags → preRun → deferred postRun → ValidateArgs → persistent/local pre-hooks → required/group validation → RunE or Run → local/persistent post-hooks.",
+          "sources": [
+            "command.go#L905-926",
+            "command.go#L955-970",
+            "command.go#L984-1042"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Execution exits early for parsing errors, help, version, or a non-runnable command; after execute returns ErrHelp, ExecuteC calls HelpFunc and returns nil error.",
+          "sources": [
+            "command.go#L920-956",
+            "command.go#L1142-1154"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Named help: the generated help command calls Root.Find → initializes the target's help/version flags → Help; an unknown topic prints a message and routes through Root.Usage and CheckErr.",
+          "sources": [
+            "command.go#L1293-1310",
+            "cobra.go#L234-239"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dynamic completion starts when a generated Bash V2 function evaluates a request to __complete or __completeNoDesc; initCompleteCmd creates the hidden, flag-parsing-disabled command only for an actual completion invocation.",
+          "sources": [
+            "bash_completionsV2.go#L32-36",
+            "bash_completionsV2.go#L54-84",
+            "completions.go#L231-248",
+            "completions.go#L299-307"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Completion resolution runs getCompletions → Find/Traverse → checkIfFlagCompletion → ParseFlags → help/version suppression → annotation/static/callback selection; it does not call the target command's execute method.",
+          "sources": [
+            "completions.go#L330-365",
+            "completions.go#L371-402",
+            "completions.go#L530-581",
+            "completions.go#L405-427"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Script generation: completion bash dispatches its RunE to Root.GenBashCompletionV2 → genBashCompletion → genBashComp, buffers the script, and writes it to the configured output.",
+          "sources": [
+            "completions.go#L830-837",
+            "bash_completionsV2.go#L24-36",
+            "bash_completionsV2.go#L480-484"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Persistence: GenMarkdownTree → GenMarkdownTreeCustom recursively processes available descendants → os.Create → filePrepender → GenMarkdownCustom → printOptions → buffer.WriteTo, returning on the first encountered error.",
+          "sources": [
+            "doc/md_docs.go#L125-157",
+            "doc/md_docs.go#L57-80",
+            "doc/md_docs.go#L112-116"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; their existence establishes intended checks, not passing results. The inspected suite uses Go's testing package and exercises execution, completion, validation, and generated documentation. Some checks invoke external tools or depend on tool availability. This is a bounded inventory, not an exhaustive coverage assessment or vulnerability verification.",
+      "claims": [
+        {
+          "claim": "Root-level tests use testing.T and shared executeCommand helpers that inject arguments and capture both output streams in a bytes.Buffer before calling ExecuteC.",
+          "sources": [
+            "command_test.go#L17-64"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TestHooks verifies arguments delivered to every lifecycle stage; TestPersistentHooks asserts different ordered hook lists with EnableTraverseRunHooks enabled and disabled.",
+          "sources": [
+            "command_test.go#L1645-1717",
+            "command_test.go#L1719-1785"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TestValidateFlagGroups uses table-driven cases for required-together, one-required, exclusive, overlapping, and persistent flag groups, including deterministic error ordering.",
+          "sources": [
+            "flag_groups_test.go#L22-115"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TestFlagCompletionConcurrentRegistration registers 50 callbacks across goroutines and checks completion responses for the first six flags; TestCompletionDoesNotMutateOsArgs checks the shared-slice regression with TraverseChildren.",
+          "sources": [
+            "completions_test.go#L2121-2184",
+            "completions_test.go#L4076-4129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "TestActiveHelpAlone checks exact protocol output for both root and child completion callbacks, including the marker, directive, and diagnostic line.",
+          "sources": [
+            "active_help_test.go#L30-86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation tests inspect descriptions, examples, inherited/hidden flags, and generation tags; filesystem tests check do.md and do.2, and the man-tree test verifies its caller header remains unchanged.",
+          "sources": [
+            "doc/md_docs_test.go#L26-109",
+            "doc/man_docs_test.go#L164-185"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected Bash tests use generated-text assertions and conditionally run shellcheck only when found; a separate dead-code test writes a fixture, runs go build and go tool nm, and skips Windows.",
+          "sources": [
+            "bash_completions_test.go#L28-75",
+            "bash_completions_test.go#L220-226",
+            "cobra_test.go#L246-301"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CI definitions run make richtest on Unix and Windows, use external linking for macOS Go versions below 1.24, and configure linting including gosec; the inspected commands do not explicitly add race or coverage flags.",
+          "sources": [
+            ".github/workflows/test.yml#L74-93",
+            ".github/workflows/test.yml#L125-130",
+            "Makefile#L26-32",
+            ".golangci.yml#L25-53"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "These findings are source observations and explicitly labeled hypotheses, not confirmed vulnerabilities. Sensitive boundaries include evaluated shell requests, caller-selected file destinations, environment-controlled logging, and process termination. Mutable command and global state also couples otherwise separate uses of the library. Actual exploitability and downstream application security were not tested.",
+      "claims": [
+        {
+          "claim": "Generated Bash requests use eval, PowerShell uses Invoke-Expression, and Fish escapes arguments before eval; hypothesis: quoting regressions at these boundaries could reinterpret shell input and need shell-specific reproduction.",
+          "sources": [
+            "bash_completionsV2.go#L54-84",
+            "powershell_completions.go#L109-129",
+            "fish_completions.go#L48-59"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "CompDebug accepts BASH_COMP_DEBUG_FILE as an unrestricted destination and opens it with append/create/write flags and mode 0644; open failures are ignored, while write errors flow through CheckErr.",
+          "sources": [
+            "completions.go#L955-974",
+            "cobra.go#L234-245"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation and completion-file APIs use os.Create on caller-selected paths, which permits overwriting existing files; tree generation can leave earlier descendant files written when a later step fails.",
+          "sources": [
+            "doc/md_docs.go#L133-155",
+            "doc/man_docs.go#L48-79",
+            "bash_completionsV2.go#L470-478"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Normal pre-hooks run before required-flag and flag-group validation; RunE errors bypass command post-hooks, whereas deferred global finalizers are already installed after preRun.",
+          "sources": [
+            "command.go#L959-970",
+            "command.go#L984-1027",
+            "command.go#L1053-1057"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Template functions, initializer/finalizer lists, and execution switches are package-global mutable state without synchronization in their setters; completion callback registration separately uses an RWMutex.",
+          "sources": [
+            "cobra.go#L32-66",
+            "cobra.go#L83-106",
+            "completions.go#L170-195"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Legacy Bash generation iterates the global callback registry and rewrites each registered flag's BashCompCustom annotation using the current command's root name, including flags outside that command tree.",
+          "sources": [
+            "bash_completions.go#L535-551"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Completion group enforcement mutates required annotations and Hidden flags; YAML genFlagResult visits all flags without the hidden/deprecated filtering implemented by manPrintFlags.",
+          "sources": [
+            "flag_groups.go#L240-269",
+            "flag_groups.go#L273-285",
+            "doc/yaml_docs.go#L149-174",
+            "doc/man_docs.go#L159-163"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Malformed custom templates can panic through template.Must, missing group IDs panic during ExecuteC, and YAML marshal failure or CheckErr can terminate the embedding process.",
+          "sources": [
+            "cobra.go#L179-187",
+            "command.go#L1205-1212",
+            "doc/yaml_docs.go#L137-140",
+            "cobra.go#L234-239"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Extension uses ordinary Go values, callbacks, and metadata rather than requiring a special constructor. Command composition defines new actions and hierarchies. Registration APIs customize completion, validation, templates, lifecycle behavior, and generated documentation. Compatibility APIs include both supported extension surfaces and explicitly disabled legacy methods.",
+      "claims": [
+        {
+          "claim": "Applications instantiate Command directly and register children through AddCommand, which assigns parents, propagates normalization, and invalidates command sorting.",
+          "sources": [
+            "site/content/user_guide.md#L39-54",
+            "command.go#L1342-1367"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Run/RunE and persistent/local pre/post callback fields provide action and lifecycle extension points; error-returning variants take precedence when both forms are defined.",
+          "sources": [
+            "command.go#L123-151",
+            "command.go#L984-1041"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "PositionalArgs is a function type; MatchAll builds a validator that runs supplied validators in order and returns the first error.",
+          "sources": [
+            "args.go#L22-22",
+            "args.go#L126-135"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "RegisterFlagCompletionFunc keys callbacks by the resolved pflag.Flag pointer, rejects missing or already-registered flags, and complements command-level ValidArgsFunction.",
+          "sources": [
+            "completions.go#L170-195",
+            "completions.go#L567-581"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Flag annotations plug into required-flag, filename, directory, and legacy Bash custom completion behavior; portable Go callbacks are recommended over MarkFlagCustom.",
+          "sources": [
+            "shell_completions.go#L35-55",
+            "shell_completions.go#L65-97"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SetHelpFunc, SetUsageFunc, template setters, and AddTemplateFunc customize inherited help/usage behavior and template function lookup.",
+          "sources": [
+            "command.go#L313-338",
+            "command.go#L444-472",
+            "command.go#L484-514",
+            "cobra.go#L83-94"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CommandDisplayNameAnnotation adapts displayed identity for external plugins such as kubectl-myplugin presented as kubectl myplugin; DisplayName reads this metadata.",
+          "sources": [
+            "site/content/user_guide.md#L835-868",
+            "command.go#L1472-1478"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation custom APIs accept link handlers and file prependers; GenManTreeOptions adds output path and command separator, while GenManHeader supplies title, section, date, source, and manual.",
+          "sources": [
+            "doc/md_docs.go#L131-155",
+            "doc/rest_docs.go#L143-166",
+            "doc/man_docs.go#L81-97"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Start by identifying whether a change affects resolution, parsing, lifecycle, completion protocol, or document rendering. Read its implementation and nearby tests together, because command state and generated output are coupled. Preserve compatibility branches and use existing test helpers for focused changes. Tests and CI were inspected, not executed here; proposed checks require separate execution authorization under the task's restrictions.",
+      "claims": [
+        {
+          "claim": "Use the README and user guide to distinguish this library from the separately installed cobra-cli generator; consuming applications construct their own root Command and main function.",
+          "sources": [
+            "README.md#L116-129",
+            "site/content/user_guide.md#L16-41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read ExecuteC, execute, Find/Traverse, and ParseFlags together before changing dispatch; TraverseChildren changes parent parsing, and nil Args invokes legacy lookup validation.",
+          "sources": [
+            "command.go#L757-778",
+            "command.go#L821-860",
+            "command.go#L1117-1143",
+            "command.go#L1868-1889"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve Go 1.15 compatibility and dual platform build tags; lint explicitly disables govet's buildtag check for that compatibility requirement.",
+          "sources": [
+            "go.mod#L3-3",
+            ".golangci.yml#L75-81",
+            "command_win.go#L15-16"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use executeCommand/executeCommandC to inject arguments and capture streams; tests manipulating global hook behavior should account for EnableTraverseRunHooks affecting other command trees.",
+          "sources": [
+            "command_test.go#L33-64",
+            "command_test.go#L1697-1717",
+            "cobra.go#L64-66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For completion edits, preserve the copied input slice, static ValidArgs precedence, final :<directive> protocol line, and the regression that verifies os.Args remains unchanged.",
+          "sources": [
+            "completions.go#L282-296",
+            "completions.go#L316-323",
+            "completions.go#L556-558",
+            "completions_test.go#L4076-4129"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Avoid treating rendering as pure observation: Markdown initializes help and redirects flag output, while legacy Bash sorts argument/alias slices and changes completion annotations.",
+          "sources": [
+            "doc/md_docs.go#L32-45",
+            "doc/md_docs.go#L57-59",
+            "bash_completions.go#L535-548",
+            "bash_completions.go#L616-650"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Recommended implementation validation is a focused Go test followed by go test ./... and applicable formatting/lint checks; make test and make richtest first invoke go get, so they cross a dependency-download boundary.",
+          "sources": [
+            "CONTRIBUTING.md#L33-36",
+            "Makefile#L14-32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests and CI were inspected, not executed in this investigation: conditional shellcheck and Windows-skipped dead-code checks limit what suite definitions establish, and CI runs richgo without explicit race/coverage options.",
+          "sources": [
+            "bash_completions_test.go#L220-226",
+            "cobra_test.go#L246-248",
+            ".github/workflows/test.yml#L88-93",
+            "Makefile#L26-28"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 292358,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T18:23:13.202597+00:00",
+    "source_commit_sha": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 26,
+      "private_review_receipt_sha256": "2a0e7a837567f20ea37fe33709d172aa7563d299181790806fbed5f8953eaa7d",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "74704d1238a58619a9f7f0341cf7be9d4945cbb428a6ba45d9ca2f15b954de5f",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

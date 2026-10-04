@@ -2,6 +2,8 @@
 import Icon from './Icon.astro';
 import GitHubIcon from './GitHubIcon.astro';
 
+const newsletterProjectKey = import.meta.env.PUBLIC_SAASMAKER_NEWSLETTER_KEY?.trim();
+
 const cols = [
   {
     label: 'Product',
@@ -11,6 +13,7 @@ const cols = [
       { l: 'Availability', h: '/#availability' },
       { l: 'Changelog', h: '/changelog' },
       { l: 'Roadmap', h: 'https://github.com/Codevetter/codevetter/issues' },
+      { l: 'Starboard — repo discovery', h: 'https://starboard.codevetter.com' },
     ],
   },
   {
@@ -20,6 +23,7 @@ const cols = [
       { l: 'FAQ', h: '/faq' },
       { l: 'Verification guide', h: '/coding-agent-verification' },
       { l: 'Articles', h: '/articles' },
+      { l: 'Inspiration', h: '/inspiration' },
       { l: 'Review vs verification', h: '/ai-code-review-vs-verification' },
       { l: 'Compare CodeVetter', h: '/compare' },
       { l: 'vs CodeRabbit', h: '/codevetter-vs-coderabbit' },
@@ -61,7 +65,7 @@ const year = new Date().getFullYear();
         Execution-backed verification for coding-agent changes. Preserve the
         task, exact change, executable evidence, limitations, and measurable verdict.
       </p>
-      <a href="/benchmark" class="inline-flex text-xs font-mono text-[--color-accent] hover:underline">Inspect public evidence →</a>
+      <a href="/benchmark" data-log="benchmark_opened" class="inline-flex text-xs font-mono text-[--color-accent] hover:underline">Inspect public evidence →</a>
     </div>
 
     {cols.map((c) => (
@@ -101,6 +105,19 @@ const year = new Date().getFullYear();
       </div>
     ))}
   </div>
+
+  {newsletterProjectKey && (
+    <div class="max-w-7xl mx-auto px-6 mt-12">
+      <saas-maker-newsletter-capture
+        product-name="CodeVetter"
+        project-key={newsletterProjectKey}
+        source="codevetter-footer"
+        kind="newsletter"
+        privacy-url="https://codevetter.com/privacy"
+        theme="dark"
+      ></saas-maker-newsletter-capture>
+    </div>
+  )}
 
   <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400 font-medium">
     <div class="flex items-center gap-6">

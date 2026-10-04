@@ -10,16 +10,28 @@
 // changing the page contract.
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const CORPUS = join(ROOT, 'benchmarks/repo-unpacks');
 
-const [repo, slugArg] = process.argv.slice(2);
-if (!repo || !repo.includes('/')) {
-  console.error('usage: node scripts/collect-unpack-repo.mjs <org/repo> [slug]');
+const [repo, ...args] = process.argv.slice(2);
+const slugArg = args[0]?.startsWith('--') ? undefined : args.shift();
+let cloneDirectory = null;
+let cli = 'codevetter';
+for (let index = 0; index < args.length; index += 2) {
+  const value = args[index + 1];
+  if (!value || value.startsWith('--')) throw new Error('missing option value');
+  if (args[index] === '--clone') cloneDirectory = resolve(value);
+  else if (args[index] === '--cli') cli = resolve(value);
+  else throw new Error(`unknown option: ${args[index]}`);
+}
+if (!repo || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) {
+  console.error(
+    'usage: node scripts/collect-unpack-repo.mjs <org/repo> [slug] [--clone <clean-clone>] [--cli <binary>]'
+  );
   process.exit(1);
 }
 const slug =
@@ -33,16 +45,24 @@ if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
   process.exit(1);
 }
 
-const work = mkdtempSync(join(tmpdir(), 'unpack-pilot-'));
+const work = cloneDirectory ? null : mkdtempSync(join(tmpdir(), 'unpack-pilot-'));
+const clone = cloneDirectory ?? join(work, slug);
 try {
-  execFileSync(
-    'git',
-    ['clone', '--depth', '50', `https://github.com/${repo}.git`, join(work, slug)],
-    {
+  if (!cloneDirectory)
+    execFileSync('git', ['clone', '--depth', '50', `https://github.com/${repo}.git`, clone], {
       stdio: 'pipe',
-    }
-  );
-  const logLine = execFileSync('git', ['-C', join(work, slug), 'log', '-1', '--format=%H|%cs|%s'], {
+    });
+  if (!existsSync(join(clone, '.git'))) throw new Error('clone is not a Git checkout');
+  const status = execFileSync('git', ['-C', clone, 'status', '--porcelain'], {
+    encoding: 'utf8',
+  }).trim();
+  if (status) throw new Error('refusing to collect a dirty clone');
+  const remote = execFileSync('git', ['-C', clone, 'remote', 'get-url', 'origin'], {
+    encoding: 'utf8',
+  }).trim();
+  if (remote.toLowerCase() !== `https://github.com/${repo}.git`.toLowerCase())
+    throw new Error('clone remote does not match requested repository');
+  const logLine = execFileSync('git', ['-C', clone, 'log', '-1', '--format=%H|%cs|%s'], {
     encoding: 'utf8',
   }).trim();
   const firstPipe = logLine.indexOf('|');
@@ -52,17 +72,15 @@ try {
     date: logLine.slice(firstPipe + 1, secondPipe),
     subject: logLine.slice(secondPipe + 1),
   };
-  const version = execFileSync('codevetter', ['--version'], { encoding: 'utf8' }).trim();
+  const version = execFileSync(cli, ['--version'], { encoding: 'utf8' }).trim();
   const receipt = JSON.parse(
-    execFileSync(
-      'codevetter',
-      ['unpack', '--operation', 'scan', '--repo', join(work, slug), '--json'],
-      {
-        encoding: 'utf8',
-        maxBuffer: 64 * 1024 * 1024,
-      }
-    )
+    execFileSync(cli, ['unpack', '--operation', 'scan', '--repo', clone, '--json'], {
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    })
   );
+  if (receipt.inventory?.commit_sha !== lastCommit.sha)
+    throw new Error('scan and clone revision differ');
 
   const record = {
     schema_version: 'codevetter.repo-unpack-corpus/v1',
@@ -80,5 +98,5 @@ try {
     `${repo} → ${out} (${record.scan.inventory.files_scanned} files, commit ${lastCommit.sha.slice(0, 7)})`
   );
 } finally {
-  rmSync(work, { recursive: true, force: true });
+  if (work) rmSync(work, { recursive: true, force: true });
 }

@@ -1,0 +1,4404 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "semantic-release/semantic-release",
+  "slug": "semantic-release",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T15:25:17.458Z",
+  "last_commit": {
+    "sha": "e8c2436e5704a6d1fa5b4aa69238f50edbe586bf",
+    "date": "2026-09-21",
+    "subject": "build(deps-dev): bump fast-uri from 3.1.4 to 3.1.7 (#4293)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "44f752d0-3c7c-422f-b027-9f536d2a0680",
+    "status": "scan_only",
+    "created_at": "2026-10-02T15:25:17.455785+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "semantic-release",
+      "commit_sha": "e8c2436e5704a6d1fa5b4aa69238f50edbe586bf",
+      "branch": "master",
+      "remote_url": "https://github.com/semantic-release/semantic-release.git",
+      "files_scanned": 85,
+      "files_skipped": 2,
+      "bytes_scanned": 475919,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "JavaScript",
+          "files": 65,
+          "bytes": 403635
+        },
+        {
+          "language": "Markdown",
+          "files": 3,
+          "bytes": 33745
+        },
+        {
+          "language": "TypeScript",
+          "files": 1,
+          "bytes": 20974
+        },
+        {
+          "language": "YAML",
+          "files": 9,
+          "bytes": 9086
+        },
+        {
+          "language": "JSON",
+          "files": 1,
+          "bytes": 4504
+        }
+      ],
+      "manifests": [
+        {
+          "path": "package.json",
+          "kind": "package.json",
+          "name": "semantic-release",
+          "version": "0.0.0-development",
+          "dependencies": [
+            "@semantic-release/commit-analyzer",
+            "@semantic-release/error",
+            "@semantic-release/github",
+            "@semantic-release/npm",
+            "@semantic-release/release-notes-generator",
+            "@types/node",
+            "@types/signale",
+            "aggregate-error",
+            "ava",
+            "c8",
+            "clear-module",
+            "cosmiconfig",
+            "cz-conventional-changelog",
+            "debug",
+            "env-ci",
+            "execa",
+            "figures",
+            "file-url",
+            "find-versions",
+            "fs-extra",
+            "get-stream",
+            "git-log-parser",
+            "got",
+            "hook-std",
+            "hosted-git-info",
+            "import-from-esm",
+            "js-yaml",
+            "lockfile-lint",
+            "lodash-es",
+            "ls-engines",
+            "marked",
+            "marked-terminal",
+            "micromatch",
+            "mockserver-client",
+            "nock",
+            "npm-run-all2",
+            "p-each-series",
+            "p-reduce",
+            "p-retry",
+            "prettier",
+            "publint",
+            "read-package-up",
+            "resolve-from",
+            "semver",
+            "signale",
+            "sinon",
+            "stream-buffers",
+            "tempy",
+            "testcontainers",
+            "testdouble",
+            "yargs"
+          ],
+          "scripts": [
+            "lint:engines",
+            "lint:lockfile",
+            "lint:prettier",
+            "lint:prettier:fix",
+            "lint:publish",
+            "semantic-release",
+            "test",
+            "test:e2e",
+            "test:integration",
+            "test:unit"
+          ]
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": ".github/workflows/release.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/test.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/scorecard.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": "package.json",
+          "kind": "config",
+          "reason": "npm scripts: lint:engines, lint:lockfile, lint:prettier, lint:prettier:fix, lint:publish, semantic-release, test, test:e2e"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "test",
+          "file_count": 39,
+          "bytes": 317042
+        },
+        {
+          "path": "lib",
+          "file_count": 24,
+          "bytes": 72712
+        },
+        {
+          "path": ".github",
+          "file_count": 7,
+          "bytes": 8071
+        },
+        {
+          "path": "media",
+          "file_count": 1,
+          "bytes": 715
+        },
+        {
+          "path": "bin",
+          "file_count": 1,
+          "bytes": 1303
+        }
+      ],
+      "docs": [
+        {
+          "path": "CONTRIBUTING.md",
+          "bytes": 15742,
+          "preview": "# Contributing to semantic-release\n\n✨ Thanks for contributing to **semantic-release**! ✨\n\nAs a contributor, here are the guidelines we would like you to follow:\n\n- [Code of conduct](#code-of-conduct)\n- [How can I contribute?](#how-can-i-contribute)\n- [Using the issue tracker](#using-the-issue-tracker)\n- [Submitting a Pull Request](#submitting-a-pull-request)\n- [Coding rules](#coding-rules)\n- [Working with the code](#working-with-the-code)\n\nWe also recommend that you read [How to Contribute to Open Source](https://opensource.guide/how-to-contribute).\n\n## Code of conduct\n\nHelp us keep **semantic-release** open and inclusive. Please read and follow our [Code of conduct](CODE_OF_CONDUCT.md).\n\n## How can I contribute?\n\n### Improve documentation\n\nAs a **semantic-release** user, you are the perfect candidate to help us improve our documentation: typo corrections, clarifications, more examples, new [recipes](https://github.com/semantic-release/docs/tree/main/docs/recipes/), etc.\n\nCheck out the [documentation issues that need help](https://github.com/semantic-release/docs/issues) in the [semantic-release/docs](https://github.com/semantic-release/docs) repository.\n\nPlease follow the [Documentation guidelines](#documentation).\n\n### Give feedback on issues\n\nSome issues are created without information requested in the [Bug report guideline](#bug-report).\nHelp make them easier to resolve by adding any relevant information.\n\nIssues with the [design label](https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3Asemantic-release+archived%3Afalse+label%3Adesign) are meant to discuss the implementation of new features.\nParticipating in the discussion is a good opportunity to get involved and influence the future direction of **semantic-release**.\n\n### Fix bugs and implement features\n\nConfirmed bugs and ready-to-implement features are marked with the [help wanted label](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3Asemantic-release+archived%3Afalse+label%3A%22help+wanted%22).\nPost a comment on an issue to indicate you would like to work on it and to request help from the [@semantic-release/maintainers](https://github.com/orgs/semantic-release/teams/contributors) and the community.\n\n## Using the issue tracker\n\nThe issue tracker is the channel for [bug reports](#bug-report), [feature requests](#feature-request) and [submitting pull requests](#submitting-a-pull-request) only.\nPlease use the [Support](https://semantic-release.org/support/) and [Get help](README.md#get-help) sections for support, troubleshooting and questions.\n\nBefore opening an issue or a Pull Request, please use the [GitHub issue search](https://github.com/issues?utf8=%E2%9C%93&q=user%3Asemantic-release) to make sure the bug or feature request hasn't been already reported or fixed.\n\n### Bug report\n\nA good bug report shouldn't leave others needing to chase you for more information.\nPlease try to be as detailed as possible in your report and fill the information requested in the [bug report template](https://github.com/semantic-release/semantic-release/issues/new?template=01_bug_report.yml).\n\n### Feature request\n\nFeature requests are welcome, but take a moment to find out whether your idea fits with the scope and aims of the project.\nIt's up to you to make a strong case to convince the project's developers of the merits of this feature.\nPlease provide as much detail and context as possible and fill the information requested in the [feature request template](https://github.com/semantic-release/semantic-release/issues/new?template=02_feature_request.yml).\n\n### New plugin request\n\n[Plugins](https://semantic-release.org/foundation/plugins/) are a great way to extend **semantic-release** capabilities, integrate with other systems and support new project types.\nPlease provide as much detail and context as possible and fill the information requested in the [plugin suggestion template](https://github.com/semantic-release/semantic-release/issues/new?template=03_plugin_suggestion.yml).\n\n## Submitting a Pull Request\n\nGood pull requests, whether patches, improvements, or new features, are a fantastic help.\nThey should remain focused in scope and avoid containing unrelated commits.\n\n**Please ask first** before embarking on any significant pull requests (e.g. implementing features, refactoring code), otherwise you risk spending a lot of time working on something that the project's maintainers might not want to merge into the project.\n\nIf you have never created a pull request before, welcome 🎉 😄.\n[Here is a great tutorial](https://opensource.guide/how-to-contribute/#opening-a-pull-request) on how to send one :)\n\nHere is a summary of the steps to follow:\n\n1. [Set up the workspace](#set-up-the-workspace)\n2. If you cloned a while ago, get the latest changes from upstream and update dependencies:\n\n```bash\n$ git checkout master\n$ git pull upstream master\n$ rm -rf node_modules\n$ npm install\n```\n\n3. Create a new topic branch (off the main project development branch) to contain your feature, change, or fix:\n\n```bash\n$ git checkout -b <topic-branch-name>\n```\n\n4. Make your code changes, following the [Coding rules](#coding-rules)\n5. Push your topic branch up to your fork:\n\n```bash\n$ git push origin <topic-branch-name>\n```\n\n6. [Open a Pull Request](https://help.github.com/articles/creating-a-pull-request/#creating-the-pull-request) with a clear title and description.\n\n**Tips**:\n\n- For ambitious tasks, open a Pull Request as soon as possible with the `[WIP]` prefix in the title, in order to get feedback and help from the community.\n- [Allow semantic-release maintainers to make changes to your Pull Request branch](https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork).\n  This way, we can rebase it and make some minor changes if necessary.\n  All changes we make will be done in new commit, and we'll ask for your approval before merging them.\n\n## Coding rules\n\n### Source code\n\nTo ensure consistency and quality throughout the source code, all code modifications must have:\n\n- No [linting](#lint) errors\n- A [test](#tests) for every possible case introduced by your code change\n- **100%** test coverage\n- [Valid commit message(s)](#commit-message-guidelines)\n- Documentation for new features\n- Updated documentation for modified features\n\n### Documentation\n\nTo ensure consistency and quality, all documentation modifications must:\n\n- Refer to brand in [bold](https://help.github.com/articles/basic-writing-and-formatting-syntax/#styling-text) with proper capitalization, i.e. **GitHub**, **semantic-release**, **npm**\n- Prefer [tables](https://help.github.com/articles/organizing-information-with-tables) over [lists](https://help.github.com/articles/basic-writing-and-formatting-syntax/#lists) when listing key values, i.e. List of options with their description\n- Use [links](https://help.github.com/articles/basic-writing-and-formatting-syntax/#links) when you are referring to:\n  - a **semantic-release** concept described somewhere else in the documentation, i.e. How to [contribute](CONTRIBUTING.md)\n  - a third-party product/brand/service, i.e. Integrate with [GitHub](https://github.com)\n  - an external concept or feature, i.e. Create a [GitHub release](https://help.github.com/articles/creating-releases)\n  - a package or module, i.e. The [`@semantic-release/github`](https://github.com/semantic-release/github) module\n- Use the [single backtick `code` quoting](https://help.github.com/articles/basic-writing-and-formatting-syntax/#quoting-code) for:\n  - commands inside sentences, i.e. the `semantic-release` command\n  - programming language keywords, i.e. `function`, `async`, `String`\n  - packages or modules, i.e. The [`@semantic-release/github`](https://github.com/semantic-release/github) module\n- Use the [triple backtick `code` formatting](https://help.github.com/articles/creating-and-highlighting-code-blocks) for:\n  - code examples\n  - configuration examples\n  - sequence of command lines\n\n### Commit message guidelines\n\n#### Atomic commits\n\nIf possible, make [atomic commits](https://en.wikipedia.org/wiki/Atomic_commit), which means:\n\n- a commit should contain exactly on"
+        },
+        {
+          "path": "README.md",
+          "bytes": 14773,
+          "preview": "<h1 align=\"center\" style=\"border-bottom: none;\">📦🚀 semantic-release</h1>\n<h3 align=\"center\">Fully automated version management and package publishing</h3>\n<p align=\"center\">\n  <a href=\"https://github.com/semantic-release/semantic-release/discussions\">\n    <img alt=\"Join the community on GitHub Discussions\" src=\"https://img.shields.io/badge/Join%20the%20community-on%20GitHub%20Discussions-blue\">\n  </a>\n  <a href=\"https://github.com/semantic-release/semantic-release/actions/workflows/test.yml\">\n    <img alt=\"Build states\" src=\"https://github.com/semantic-release/semantic-release/actions/workflows/test.yml/badge.svg\">\n  </a>\n  <a href=\"https://securityscorecards.dev/viewer/?uri=github.com/semantic-release/semantic-release\">\n    <img alt=\"OpenSSF Scorecard\" src=\"https://api.securityscorecards.dev/projects/github.com/semantic-release/semantic-release/badge\">\n  </a>\n  <a href=\"#badge\">\n    <img alt=\"semantic-release: angular\" src=\"https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release\">\n  </a>\n</p>\n<p align=\"center\">\n  <a href=\"https://www.npmjs.com/package/semantic-release\">\n    <img alt=\"npm latest version\" src=\"https://img.shields.io/npm/v/semantic-release/latest.svg\">\n  </a>\n  <a href=\"https://www.npmjs.com/package/semantic-release\">\n    <img alt=\"npm beta version\" src=\"https://img.shields.io/npm/v/semantic-release/beta.svg\">\n  </a>\n</p>\n\n**semantic-release** automates the whole package release workflow including: determining the next version number, generating the release notes, and publishing the package.\n\nThis removes the immediate connection between human emotions and version numbers, strictly following the [Semantic Versioning](http://semver.org) specification and communicating the **impact** of changes to consumers.\n\n> Trust us, this will change your workflow for the better. – [egghead.io](https://egghead.io/lessons/javascript-how-to-write-a-javascript-library-automating-releases-with-semantic-release)\n\n## Highlights\n\n- Fully automated release\n- Enforce [Semantic Versioning](https://semver.org) specification\n- New features and fixes are immediately available to users\n- Notify maintainers and users of new releases\n- Use formalized commit message convention to document changes in the codebase\n- Publish on different distribution channels (such as [npm dist-tags](https://docs.npmjs.com/cli/dist-tag)) based on git merges\n- Integrate with your [continuous integration workflow](https://semantic-release.org/recipes/ci-configurations/#ci-configurations)\n- Avoid potential errors associated with manual releases\n- Support any [package managers and languages](https://semantic-release.org/recipes/release-workflow/#package-managers-and-languages) via [plugins](https://semantic-release.org/foundation/plugins/)\n- Simple and reusable configuration via [shareable configurations](https://semantic-release.org/foundation/shareable-configurations/)\n- Support for [npm package provenance](https://github.com/semantic-release/npm#npm-provenance) that promotes increased supply-chain security via signed attestations on GitHub Actions\n\n## How does it work?\n\n### Commit message format\n\n**semantic-release** uses the commit messages to determine the consumer impact of changes in the codebase.\nFollowing formalized conventions for commit messages, **semantic-release** automatically determines the next [semantic version](https://semver.org) number, generates a changelog and publishes the release.\n\nBy default, **semantic-release** uses [Angular Commit Message Conventions](https://github.com/angular/angular/blob/main/contributing-docs/commit-message-guidelines.md).\nThe commit message format can be changed with the [`preset` or `config` options](https://semantic-release.org/usage/configuration/#options) of the [@semantic-release/commit-analyzer](https://github.com/semantic-release/commit-analyzer#options) and [@semantic-release/release-notes-generator](https://github.com/semantic-release/release-notes-generator#options) plugins.\n\nTools such as [commitizen](https://github.com/commitizen/cz-cli) or [commitlint](https://github.com/conventional-changelog/commitlint) can be used to help contributors and enforce valid commit messages.\n\nThe table below shows which commit message gets you which release type when `semantic-release` runs (using the default configuration):\n\n| Commit message                                                                                                                                                                                   | Release type                                                                                                    |\n| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |\n| `fix(pencil): stop graphite breaking when too much pressure applied`                                                                                                                             | ~~Patch~~ Fix Release                                                                                           |\n| `feat(pencil): add 'graphiteWidth' option`                                                                                                                                                       | ~~Minor~~ Feature Release                                                                                       |\n| `perf(pencil): remove graphiteWidth option`<br><br>`BREAKING CHANGE: The graphiteWidth option has been removed.`<br>`The default graphite width of 10mm is always used for performance reasons.` | ~~Major~~ Breaking Release <br /> (Note that the `BREAKING CHANGE: ` token must be in the footer of the commit) |\n\n### Automation with CI\n\n**semantic-release** is meant to be executed on the CI environment after every successful build on the release branch.\nThis way no human is directly involved in the release process and the releases are guaranteed to be [unromantic and unsentimental](https://github.com/dominictarr/sentimental-versioning#readme).\n\n### Triggering a release\n\nFor each new commit added to one of the release branches (for example: `master`, `main`, `next`, `beta`), with `git push` or by merging a pull request or merging from another branch, a CI build is triggered and runs the `semantic-release` command to make a release if there are codebase changes since the last release that affect the package functionalities.\n\n**semantic-release** offers various ways to control the timing, the content and the audience of published releases.\nSee example workflows in the following recipes:\n\n- [Using distribution channels](https://semantic-release.org/recipes/release-workflow/distribution-channels/#publishing-on-distribution-channels)\n- [Maintenance releases](https://semantic-release.org/recipes/release-workflow/maintenance-releases/#publishing-maintenance-releases)\n- [Pre-releases](https://semantic-release.org/recipes/release-workflow/pre-releases/#publishing-pre-releases)\n\n### Release steps\n\nAfter running the tests, the command `semantic-release` will execute the following steps:\n\n| Step              | Description                                                                                                                     |\n| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |\n| Verify Conditions | Verify all the conditions to proceed with the release.                                                                          |\n| Get last release  | Obtain the commit corresponding to the last release by analyzing [Git tags](https://git-scm.com/book/en/v2/Git-Basics-Tagging). |\n| Analyze commits   | Determine the type of release based on the commits added since the last release.                                                |\n| Verify release    | Verify the release conformity.                                                                                         "
+        }
+      ],
+      "config_files": [],
+      "stack_tags": [
+        "GitHub Actions"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "semantic-release",
+          "kind": "workspace",
+          "manifest_path": "package.json",
+          "build_system": "package.json",
+          "file_count": 85,
+          "languages": [
+            {
+              "language": "JavaScript",
+              "files": 65,
+              "bytes": 403635
+            },
+            {
+              "language": "YAML",
+              "files": 9,
+              "bytes": 9086
+            },
+            {
+              "language": "Markdown",
+              "files": 3,
+              "bytes": 33745
+            },
+            {
+              "language": "TypeScript",
+              "files": 1,
+              "bytes": 20974
+            },
+            {
+              "language": "JSON",
+              "files": 1,
+              "bytes": 4504
+            }
+          ],
+          "scripts": [
+            "lint:engines",
+            "lint:lockfile",
+            "lint:prettier",
+            "lint:prettier:fix",
+            "lint:publish",
+            "semantic-release",
+            "test",
+            "test:e2e",
+            "test:integration",
+            "test:unit"
+          ],
+          "entrypoints": [
+            ".github/workflows/release.yml",
+            ".github/workflows/scorecard.yml",
+            ".github/workflows/test.yml",
+            "README.md",
+            "package.json"
+          ],
+          "test_files": [],
+          "tags": [
+            "JavaScript",
+            "Markdown",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 20,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "ready",
+            "detail": "Package scripts expose a QA/e2e/browser test command.",
+            "sources": [
+              "package.json"
+            ]
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-workflows-release-yml",
+            "kind": "file",
+            "label": ".github/workflows/release.yml",
+            "path": ".github/workflows/release.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/release.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-scorecard-yml",
+            "kind": "file",
+            "label": ".github/workflows/scorecard.yml",
+            "path": ".github/workflows/scorecard.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/scorecard.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-test-yml",
+            "kind": "file",
+            "label": ".github/workflows/test.yml",
+            "path": ".github/workflows/test.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:code-of-conduct-md",
+            "kind": "file",
+            "label": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CODE_OF_CONDUCT.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:contributing-md",
+            "kind": "file",
+            "label": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "CONTRIBUTING.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:bin-semantic-release-js",
+            "kind": "file",
+            "label": "bin/semantic-release.js",
+            "path": "bin/semantic-release.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "bin/semantic-release.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:cli-js",
+            "kind": "file",
+            "label": "cli.js",
+            "path": "cli.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "cli.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:index-d-ts",
+            "kind": "file",
+            "label": "index.d.ts",
+            "path": "index.d.ts",
+            "detail": "source marker candidate",
+            "sources": [
+              "index.d.ts"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:index-js",
+            "kind": "file",
+            "label": "index.js",
+            "path": "index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-branches-expand-js",
+            "kind": "file",
+            "label": "lib/branches/expand.js",
+            "path": "lib/branches/expand.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/branches/expand.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-branches-get-tags-js",
+            "kind": "file",
+            "label": "lib/branches/get-tags.js",
+            "path": "lib/branches/get-tags.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/branches/get-tags.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-branches-index-js",
+            "kind": "file",
+            "label": "lib/branches/index.js",
+            "path": "lib/branches/index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/branches/index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-branches-normalize-js",
+            "kind": "file",
+            "label": "lib/branches/normalize.js",
+            "path": "lib/branches/normalize.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/branches/normalize.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-definitions-branches-js",
+            "kind": "file",
+            "label": "lib/definitions/branches.js",
+            "path": "lib/definitions/branches.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/definitions/branches.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-definitions-constants-js",
+            "kind": "file",
+            "label": "lib/definitions/constants.js",
+            "path": "lib/definitions/constants.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/definitions/constants.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-definitions-errors-js",
+            "kind": "file",
+            "label": "lib/definitions/errors.js",
+            "path": "lib/definitions/errors.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/definitions/errors.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-definitions-plugins-js",
+            "kind": "file",
+            "label": "lib/definitions/plugins.js",
+            "path": "lib/definitions/plugins.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/definitions/plugins.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-commits-js",
+            "kind": "file",
+            "label": "lib/get-commits.js",
+            "path": "lib/get-commits.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-commits.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-config-js",
+            "kind": "file",
+            "label": "lib/get-config.js",
+            "path": "lib/get-config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-error-js",
+            "kind": "file",
+            "label": "lib/get-error.js",
+            "path": "lib/get-error.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-error.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-git-auth-url-js",
+            "kind": "file",
+            "label": "lib/get-git-auth-url.js",
+            "path": "lib/get-git-auth-url.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-git-auth-url.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-last-release-js",
+            "kind": "file",
+            "label": "lib/get-last-release.js",
+            "path": "lib/get-last-release.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-last-release.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-logger-js",
+            "kind": "file",
+            "label": "lib/get-logger.js",
+            "path": "lib/get-logger.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-logger.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-next-version-js",
+            "kind": "file",
+            "label": "lib/get-next-version.js",
+            "path": "lib/get-next-version.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-next-version.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-get-release-to-add-js",
+            "kind": "file",
+            "label": "lib/get-release-to-add.js",
+            "path": "lib/get-release-to-add.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/get-release-to-add.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-git-js",
+            "kind": "file",
+            "label": "lib/git.js",
+            "path": "lib/git.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/git.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-hide-sensitive-js",
+            "kind": "file",
+            "label": "lib/hide-sensitive.js",
+            "path": "lib/hide-sensitive.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/hide-sensitive.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-plugins-index-js",
+            "kind": "file",
+            "label": "lib/plugins/index.js",
+            "path": "lib/plugins/index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/plugins/index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-plugins-normalize-js",
+            "kind": "file",
+            "label": "lib/plugins/normalize.js",
+            "path": "lib/plugins/normalize.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/plugins/normalize.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-plugins-pipeline-js",
+            "kind": "file",
+            "label": "lib/plugins/pipeline.js",
+            "path": "lib/plugins/pipeline.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/plugins/pipeline.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-plugins-utils-js",
+            "kind": "file",
+            "label": "lib/plugins/utils.js",
+            "path": "lib/plugins/utils.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/plugins/utils.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-utils-js",
+            "kind": "file",
+            "label": "lib/utils.js",
+            "path": "lib/utils.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/utils.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:lib-verify-js",
+            "kind": "file",
+            "label": "lib/verify.js",
+            "path": "lib/verify.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "lib/verify.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:package-json",
+            "kind": "file",
+            "label": "package.json",
+            "path": "package.json",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-branches-branches-test-js",
+            "kind": "file",
+            "label": "test/branches/branches.test.js",
+            "path": "test/branches/branches.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/branches/branches.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-branches-expand-test-js",
+            "kind": "file",
+            "label": "test/branches/expand.test.js",
+            "path": "test/branches/expand.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/branches/expand.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-branches-get-tags-test-js",
+            "kind": "file",
+            "label": "test/branches/get-tags.test.js",
+            "path": "test/branches/get-tags.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/branches/get-tags.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-branches-normalize-test-js",
+            "kind": "file",
+            "label": "test/branches/normalize.test.js",
+            "path": "test/branches/normalize.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/branches/normalize.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-cli-test-js",
+            "kind": "file",
+            "label": "test/cli.test.js",
+            "path": "test/cli.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/cli.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-definitions-branches-test-js",
+            "kind": "file",
+            "label": "test/definitions/branches.test.js",
+            "path": "test/definitions/branches.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/definitions/branches.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-definitions-errors-test-js",
+            "kind": "file",
+            "label": "test/definitions/errors.test.js",
+            "path": "test/definitions/errors.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/definitions/errors.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-definitions-plugins-test-js",
+            "kind": "file",
+            "label": "test/definitions/plugins.test.js",
+            "path": "test/definitions/plugins.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/definitions/plugins.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-e2e-test-js",
+            "kind": "file",
+            "label": "test/e2e.test.js",
+            "path": "test/e2e.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/e2e.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-index-js",
+            "kind": "file",
+            "label": "test/fixtures/index.js",
+            "path": "test/fixtures/index.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/index.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-plugin-error-inherited-js",
+            "kind": "file",
+            "label": "test/fixtures/plugin-error-inherited.js",
+            "path": "test/fixtures/plugin-error-inherited.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/plugin-error-inherited.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-plugin-error-js",
+            "kind": "file",
+            "label": "test/fixtures/plugin-error.js",
+            "path": "test/fixtures/plugin-error.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/plugin-error.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-plugin-errors-js",
+            "kind": "file",
+            "label": "test/fixtures/plugin-errors.js",
+            "path": "test/fixtures/plugin-errors.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/plugin-errors.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-plugin-esm-named-exports-js",
+            "kind": "file",
+            "label": "test/fixtures/plugin-esm-named-exports.js",
+            "path": "test/fixtures/plugin-esm-named-exports.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/plugin-esm-named-exports.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-plugin-identity-js",
+            "kind": "file",
+            "label": "test/fixtures/plugin-identity.js",
+            "path": "test/fixtures/plugin-identity.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/plugin-identity.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-plugin-log-env-js",
+            "kind": "file",
+            "label": "test/fixtures/plugin-log-env.js",
+            "path": "test/fixtures/plugin-log-env.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/plugin-log-env.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-fixtures-plugin-result-config-js",
+            "kind": "file",
+            "label": "test/fixtures/plugin-result-config.js",
+            "path": "test/fixtures/plugin-result-config.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/fixtures/plugin-result-config.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-get-commits-test-js",
+            "kind": "file",
+            "label": "test/get-commits.test.js",
+            "path": "test/get-commits.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/get-commits.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-get-config-test-js",
+            "kind": "file",
+            "label": "test/get-config.test.js",
+            "path": "test/get-config.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/get-config.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-get-git-auth-url-test-js",
+            "kind": "file",
+            "label": "test/get-git-auth-url.test.js",
+            "path": "test/get-git-auth-url.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/get-git-auth-url.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-get-last-release-test-js",
+            "kind": "file",
+            "label": "test/get-last-release.test.js",
+            "path": "test/get-last-release.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/get-last-release.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-get-logger-test-js",
+            "kind": "file",
+            "label": "test/get-logger.test.js",
+            "path": "test/get-logger.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/get-logger.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-get-next-version-test-js",
+            "kind": "file",
+            "label": "test/get-next-version.test.js",
+            "path": "test/get-next-version.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/get-next-version.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-get-release-to-add-test-js",
+            "kind": "file",
+            "label": "test/get-release-to-add.test.js",
+            "path": "test/get-release-to-add.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/get-release-to-add.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-git-test-js",
+            "kind": "file",
+            "label": "test/git.test.js",
+            "path": "test/git.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/git.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-helpers-e2e-environment-js",
+            "kind": "file",
+            "label": "test/helpers/e2e-environment.js",
+            "path": "test/helpers/e2e-environment.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/helpers/e2e-environment.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-helpers-git-utils-js",
+            "kind": "file",
+            "label": "test/helpers/git-utils.js",
+            "path": "test/helpers/git-utils.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/helpers/git-utils.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-helpers-npm-utils-js",
+            "kind": "file",
+            "label": "test/helpers/npm-utils.js",
+            "path": "test/helpers/npm-utils.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/helpers/npm-utils.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-hide-sensitive-test-js",
+            "kind": "file",
+            "label": "test/hide-sensitive.test.js",
+            "path": "test/hide-sensitive.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/hide-sensitive.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-integration-test-js",
+            "kind": "file",
+            "label": "test/integration.test.js",
+            "path": "test/integration.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/integration.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-plugins-normalize-test-js",
+            "kind": "file",
+            "label": "test/plugins/normalize.test.js",
+            "path": "test/plugins/normalize.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/plugins/normalize.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-plugins-pipeline-test-js",
+            "kind": "file",
+            "label": "test/plugins/pipeline.test.js",
+            "path": "test/plugins/pipeline.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/plugins/pipeline.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-plugins-plugins-test-js",
+            "kind": "file",
+            "label": "test/plugins/plugins.test.js",
+            "path": "test/plugins/plugins.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/plugins/plugins.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-plugins-utils-test-js",
+            "kind": "file",
+            "label": "test/plugins/utils.test.js",
+            "path": "test/plugins/utils.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/plugins/utils.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-utils-test-js",
+            "kind": "file",
+            "label": "test/utils.test.js",
+            "path": "test/utils.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/utils.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:test-verify-test-js",
+            "kind": "file",
+            "label": "test/verify.test.js",
+            "path": "test/verify.test.js",
+            "detail": "source marker candidate",
+            "sources": [
+              "test/verify.test.js"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:package-json",
+            "kind": "package",
+            "label": "semantic-release",
+            "path": "package.json",
+            "detail": "package.json manifest",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-engines",
+            "kind": "script",
+            "label": "lint:engines",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-lockfile",
+            "kind": "script",
+            "label": "lint:lockfile",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-prettier",
+            "kind": "script",
+            "label": "lint:prettier",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-prettier-fix",
+            "kind": "script",
+            "label": "lint:prettier:fix",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-lint-publish",
+            "kind": "script",
+            "label": "lint:publish",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-semantic-release",
+            "kind": "script",
+            "label": "semantic-release",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test",
+            "kind": "script",
+            "label": "test",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-e2e",
+            "kind": "script",
+            "label": "test:e2e",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-integration",
+            "kind": "script",
+            "label": "test:integration",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "script:package-json-test-unit",
+            "kind": "script",
+            "label": "test:unit",
+            "path": "package.json",
+            "detail": "package script",
+            "sources": [
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "semantic-release",
+            "path": null,
+            "detail": "workspace | 85 files | 65 JavaScript, 9 YAML, 3 Markdown",
+            "sources": [
+              ".github/workflows/release.yml",
+              ".github/workflows/scorecard.yml",
+              "package.json"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-engines",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:engines`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-lockfile",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:lockfile`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-prettier",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:prettier`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-prettier-fix",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:prettier:fix`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-lint-publish",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `lint:publish`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-semantic-release",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `semantic-release`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-e2e",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test:e2e`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-integration",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test:integration`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "package:package-json",
+            "to": "script:package-json-test-unit",
+            "kind": "defines",
+            "evidence": "package.json defines npm script `test:unit`",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "package:package-json",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-release-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/release.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-scorecard-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/scorecard.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-test-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/test.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:package-json",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "package.json"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 9 test hints, and 3 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "e8c2436e5704",
+            "date": "2026-09-21",
+            "subject": "build(deps-dev): bump fast-uri from 3.1.4 to 3.1.7 (#4293)",
+            "files": []
+          },
+          {
+            "sha": "a1def89ffdaa",
+            "date": "2026-09-21",
+            "subject": "build(deps): bump js-yaml from 3.15.0 to 3.15.2 (#4298)",
+            "files": []
+          },
+          {
+            "sha": "64b5e0ba5b42",
+            "date": "2026-09-14",
+            "subject": "chore(deps): update dependency got to v16 (#4305)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "afe0ddbbdf46",
+            "date": "2026-09-14",
+            "subject": "ci(action): update github/codeql-action action to v4.38.0 (#4304)",
+            "files": [
+              ".github/workflows/scorecard.yml"
+            ]
+          },
+          {
+            "sha": "ddab29d3cf61",
+            "date": "2026-09-14",
+            "subject": "chore(deps): update dependency testcontainers to v12.1.0 (#4303)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "474058bd12ea",
+            "date": "2026-09-14",
+            "subject": "chore(deps): update dependency mockserver-client to v7.6.0 (#4302)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "9122e05f4bbb",
+            "date": "2026-09-13",
+            "subject": "chore(deps): update dependency publint to v0.3.24 (#4301)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "906922fbf1ca",
+            "date": "2026-09-13",
+            "subject": "chore(deps): update dependency p-retry to v8.0.1 (#4300)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "44df47d1ff9c",
+            "date": "2026-09-13",
+            "subject": "chore(deps): update dependency lockfile-lint to v5.0.1 (#4299)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "11157f1a7cac",
+            "date": "2026-09-13",
+            "subject": "chore(deps): update dependency @types/node to v24.13.4 (#4297)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "16e5603f3816",
+            "date": "2026-09-13",
+            "subject": "chore(deps): update dependency js-yaml to v4.3.2 [security] (#4296)",
+            "files": [
+              "package.json"
+            ]
+          },
+          {
+            "sha": "8d905a56e800",
+            "date": "2026-08-04",
+            "subject": "fix: do not expose the authenticated repository URL in EGITNOPERMISSION errors (#4283)",
+            "files": [
+              "lib/definitions/errors.js",
+              "test/definitions/errors.test.js"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "package.json",
+            "reason": "package script `lint:engines` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:lockfile` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:prettier` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:prettier:fix` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `lint:publish` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test:e2e` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test:integration` is a likely verification command"
+          },
+          {
+            "path": "package.json",
+            "reason": "package script `test:unit` is a likely verification command"
+          }
+        ],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/release.yml",
+              ".github/workflows/test.yml"
+            ],
+            "commit_count": 3,
+            "last_commit": "520482ddf6c0",
+            "reason": "These files changed together in 3 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lib/hide-sensitive.js",
+              "test/hide-sensitive.test.js"
+            ],
+            "commit_count": 2,
+            "last_commit": "973d763c2e25",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              "lib/verify.js",
+              "test/verify.test.js"
+            ],
+            "commit_count": 2,
+            "last_commit": "f121540e89d2",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:11157f1a7cac",
+              "kind": "commit",
+              "label": "chore(deps): update dependency @types/node to v24.13.4 (#4297)",
+              "path": null,
+              "detail": "2026-09-13",
+              "citations": [
+                "git:11157f1a7cac"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:16e5603f3816",
+              "kind": "commit",
+              "label": "chore(deps): update dependency js-yaml to v4.3.2 [security] (#4296)",
+              "path": null,
+              "detail": "2026-09-13",
+              "citations": [
+                "git:16e5603f3816"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:44df47d1ff9c",
+              "kind": "commit",
+              "label": "chore(deps): update dependency lockfile-lint to v5.0.1 (#4299)",
+              "path": null,
+              "detail": "2026-09-13",
+              "citations": [
+                "git:44df47d1ff9c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:474058bd12ea",
+              "kind": "commit",
+              "label": "chore(deps): update dependency mockserver-client to v7.6.0 (#4302)",
+              "path": null,
+              "detail": "2026-09-14",
+              "citations": [
+                "git:474058bd12ea"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:64b5e0ba5b42",
+              "kind": "commit",
+              "label": "chore(deps): update dependency got to v16 (#4305)",
+              "path": null,
+              "detail": "2026-09-14",
+              "citations": [
+                "git:64b5e0ba5b42"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:8d905a56e800",
+              "kind": "commit",
+              "label": "fix: do not expose the authenticated repository URL in EGITNOPERMISSION errors (#4283)",
+              "path": null,
+              "detail": "2026-08-04",
+              "citations": [
+                "git:8d905a56e800"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:906922fbf1ca",
+              "kind": "commit",
+              "label": "chore(deps): update dependency p-retry to v8.0.1 (#4300)",
+              "path": null,
+              "detail": "2026-09-13",
+              "citations": [
+                "git:906922fbf1ca"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9122e05f4bbb",
+              "kind": "commit",
+              "label": "chore(deps): update dependency publint to v0.3.24 (#4301)",
+              "path": null,
+              "detail": "2026-09-13",
+              "citations": [
+                "git:9122e05f4bbb"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:a1def89ffdaa",
+              "kind": "commit",
+              "label": "build(deps): bump js-yaml from 3.15.0 to 3.15.2 (#4298)",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:a1def89ffdaa"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:afe0ddbbdf46",
+              "kind": "commit",
+              "label": "ci(action): update github/codeql-action action to v4.38.0 (#4304)",
+              "path": null,
+              "detail": "2026-09-14",
+              "citations": [
+                "git:afe0ddbbdf46"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ddab29d3cf61",
+              "kind": "commit",
+              "label": "chore(deps): update dependency testcontainers to v12.1.0 (#4303)",
+              "path": null,
+              "detail": "2026-09-14",
+              "citations": [
+                "git:ddab29d3cf61"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:e8c2436e5704",
+              "kind": "commit",
+              "label": "build(deps-dev): bump fast-uri from 3.1.4 to 3.1.7 (#4293)",
+              "path": null,
+              "detail": "2026-09-21",
+              "citations": [
+                "git:e8c2436e5704"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-release-yml",
+              "kind": "file",
+              "label": ".github/workflows/release.yml",
+              "path": ".github/workflows/release.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/release.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-scorecard-yml",
+              "kind": "file",
+              "label": ".github/workflows/scorecard.yml",
+              "path": ".github/workflows/scorecard.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/scorecard.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-test-yml",
+              "kind": "file",
+              "label": ".github/workflows/test.yml",
+              "path": ".github/workflows/test.yml",
+              "detail": "Recent co-change lead",
+              "citations": [
+                ".github/workflows/test.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-definitions-errors-js",
+              "kind": "file",
+              "label": "lib/definitions/errors.js",
+              "path": "lib/definitions/errors.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "lib/definitions/errors.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-hide-sensitive-js",
+              "kind": "file",
+              "label": "lib/hide-sensitive.js",
+              "path": "lib/hide-sensitive.js",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "lib/hide-sensitive.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:lib-verify-js",
+              "kind": "file",
+              "label": "lib/verify.js",
+              "path": "lib/verify.js",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "lib/verify.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:package-json",
+              "kind": "file",
+              "label": "package.json",
+              "path": "package.json",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-definitions-errors-test-js",
+              "kind": "file",
+              "label": "test/definitions/errors.test.js",
+              "path": "test/definitions/errors.test.js",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "test/definitions/errors.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-hide-sensitive-test-js",
+              "kind": "file",
+              "label": "test/hide-sensitive.test.js",
+              "path": "test/hide-sensitive.test.js",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "test/hide-sensitive.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:test-verify-test-js",
+              "kind": "file",
+              "label": "test/verify.test.js",
+              "path": "test/verify.test.js",
+              "detail": "Recent co-change lead",
+              "citations": [
+                "test/verify.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "test:package-json-package-script--lint-engines--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:engines` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-lockfile--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:lockfile` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-prettier--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:prettier` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-prettier-fix--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:prettier:fix` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--lint-publish--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `lint:publish` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-e2e--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test:e2e` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-integration--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test:integration` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:package-json-package-script--test-unit--is-a-likely-verification-command",
+              "kind": "test",
+              "label": "package script `test:unit` is a likely verification command",
+              "path": "package.json",
+              "detail": "Likely verification lead",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:11157f1a7cac",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "11157f1a7cac changed this file",
+              "citations": [
+                "git:11157f1a7cac",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:16e5603f3816",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "16e5603f3816 changed this file",
+              "citations": [
+                "git:16e5603f3816",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:44df47d1ff9c",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "44df47d1ff9c changed this file",
+              "citations": [
+                "git:44df47d1ff9c",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:474058bd12ea",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "474058bd12ea changed this file",
+              "citations": [
+                "git:474058bd12ea",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:64b5e0ba5b42",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "64b5e0ba5b42 changed this file",
+              "citations": [
+                "git:64b5e0ba5b42",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8d905a56e800",
+              "to": "file:lib-definitions-errors-js",
+              "kind": "changed",
+              "evidence": "8d905a56e800 changed this file",
+              "citations": [
+                "git:8d905a56e800",
+                "lib/definitions/errors.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:8d905a56e800",
+              "to": "file:test-definitions-errors-test-js",
+              "kind": "changed",
+              "evidence": "8d905a56e800 changed this file",
+              "citations": [
+                "git:8d905a56e800",
+                "test/definitions/errors.test.js"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:906922fbf1ca",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "906922fbf1ca changed this file",
+              "citations": [
+                "git:906922fbf1ca",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:9122e05f4bbb",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "9122e05f4bbb changed this file",
+              "citations": [
+                "git:9122e05f4bbb",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:afe0ddbbdf46",
+              "to": "file:-github-workflows-scorecard-yml",
+              "kind": "changed",
+              "evidence": "afe0ddbbdf46 changed this file",
+              "citations": [
+                "git:afe0ddbbdf46",
+                ".github/workflows/scorecard.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ddab29d3cf61",
+              "to": "file:package-json",
+              "kind": "changed",
+              "evidence": "ddab29d3cf61 changed this file",
+              "citations": [
+                "git:ddab29d3cf61",
+                "package.json"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-release-yml",
+              "to": "file:-github-workflows-test-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 3 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:520482ddf6c0"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:lib-hide-sensitive-js",
+              "to": "file:test-hide-sensitive-test-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:973d763c2e25"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:lib-verify-js",
+              "to": "file:test-verify-test-js",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f121540e89d2"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-engines--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:engines` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-lockfile--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:lockfile` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-prettier--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:prettier` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-prettier-fix--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:prettier:fix` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--lint-publish--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `lint:publish` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-e2e--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test:e2e` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-integration--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test:integration` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:package-json",
+              "to": "test:package-json-package-script--test-unit--is-a-likely-verification-command",
+              "kind": "verified_by",
+              "evidence": "package script `test:unit` is a likely verification command",
+              "citations": [
+                "package.json"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "package.json",
+          ".github/workflows/release.yml",
+          ".github/workflows/test.yml",
+          "lib/hide-sensitive.js",
+          "test/hide-sensitive.test.js",
+          "lib/verify.js",
+          "test/verify.test.js"
+        ],
+        "truncated": false
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 64 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 1 hotspot surfaced; average score is 8.7/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 8.7,
+        "hotspot_count": 1,
+        "files_analyzed": 64,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "test/integration.test.js",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 2041,
+            "bytes": 76559,
+            "churn": 2041,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "high",
+                "detail": "2041 lines in one source file; inspect whether the module hides multiple responsibilities.",
+                "sources": [
+                  "test/integration.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 355 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/integration.test.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 2041 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/integration.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/integration.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "test/e2e.test.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 743,
+            "bytes": 29511,
+            "churn": 743,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "743 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/e2e.test.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 248 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "test/e2e.test.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 743 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/e2e.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/e2e.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "index.d.ts",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 724,
+            "bytes": 20974,
+            "churn": 724,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "724 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "index.d.ts"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 720 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "index.d.ts"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 724 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "index.d.ts"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "index.d.ts"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow."
+            ]
+          },
+          {
+            "path": "index.js",
+            "score": 6.7,
+            "bucket": "watch",
+            "lines": 290,
+            "bytes": 10334,
+            "churn": 290,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 6; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "index.js"
+                ]
+              },
+              {
+                "id": "long_block",
+                "label": "Long function/block",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "A brace-delimited block spans roughly 195 lines; consider extracting a helper when touching it.",
+                "sources": [
+                  "index.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 290 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "index.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "index.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Split file or extract helper around the largest cohesive flow.",
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "test/git.test.js",
+            "score": 7.1,
+            "bucket": "watch",
+            "lines": 454,
+            "bytes": 17109,
+            "churn": 454,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "454 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/git.test.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 454 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/git.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/git.test.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/git.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "test/get-config.test.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 729,
+            "bytes": 29831,
+            "churn": 729,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "729 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "test/get-config.test.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 729 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/get-config.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/get-config.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "test/plugins/plugins.test.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 324,
+            "bytes": 11346,
+            "churn": 324,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Maximum indentation depth is about 7; inspect branch-heavy paths before risky edits.",
+                "sources": [
+                  "test/plugins/plugins.test.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 324 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/plugins/plugins.test.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/plugins/plugins.test.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "lib/plugins/index.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 103,
+            "bytes": 3449,
+            "churn": 103,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 9; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "lib/plugins/index.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 103 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "lib/plugins/index.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/plugins/index.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "lib/get-config.js",
+            "score": 7.4,
+            "bucket": "watch",
+            "lines": 98,
+            "bytes": 3622,
+            "churn": 98,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "lib/get-config.js"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 98 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "lib/get-config.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/get-config.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "lib/branches/index.js",
+            "score": 7.6,
+            "bucket": "watch",
+            "lines": 71,
+            "bytes": 2379,
+            "churn": 71,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 71 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "lib/branches/index.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/branches/index.js"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "lib/branches/index.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "lib/branches/index.js"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "lib/git.js",
+            "score": 7.8,
+            "bucket": "watch",
+            "lines": 387,
+            "bytes": 12377,
+            "churn": 411,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 411 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "lib/git.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "lib/git.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "lib/git.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          },
+          {
+            "path": "test/helpers/git-utils.js",
+            "score": 7.8,
+            "bucket": "watch",
+            "lines": 339,
+            "bytes": 11814,
+            "churn": 339,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 339 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "test/helpers/git-utils.js"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "test/helpers/git-utils.js"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "test/helpers/git-utils.js"
+                ]
+              }
+            ],
+            "refactoring_targets": []
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 85,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "JavaScript",
+            "files": 65,
+            "bytes": 403635
+          },
+          {
+            "language": "YAML",
+            "files": 9,
+            "bytes": 9086
+          },
+          {
+            "language": "Markdown",
+            "files": 3,
+            "bytes": 33745
+          },
+          {
+            "language": "JSON",
+            "files": 1,
+            "bytes": 4504
+          },
+          {
+            "language": "TypeScript",
+            "files": 1,
+            "bytes": 20974
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "test",
+            "file_count": 39,
+            "bytes": 317042
+          },
+          {
+            "path": "lib",
+            "file_count": 24,
+            "bytes": 72712
+          },
+          {
+            "path": ".github",
+            "file_count": 7,
+            "bytes": 8071
+          },
+          {
+            "path": "bin",
+            "file_count": 1,
+            "bytes": 1303
+          },
+          {
+            "path": "media",
+            "file_count": 1,
+            "bytes": 715
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 85,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "01_bug_report.yml",
+                    "path": ".github/ISSUE_TEMPLATE/01_bug_report.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "02_feature_request.yml",
+                    "path": ".github/ISSUE_TEMPLATE/02_feature_request.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "03_plugin_suggestion.yml",
+                    "path": ".github/ISSUE_TEMPLATE/03_plugin_suggestion.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.yml",
+                    "path": ".github/ISSUE_TEMPLATE/config.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "release.yml",
+                    "path": ".github/workflows/release.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "scorecard.yml",
+                    "path": ".github/workflows/scorecard.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test.yml",
+                    "path": ".github/workflows/test.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "bin",
+            "path": "bin",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "semantic-release.js",
+                "path": "bin/semantic-release.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "lib",
+            "path": "lib",
+            "is_dir": true,
+            "file_count": 24,
+            "children": [
+              {
+                "name": "branches",
+                "path": "lib/branches",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "expand.js",
+                    "path": "lib/branches/expand.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "get-tags.js",
+                    "path": "lib/branches/get-tags.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "index.js",
+                    "path": "lib/branches/index.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "normalize.js",
+                    "path": "lib/branches/normalize.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "definitions",
+                "path": "lib/definitions",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "branches.js",
+                    "path": "lib/definitions/branches.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "constants.js",
+                    "path": "lib/definitions/constants.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "errors.js",
+                    "path": "lib/definitions/errors.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugins.js",
+                    "path": "lib/definitions/plugins.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "plugins",
+                "path": "lib/plugins",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "index.js",
+                    "path": "lib/plugins/index.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "normalize.js",
+                    "path": "lib/plugins/normalize.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pipeline.js",
+                    "path": "lib/plugins/pipeline.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "utils.js",
+                    "path": "lib/plugins/utils.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "get-commits.js",
+                "path": "lib/get-commits.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-config.js",
+                "path": "lib/get-config.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-error.js",
+                "path": "lib/get-error.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-git-auth-url.js",
+                "path": "lib/get-git-auth-url.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-last-release.js",
+                "path": "lib/get-last-release.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-logger.js",
+                "path": "lib/get-logger.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-next-version.js",
+                "path": "lib/get-next-version.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-release-to-add.js",
+                "path": "lib/get-release-to-add.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "git.js",
+                "path": "lib/git.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "hide-sensitive.js",
+                "path": "lib/hide-sensitive.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utils.js",
+                "path": "lib/utils.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "verify.js",
+                "path": "lib/verify.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "media",
+            "path": "media",
+            "is_dir": true,
+            "file_count": 1,
+            "children": [
+              {
+                "name": "semantic-release-logo.svg",
+                "path": "media/semantic-release-logo.svg",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "test",
+            "path": "test",
+            "is_dir": true,
+            "file_count": 39,
+            "children": [
+              {
+                "name": "branches",
+                "path": "test/branches",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "branches.test.js",
+                    "path": "test/branches/branches.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "expand.test.js",
+                    "path": "test/branches/expand.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "get-tags.test.js",
+                    "path": "test/branches/get-tags.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "normalize.test.js",
+                    "path": "test/branches/normalize.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "definitions",
+                "path": "test/definitions",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "branches.test.js",
+                    "path": "test/definitions/branches.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "errors.test.js",
+                    "path": "test/definitions/errors.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugins.test.js",
+                    "path": "test/definitions/plugins.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "fixtures",
+                "path": "test/fixtures",
+                "is_dir": true,
+                "file_count": 10,
+                "children": [
+                  {
+                    "name": "index.js",
+                    "path": "test/fixtures/index.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "multi-plugin.cjs",
+                    "path": "test/fixtures/multi-plugin.cjs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-error-inherited.js",
+                    "path": "test/fixtures/plugin-error-inherited.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-error.js",
+                    "path": "test/fixtures/plugin-error.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-errors.js",
+                    "path": "test/fixtures/plugin-errors.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-esm-named-exports.js",
+                    "path": "test/fixtures/plugin-esm-named-exports.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-identity.js",
+                    "path": "test/fixtures/plugin-identity.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-log-env.js",
+                    "path": "test/fixtures/plugin-log-env.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-noop.cjs",
+                    "path": "test/fixtures/plugin-noop.cjs",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugin-result-config.js",
+                    "path": "test/fixtures/plugin-result-config.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "helpers",
+                "path": "test/helpers",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "config.yaml",
+                    "path": "test/helpers/config.yaml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "e2e-environment.js",
+                    "path": "test/helpers/e2e-environment.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "git-utils.js",
+                    "path": "test/helpers/git-utils.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "npm-utils.js",
+                    "path": "test/helpers/npm-utils.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "plugins",
+                "path": "test/plugins",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "normalize.test.js",
+                    "path": "test/plugins/normalize.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "pipeline.test.js",
+                    "path": "test/plugins/pipeline.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "plugins.test.js",
+                    "path": "test/plugins/plugins.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "utils.test.js",
+                    "path": "test/plugins/utils.test.js",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "cli.test.js",
+                "path": "test/cli.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "e2e.test.js",
+                "path": "test/e2e.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-commits.test.js",
+                "path": "test/get-commits.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-config.test.js",
+                "path": "test/get-config.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-git-auth-url.test.js",
+                "path": "test/get-git-auth-url.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-last-release.test.js",
+                "path": "test/get-last-release.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-logger.test.js",
+                "path": "test/get-logger.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-next-version.test.js",
+                "path": "test/get-next-version.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "get-release-to-add.test.js",
+                "path": "test/get-release-to-add.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "git.test.js",
+                "path": "test/git.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "hide-sensitive.test.js",
+                "path": "test/hide-sensitive.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "integration.test.js",
+                "path": "test/integration.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "utils.test.js",
+                "path": "test/utils.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "verify.test.js",
+                "path": "test/verify.test.js",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".git-blame-ignore-revs",
+            "path": ".git-blame-ignore-revs",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitattributes",
+            "path": ".gitattributes",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": ".nvmrc",
+            "path": ".nvmrc",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CODE_OF_CONDUCT.md",
+            "path": "CODE_OF_CONDUCT.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CONTRIBUTING.md",
+            "path": "CONTRIBUTING.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE",
+            "path": "LICENSE",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "cli.js",
+            "path": "cli.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "e2e.compose.yml",
+            "path": "e2e.compose.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "index.d.ts",
+            "path": "index.d.ts",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "index.js",
+            "path": "index.js",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "package.json",
+            "path": "package.json",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 44860,
+        "peak_rss_bytes": 29163520,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 6,
+            "pct": 0.013374944271065536
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 1,
+            "pct": 0.002229157378510923
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 13,
+            "pct": 0.028979045920641995
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 44837,
+            "pct": 99.94872938029424
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 0,
+        "peak_rss_bytes": 29671424,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "semantic-release is an ESM Node.js CLI and JavaScript API that automates package releases for maintainers running CI against Git repositories. It derives release versions from commit analysis, generates notes, persists release and channel metadata in Git tags and notes, and delegates publishing and notifications to plugins. Its distinctive capability is coordinating regular, maintenance, and prerelease branches with distribution channels while enforcing version ranges.",
+    "agent_prompt": "You are onboarding to semantic-release at commit e8c2436e5704a6d1fa5b4aa69238f50edbe586bf. Verify the checkout before using this brief; its inventory and test inspection are bounded, and no tests or CI jobs were executed. During a read-only investigation, use rtk proxy for source reads and searches. Do not execute repository code, install dependencies, start containers, access credentials, or publish anything.\n\nStart with package.json, bin/semantic-release.js, cli.js, index.js, and lib/get-config.js. The package is ESM, uses npm with package-lock.json, supports Node ^22.14.0 or >=24.10.0, and publishes JavaScript directly with index.d.ts declarations. The executable checks Node and starts a Git version check, then calls the CLI. CLI options pass into the default asynchronous API, whose environment argument supplies cwd, env, stdout, and stderr.\n\nTreat index.js as the orchestration owner. Startup creates a redacted output hook and CI context, loads configuration and plugins, applies CI and pull-request gates, verifies configuration, resolves Git authentication, and discovers release branches. Configuration precedence is shareable configurations, discovered release configuration, then CLI/API options. Plugins and shareable configurations execute imported code and therefore require trust.\n\nTrace a new release through getLastRelease, getCommits, analyzeCommits, getNextVersion, makeTag, verifyRelease, generateNotes, and prepare. Preparation may change HEAD, causing notes to regenerate. The core then creates a tag, writes channel notes, pushes tags and notes, invokes publish plugins, and invokes success plugins. Publication is sequential and has no rollback in this path. Separately trace promotion through getReleaseToAdd: merged releases from higher regular branches can acquire the current branch's channel before new commits are analyzed.\n\nRead lib/definitions/plugins.js alongside lib/plugins/index.js, normalize.js, pipeline.js, and utils.js before modifying lifecycle behavior. Definitions control output validation, dry-run eligibility, preprocessing, aggregation, and error settlement. Dry-run still performs authentication and fetch operations; it skips mutating lifecycle hooks and release tag creation. Read lib/branches/index.js, normalize.js, and definitions/branches.js before changing branch ordering or ranges.\n\nFor security-related work, inspect lib/verify.js, lib/git.js, lib/get-git-auth-url.js, and lib/hide-sensitive.js. Preserve Git option separators, rejection of repository URLs beginning with a dash, and masking of encoded credentials. Masking has explicit name and length limits and is not recursive object sanitization.\n\nFor an authorized implementation task, select the smallest relevant AVA test file first, then the appropriate npm test script. Integration tests use local Git repositories and stubbed plugins; E2E tests require Testcontainers services and mock GitHub responses. npm test also includes lint checks and E2E execution. Read the workflows independently: release.yml invokes published semantic-release@25.0.1 and does not declare a dependency on the test workflow. Report actual execution results separately from source inspection.",
+    "system_map": {
+      "summary": "The system is a one-shot release coordinator with CLI and programmatic entrypoints. Core modules own configuration, branch policy, Git state, and lifecycle sequencing; external plugins own package and hosting integrations. The published package contains executable JavaScript and TypeScript declarations, while Git tags and notes provide durable release state.",
+      "claims": [
+        {
+          "claim": "package.json exposes bin/semantic-release.js as the semantic-release executable, index.js as the main module, and index.d.ts as its declarations; the package uses ESM.",
+          "sources": [
+            "package.json#L5-L5",
+            "package.json#L18-L20",
+            "package.json#L108-L109"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The executable rejects unsupported Node versions and checks Git against minimum 2.7.1; package engines require ^22.14.0 or >=24.10.0.",
+          "sources": [
+            "bin/semantic-release.js#L15-L38",
+            "package.json#L84-L86"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "cli.js parses release options with yargs, dynamically imports index.js, and maps successful execution to exit code 0 and errors to 1.",
+          "sources": [
+            "cli.js#L15-L41",
+            "cli.js#L43-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "index.js owns the run context and release sequence, with dedicated modules for configuration, verification, versions, commits, authentication, and branches.",
+          "sources": [
+            "index.js#L8-L21",
+            "index.js#L259-L290"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getConfig searches for release configuration with cosmiconfig, reads package metadata upward, falls back to remote.origin.url, and constructs plugin pipelines.",
+          "sources": [
+            "lib/get-config.js#L19-L26",
+            "lib/get-config.js#L62-L98",
+            "lib/git.js#L177-L183"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Default integrations are commit-analyzer, release-notes-generator, npm, and github; they are dependencies loaded through the plugin system rather than implemented in the core.",
+          "sources": [
+            "lib/get-config.js#L75-L80",
+            "package.json#L29-L34",
+            "lib/plugins/utils.js#L50-L66"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git release storage uses tags plus JSON notes under semantic-release-prefixed refs; current writes use a separate note ref for each tagged release, and reads include older note naming.",
+          "sources": [
+            "lib/git.js#L324-L335",
+            "lib/git.js#L371-L376",
+            "lib/definitions/constants.js#L17-L17"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Development uses npm scripts for formatting, lockfile validation, engine compatibility, publish validation, and AVA suites; the release workflow runs npx semantic-release@25.0.1 on configured branch pushes.",
+          "sources": [
+            "package.json#L148-L158",
+            "package.json#L170-L170",
+            ".github/workflows/release.yml#L1-L35"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "Users configure a single release command or invoke the asynchronous API. Features cover commit-driven versions, notes, branch channels, maintenance ranges, prereleases, and promotion of previously released versions. Plugins provide configurable preparation, publishing, verification, and notification behavior.",
+      "claims": [
+        {
+          "claim": "The CLI exposes branches, repository URL, tag format, plugins, shareable configurations, CI verification, debugging, dry-run, help, and lifecycle-specific plugin options.",
+          "sources": [
+            "cli.js#L23-L41"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The JavaScript API accepts configurable cwd, env, stdout, and stderr and normally returns lastRelease, commits, nextRelease, and releases; skipped runs return false.",
+          "sources": [
+            "index.js#L179-L181",
+            "index.js#L231-L231",
+            "index.js#L259-L270",
+            "index.d.ts#L525-L565"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Commit analysis excludes messages containing [skip release] or [release skip], case-insensitively, and selects the highest patch/minor/major result across analyzers.",
+          "sources": [
+            "lib/definitions/plugins.js#L15-L30",
+            "lib/definitions/constants.js#L1-L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "First releases start at 1.0.0; prerelease branches append their identifier and start at .1, while later releases increment according to analysis and channel history.",
+          "sources": [
+            "lib/get-next-version.js#L5-L34",
+            "lib/definitions/constants.js#L3-L5"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Branch configuration supports remote-name patterns, interpolated branch properties, maintenance branches, up to three regular release branches, and unique prerelease identifiers.",
+          "sources": [
+            "lib/branches/expand.js#L5-L19",
+            "lib/definitions/branches.js#L5-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Maintenance and regular branches receive computed version ranges and accepted release types; prerelease branches receive an identifier and default channel based on their name.",
+          "sources": [
+            "lib/branches/normalize.js#L16-L54",
+            "lib/branches/normalize.js#L58-L103"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Merged releases from higher non-prerelease branches can be added to the current distribution channel using addChannel, without creating a new version.",
+          "sources": [
+            "lib/get-release-to-add.js#L20-L57",
+            "index.js#L112-L151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dry-run permits verification, commit analysis, and note generation, skips preparation/publishing/channel/notification hooks, and prints generated notes in the terminal.",
+          "sources": [
+            "lib/definitions/plugins.js#L10-L39",
+            "lib/definitions/plugins.js#L52-L106",
+            "index.js#L224-L229"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "Configuration and CI detection establish a mutable core context for each invocation. Remote branch names, merged tags, Git notes, and commit history become normalized release inputs. Plugin pipelines transform those inputs into release decisions and outputs, which the core persists to Git before provider publication.",
+      "claims": [
+        {
+          "claim": "Configuration merges discovered values with CLI/API options, reduces shareable configurations in order, then overlays explicit options and non-null defaults.",
+          "sources": [
+            "lib/get-config.js#L25-L59",
+            "lib/get-config.js#L62-L84"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "envCi derives the execution branch from the supplied environment and cwd; run uses prBranch for pull requests and branch otherwise.",
+          "sources": [
+            "index.js#L38-L41",
+            "index.js#L264-L270"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getGitAuthUrl normalizes hosted shortcuts and git+HTTP URLs, tries existing authentication, and falls back to selected environment credentials embedded in a formatted URL.",
+          "sources": [
+            "lib/get-git-auth-url.js#L64-L87",
+            "lib/get-git-auth-url.js#L90-L125"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Branch discovery expands remote patterns, fetches each matching branch and notes, loads tags, classifies branch types, normalizes ranges, and aggregates validation errors.",
+          "sources": [
+            "lib/branches/index.js#L14-L49",
+            "lib/branches/index.js#L51-L70"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "get-tags builds a regex from tagFormat, checks parsed versions with semver, attaches note channels, and treats tags without parsed notes as belonging to the default channel.",
+          "sources": [
+            "lib/branches/get-tags.js#L9-L38",
+            "lib/git.js#L340-L358"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "getLastRelease selects the highest eligible tag; getCommits reads from its resolved head to nextRelease.gitHead or HEAD and trims parsed messages and tag decorations.",
+          "sources": [
+            "lib/get-last-release.js#L29-L47",
+            "lib/get-commits.js#L13-L30",
+            "lib/git.js#L49-L61"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin wrappers bind cloned global/local configuration and clone context data while preserving streams and supplying a scoped logger; pipeline input changes occur through getNextInput.",
+          "sources": [
+            "lib/plugins/normalize.js#L23-L47",
+            "lib/plugins/pipeline.js#L28-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Publication writes the tag and channel note and pushes both before provider hooks; publish results combine nextRelease metadata, provider output, and plugin identity before entering context.releases.",
+          "sources": [
+            "index.js#L204-L218",
+            "lib/definitions/plugins.js#L70-L81"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "The inspected flows include CLI startup, new-version publication, and promotion of an existing release to another channel. Additional branches explain dry-run behavior, skipped releases, preparation commits, and failures. Execution order comes from implementation rather than the README's simplified step table.",
+      "claims": [
+        {
+          "claim": "Startup: bin checks Node and launches execa(git --version), then calls cli; cli parses options, enables debug if requested, imports index.js, and the API installs masking, detects CI, creates a logger, calls getConfig, then run.",
+          "sources": [
+            "bin/semantic-release.js#L17-L42",
+            "cli.js#L43-L56",
+            "index.js#L259-L278"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Eligibility: run forces dry-run outside known CI unless noCi is set, skips CI pull requests unless noCi, then calls verify, getGitAuthUrl, and getBranches; a branch absent from normalized release branches returns false.",
+          "sources": [
+            "index.js#L43-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authorization: run calls verifyAuth; if that fails, isBranchUpToDate can return false and skip publication, otherwise the error becomes EGITNOPERMISSION before verifyConditions runs.",
+          "sources": [
+            "index.js#L86-L106",
+            "lib/git.js#L209-L215",
+            "lib/git.js#L296-L302"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "New version: getLastRelease → getTagHead when available → getCommits → analyzeCommits → getGitHead → getNextVersion → makeTag; non-prerelease versions outside branch.range throw EINVALIDNEXTVERSION.",
+          "sources": [
+            "index.js#L159-L195",
+            "lib/get-next-version.js#L5-L34"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Publication: verifyRelease → generateNotes → prepare → tag → addNote → push → pushNotes → publish → success; the API finally returns selected context fields.",
+          "sources": [
+            "index.js#L198-L231",
+            "lib/git.js#L227-L252",
+            "lib/git.js#L371-L376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preparation commits: after each prepare plugin, getGitHead detects a changed HEAD, updates nextRelease.gitHead, regenerates notes, and passes updated release data to the following prepare plugin.",
+          "sources": [
+            "lib/definitions/plugins.js#L52-L68",
+            "lib/plugins/pipeline.js#L37-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Channel promotion: getReleaseToAdd chooses an eligible merged version → getTagHead resolves release heads → maintenance mergeRange is checked → getCommits and generateNotes run → updated channel notes are pushed → addChannel and success run.",
+          "sources": [
+            "lib/get-release-to-add.js#L20-L57",
+            "index.js#L110-L151"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Failure: run errors enter callFail, which sends only semanticRelease errors to fail plugins and logs fail-hook errors; the outer catch logs the original error, removes output hooks, and rethrows for CLI exit code 1.",
+          "sources": [
+            "index.js#L234-L257",
+            "index.js#L277-L289",
+            "cli.js#L57-L62"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI definitions were inspected, not executed; their existence is not a passing result. AVA suites cover core helpers, Git behavior, lifecycle integration, and container-backed publishing scenarios. Inspection sampled test implementations and declarations, so it does not establish exhaustive coverage or live provider compatibility.",
+      "claims": [
+        {
+          "claim": "AVA's default file selection includes test/**/*.test.js except integration and E2E; separate scripts run those suites, and c8 instruments lib JavaScript, index.js, and cli.js with all enabled.",
+          "sources": [
+            "package.json#L7-L17",
+            "package.json#L110-L122",
+            "package.json#L156-L158"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Inspected integration tests create real local Git histories and stub lifecycle hooks with Sinon, replacing env-ci and logging through testdouble to assert plugin context.",
+          "sources": [
+            "test/integration.test.js#L1-L26",
+            "test/integration.test.js#L47-L97",
+            "test/integration.test.js#L158-L175"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Integration assertions cover channel promotion across fast-forward, merge, and rebase histories; dry-run hook suppression; pull-request skipping; stale clones; and no relevant commits.",
+          "sources": [
+            "test/integration.test.js#L859-L880",
+            "test/integration.test.js#L1088-L1111",
+            "test/integration.test.js#L1406-L1424",
+            "test/integration.test.js#L1603-L1710"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2E tests invoke the executable against Gitbox and Verdaccio, mock GitHub API requests, and assert package/shrinkwrap versions, registry dist-tags, and local/remote tag heads.",
+          "sources": [
+            "test/e2e.test.js#L43-L66",
+            "test/e2e.test.js#L70-L146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "E2E infrastructure uses Testcontainers with pinned image digests from e2e.compose.yml, mapped service ports, readiness probes, a copied Verdaccio configuration, and teardown of started containers.",
+          "sources": [
+            "test/helpers/e2e-environment.js#L11-L16",
+            "test/helpers/e2e-environment.js#L137-L161",
+            "test/helpers/e2e-environment.js#L181-L191",
+            "e2e.compose.yml#L1-L19"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security regressions include dash-prefixed repository URL rejection, Git upload/receive-pack argument-injection checks, encoded credential masking, and masking in a failing Git command's captured logs.",
+          "sources": [
+            "test/verify.test.js#L128-L138",
+            "test/git.test.js#L429-L454",
+            "test/hide-sensitive.test.js#L87-L143",
+            "test/integration.test.js#L1958-L1993"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The inspected test workflow runs npm test on Ubuntu for Node 22.14.0, 24.10.0, 24, and .nvmrc; jobs also clean-install dependencies and audit signatures, but this brief reports no execution or coverage result.",
+          "sources": [
+            ".github/workflows/test.yml#L23-L66",
+            "package.json#L155-L158",
+            ".nvmrc#L1-L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The sampled E2E path verifies mocked GitHub responses rather than live GitHub behavior, and the inspected CI jobs use Ubuntu; CONTRIBUTING asks for 100% unit coverage, while the inspected c8 config specifies reports without a threshold.",
+          "sources": [
+            "test/e2e.test.js#L54-L55",
+            "test/e2e.test.js#L107-L118",
+            ".github/workflows/test.yml#L32-L33",
+            "CONTRIBUTING.md#L292-L297",
+            "package.json#L110-L122"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "These are source observations and explicitly labeled hypotheses, not confirmed vulnerabilities. Sensitive boundaries include executable configuration, plugins receiving environment data, authenticated Git subprocesses, and durable remote publication. The main operational hazards arise from partial publication, dry-run side effects, and coupling between branch history and note metadata.",
+      "claims": [
+        {
+          "claim": "Shareable configurations and plugins execute imported modules; plugin context includes cloned environment data, so these extension inputs cross a code-execution and credential-trust boundary.",
+          "sources": [
+            "lib/get-config.js#L31-L36",
+            "lib/plugins/utils.js#L50-L66",
+            "lib/plugins/normalize.js#L34-L41",
+            "index.js#L264-L269"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Authentication fallback embeds selected Git credentials in repository URLs passed to Git; masking covers raw and encoded environment values, but does not remove credentials from subprocess arguments.",
+          "sources": [
+            "lib/get-git-auth-url.js#L96-L111",
+            "lib/git.js#L209-L211",
+            "lib/hide-sensitive.js#L17-L35"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Redaction only selects matching environment names with trimmed values of at least five characters, excludes GOPRIVATE, and only replaces strings; hideSensitiveValues visits direct properties rather than recursively traversing objects.",
+          "sources": [
+            "lib/hide-sensitive.js#L4-L35",
+            "lib/definitions/constants.js#L13-L15",
+            "lib/utils.js#L9-L18"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Git subprocesses use argument arrays and remote operations include -- before repository URLs; verify additionally rejects URLs beginning with -, with explicit regression tests for Git option injection.",
+          "sources": [
+            "lib/verify.js#L14-L22",
+            "lib/git.js#L73-L74",
+            "lib/git.js#L209-L211",
+            "test/git.test.js#L429-L454"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Dry-run still resolves authentication and fetches branch/tag/note state before lifecycle publication is skipped; it is not a no-network or no-local-Git-write execution mode.",
+          "sources": [
+            "index.js#L43-L68",
+            "lib/branches/index.js#L20-L26",
+            "lib/git.js#L110-L155",
+            "lib/plugins/normalize.js#L32-L50"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hypothesis: a failing publish or success plugin can leave a partially completed release because tags and notes are already pushed, provider hooks run sequentially, and the inspected failure handler performs logging/notification without rollback.",
+          "sources": [
+            "index.js#L207-L218",
+            "index.js#L248-L255",
+            "lib/plugins/pipeline.js#L32-L45"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "getTagsNotes ignores JSON parse failures, but does not validate parsed note shape before get-tags assigns channels; downstream last-release and promotion logic assume channel arrays.",
+          "sources": [
+            "lib/git.js#L351-L358",
+            "lib/branches/get-tags.js#L28-L31",
+            "lib/get-last-release.js#L33-L37",
+            "lib/get-release-to-add.js#L28-L32"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The inspected release workflow independently triggers on pushes and has no declared dependency on test jobs; it grants repository/issue/PR write permissions and runs published semantic-release@25.0.1 rather than the checked-out executable.",
+          "sources": [
+            ".github/workflows/release.yml#L1-L35",
+            ".github/workflows/test.yml#L68-L82"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "The lifecycle definition table is the core extension registry. Users extend behavior through package plugins, inline hook functions, and shareable configuration modules. Branch policy and typed API contracts provide separate extension surfaces, with explicit validation and result transformation rules.",
+      "claims": [
+        {
+          "claim": "PLUGINS_DEFINITIONS registers verifyConditions, analyzeCommits, verifyRelease, generateNotes, prepare, publish, addChannel, success, and fail, with per-stage required/dryRun/validation/pipeline rules.",
+          "sources": [
+            "lib/definitions/plugins.js#L9-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "A configured plugin object contributes only exports matching registered lifecycle names; each contributed function receives immutable pluginName metadata and retains list order.",
+          "sources": [
+            "lib/plugins/index.js#L13-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Plugin configuration accepts names, name/config tuples, and path-bearing objects; API callers can supply inline plugin objects, while individual stages accept functions.",
+          "sources": [
+            "lib/plugins/utils.js#L8-L38",
+            "lib/plugins/utils.js#L69-L80",
+            "lib/plugins/index.js#L17-L28"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "loadPlugin resolves relative to a shareable configuration when recorded, otherwise from core or cwd, and supports function inputs, default exports, and ESM named exports.",
+          "sources": [
+            "lib/plugins/utils.js#L50-L66",
+            "lib/get-config.js#L38-L54"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Stage-specific options override collected plugin hooks; a plain options object without path is merged into existing stage plugin configurations before normalization.",
+          "sources": [
+            "lib/plugins/index.js#L46-L72"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "pipeline exposes settleAll, getNextInput, and transform; definitions use these for aggregated verification errors, accumulated notes, prepare HEAD refresh, and enriched publication results.",
+          "sources": [
+            "lib/plugins/pipeline.js#L28-L58",
+            "lib/definitions/plugins.js#L10-L13",
+            "lib/definitions/plugins.js#L37-L81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Shareable configuration modules merge in sequence and record plugin origins; branch patterns can interpolate name into properties, while branch definitions provide classification and validation hooks.",
+          "sources": [
+            "lib/get-config.js#L31-L59",
+            "lib/branches/expand.js#L8-L18",
+            "lib/definitions/branches.js#L5-L21"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "index.d.ts exposes stage-specific contexts, branch/release types, configuration, and the asynchronous API signature; extensions changing runtime shapes should also inspect these public declarations.",
+          "sources": [
+            "index.d.ts#L54-L135",
+            "index.d.ts#L441-L447",
+            "index.d.ts#L525-L565",
+            "index.d.ts#L694-L723"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "Begin with the orchestrator and lifecycle definitions, then follow the affected branch, Git, or configuration helper. Tests and CI were inspected, not executed, and this brief is bounded evidence rather than an exhaustive audit. Future implementation work should preserve publishing order, dry-run eligibility, configuration precedence, and credential masking while validating only within the authorized environment.",
+      "claims": [
+        {
+          "claim": "Read index.js and lib/definitions/plugins.js together before lifecycle changes: core call order and per-stage dry-run/preprocess/postprocess behavior jointly determine observable execution.",
+          "sources": [
+            "index.js#L198-L218",
+            "lib/definitions/plugins.js#L9-L108"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Use npm and the tracked lockfile; packageManager pins npm 12.0.2, Node engines define runtime compatibility, and .nvmrc selects Node 24 for development.",
+          "sources": [
+            "package.json#L84-L86",
+            "package.json#L170-L170",
+            "package-lock.json#L1-L10",
+            ".nvmrc#L1-L1"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For authorized validation, start with the affected AVA file, then use test:unit, test:integration, or test:e2e as appropriate; npm test combines lint scripts with test suites, including container-backed E2E.",
+          "sources": [
+            "CONTRIBUTING.md#L299-L309",
+            "package.json#L148-L158",
+            "test/e2e.test.js#L43-L44"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Tests and CI were inspected, not executed: coverage configuration, assertions, and workflow commands establish intended checks only; no passing suite or measured coverage is asserted here.",
+          "sources": [
+            "package.json#L110-L122",
+            "package.json#L156-L158",
+            ".github/workflows/test.yml#L44-L47",
+            "test/integration.test.js#L1088-L1111"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Preserve configuration precedence and shareable-config plugin resolution when editing get-config; explicit CLI/API values override discovered configuration and imported defaults.",
+          "sources": [
+            "lib/get-config.js#L25-L59",
+            "lib/get-config.js#L81-L92",
+            "lib/plugins/utils.js#L50-L60"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Before changing branch policy, inspect normalization, last-release selection, and promotion together; branch order controls ranges and higher-channel eligibility, while Git notes carry channel history.",
+          "sources": [
+            "lib/branches/normalize.js#L58-L88",
+            "lib/get-last-release.js#L29-L44",
+            "lib/get-release-to-add.js#L20-L35",
+            "lib/branches/get-tags.js#L28-L31"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Security edits should retain dash-prefixed URL rejection, Git argument separators, and raw/encoded masking; focused regression files include verify, git, hide-sensitive, and integration tests.",
+          "sources": [
+            "lib/verify.js#L18-L21",
+            "lib/git.js#L209-L211",
+            "test/git.test.js#L429-L454",
+            "test/integration.test.js#L1958-L1993"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Contract trap: runtime can return only {releases} after channel promotion when analysis produces no new release, but Result declares a release object requiring lastRelease, commits, and nextRelease.",
+          "sources": [
+            "index.js#L179-L181",
+            "index.d.ts#L694-L716"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 301258,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T15:33:00.250109+00:00",
+    "source_commit_sha": "e8c2436e5704a6d1fa5b4aa69238f50edbe586bf",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 23,
+      "private_review_receipt_sha256": "168de7b7490ec377c00ae0b36c31c9f3cb22e507b6555950b9f9c2ad69c62c74",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "3004cfcfd8b512c6f0eddab723fa88e4a375f3c23846523397b39ea410b73af9",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

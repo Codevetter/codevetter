@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeVetter Value Evaluation"
+  short_description: "Compare verified outcomes against tool overhead"
+  default_prompt: "Use $codevetter-evaluate for this repository and preserve the evidence and limitations."
+policy:
+  allow_implicit_invocation: true

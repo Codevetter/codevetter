@@ -41,6 +41,10 @@ Do not use CodeVetter for: generic static code review without execution, style-o
 - [What an evidence receipt for a coding agent should contain](https://codevetter.com/articles/coding-agent-evidence-receipt-spec): Identity bindings, execution records, taxonomy, and closure trails
 - [Agent evaluation vs tests vs code review](https://codevetter.com/articles/agent-evaluation-vs-tests-vs-code-review): The distinct proof boundaries of each quality mechanism
 
+## Inspiration
+
+- [Tools that shaped CodeVetter](https://codevetter.com/inspiration): Source-linked notes on 38 products, projects, and ideas, with a clear boundary between shipped integrations and research
+
 ## Machine surfaces
 
 - [Agent catalog](https://codevetter.com/api/ai): JSON inventory of public surfaces
@@ -52,6 +56,7 @@ Do not use CodeVetter for: generic static code review without execution, style-o
 - [Homepage markdown](https://codevetter.com/index.md): Product brief without JS
 - [Benchmark markdown](https://codevetter.com/benchmark.md): Reproducible benchmark summary without JS
 - [Documentation markdown](https://codevetter.com/docs.md): Canonical documentation index without JS
+- [Inspiration markdown](https://codevetter.com/inspiration.md): Attribution ledger without JS
 - [This index](https://codevetter.com/llms.txt)
 - [Full agent brief](https://codevetter.com/llms-full.txt)
 

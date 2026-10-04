@@ -58,6 +58,11 @@ to an individual verification run remains in its receipt and Runs ledger.
 CodeVetter's History settings and `history-roots` command are retained for its
 existing local evidence archive and are not a general usage dashboard.
 
+If you used `codevetter usage` or `codevetter quota` in a script, move that
+workflow to ContextDaddy's app. ContextDaddy has no equivalent CodeVetter CLI
+command; these retired commands now return a migration message instead of a
+usage or quota receipt.
+
 ## Interaction policy
 
 ### Review and Explore navigation

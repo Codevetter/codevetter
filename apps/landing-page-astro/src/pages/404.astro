@@ -1,0 +1,85 @@
+---
+import Nav from '@/components/Nav.astro';
+import Layout from '@/layouts/Layout.astro';
+
+---
+
+<Layout
+  title="Page not found · CodeVetter"
+  description="This address does not match a CodeVetter page. Choose a known destination to continue."
+  path="/404"
+  noIndex
+>
+  <main class="min-h-screen text-white">
+    <Nav />
+    <section class="mx-auto max-w-6xl px-5 pb-24 pt-32 sm:px-8 md:pt-40">
+      <div class="grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+        <div class="pt-2">
+          <p class="font-mono text-xs font-semibold tracking-[0.18em] text-sky-300">
+            404 / PAGE NOT FOUND
+          </p>
+          <h1 class="mt-5 max-w-[12ch] text-5xl font-bold leading-[0.96] tracking-[-0.055em] text-white sm:text-6xl lg:text-7xl">
+            This path ends here.
+          </h1>
+          <p class="mt-7 max-w-xl text-lg leading-relaxed text-gray-300">
+            The address does not match a page on CodeVetter. Use a known destination to keep going.
+          </p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a
+              href="/"
+              class="inline-flex min-h-12 items-center gap-2 rounded-lg bg-sky-300 px-5 font-semibold text-slate-950 transition-colors hover:bg-sky-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-300"
+            >
+              Return home <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <p class="mt-5 font-mono text-xs text-gray-400">HTTP 404 · No matching route on codevetter.com</p>
+        </div>
+
+        <nav
+          aria-label="Known destinations"
+          class="rounded-xl border border-white/20 bg-white/[0.03] p-5 sm:p-7"
+        >
+          <p class="font-mono text-xs font-semibold tracking-[0.16em] text-gray-300">
+            KNOWN DESTINATIONS
+          </p>
+          <h2 class="mt-4 text-2xl font-bold tracking-tight text-white">Pick up from here.</h2>
+          <div class="mt-5">
+            <a
+              href="/"
+              class="group flex min-h-[76px] items-center justify-between gap-5 border-b border-[--color-line-2] py-4 text-white transition-colors hover:text-sky-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
+            >
+              <span>
+                <span class="block font-semibold">Start at the bench</span>
+                <span class="mt-1 block text-sm font-normal text-gray-400">See verification and its evidence.</span>
+              </span>
+              <span aria-hidden="true" class="shrink-0">↗</span>
+            </a>
+            <a
+              href="/coding-agent-verification/"
+              class="group flex min-h-[76px] items-center justify-between gap-5 border-b border-[--color-line-2] py-4 text-white transition-colors hover:text-sky-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
+            >
+              <span>
+                <span class="block font-semibold">Understand verification</span>
+                <span class="mt-1 block text-sm font-normal text-gray-400">Read the task, check and receipt contract.</span>
+              </span>
+              <span aria-hidden="true" class="shrink-0">↗</span>
+            </a>
+            <a
+              href="/download/"
+              class="group flex min-h-[76px] items-center justify-between gap-5 border-b border-[--color-line-2] py-4 text-white transition-colors hover:text-sky-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300"
+            >
+              <span>
+                <span class="block font-semibold">Get the Mac release</span>
+                <span class="mt-1 block text-sm font-normal text-gray-400">Use the current local-first Mac verifier.</span>
+              </span>
+              <span aria-hidden="true" class="shrink-0">↗</span>
+            </a>
+          </div>
+        </nav>
+      </div>
+    </section>
+    <footer class="border-t border-white/10 px-5 py-7 text-sm text-gray-400 sm:px-8">
+      <div class="mx-auto max-w-6xl">CodeVetter · Execution-backed verification for coding-agent changes.</div>
+    </footer>
+  </main>
+</Layout>

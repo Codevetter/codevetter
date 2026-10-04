@@ -2183,6 +2183,11 @@ fn parse_arguments(
         "runs" => return parse_runs(arguments),
         "performance" => return parse_performance(arguments, cwd),
         "scope" => return parse_scope(arguments, cwd),
+        "usage" | "quota" => {
+            return Err(format!(
+                "`codevetter {command}` was retired. Use ContextDaddy for general agent usage and provider allowances. CodeVetter still records token and cost evidence for verification runs."
+            ));
+        }
         "ops" => return parse_ops(arguments),
         "unpack" => return parse_unpack(arguments),
         "settings" => return parse_settings(arguments),

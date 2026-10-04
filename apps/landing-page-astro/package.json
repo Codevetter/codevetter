@@ -8,13 +8,14 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "test": "node --test test/*.test.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
     "@tailwindcss/vite": "4.2.4",
-    "astro": "^7.3.2",
+    "astro": "^7.3.3",
     "tailwindcss": "4.2.4"
   },
   "devDependencies": {

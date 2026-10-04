@@ -39,8 +39,8 @@ flowchart LR
 
 `apps/macos` contains the Xcode workspace, minimal app shell, feature Swift
 package, assets, and XCUITest targets. The UI presents six primary workspaces:
-Usage, Repo Unpack, Review, Testing, Performance, and Settings, plus the bounded
-Runs evidence ledger.
+Explore, Review, Testing, Performance, Runs, and Settings. Explore includes
+Repo Unpack and the local source browser; Runs holds bounded evidence receipts.
 
 Swift does not open SQLite, traverse Git history, rank findings, or reinterpret
 verdicts. It starts supervised companion commands and decodes exact Rust-owned

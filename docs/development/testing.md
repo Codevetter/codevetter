@@ -91,6 +91,19 @@ that exact base before running them.
 
 ## Evidence interpretation
 
+Large Repo Unpack data imports use a bounded [corpus batch gate](../../scripts/check-unpack-batch.mjs)
+alongside the unchanged source-code change-size limits. A dated receipt must bind
+each addition by hash and source pin, preserve the baseline corpus and projections,
+and retain passing qualification evidence. The batch is capped at 100 additions
+and 128 MiB; generated projections must reproduce exactly. This is artifact
+admission, not independent semantic or runtime verification. Its rejection
+contracts run in `test:automation` alongside citation and skill-recorder tests.
+
+The dated [testing-speed study](https://github.com/Codevetter/codevetter/blob/main/evidence/performance/testing-speed-study-2026-10-02.md)
+uses the Fleet skill trial to prioritize startup, selection, reuse, and evidence
+collection experiments. Its recommendations are unimplemented and require
+paired validation; they do not change these qualification requirements.
+
 - A unit test proves its contract, not a production release.
 - A local package may be ad-hoc signed; shipping requires Developer ID and
   notarization receipts.

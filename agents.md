@@ -93,6 +93,27 @@ pnpm quality:dependencies # High/critical production advisory gate
 node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 ```
 
+## Agent workflow skills
+
+For a requested agent-change review, runtime verification, or performance
+investigation, load the matching repo-owned skill before reconstructing the
+CLI workflow:
+
+- Review: `skills/codevetter-review/SKILL.md`
+- Testing: `skills/codevetter-testing/SKILL.md`
+- Performance: `skills/codevetter-performance/SKILL.md`
+- Product-value / with-without evaluation: `skills/codevetter-evaluate/SKILL.md`
+
+Use these skills automatically for matching tasks, without waiting for the
+owner to name CodeVetter. Complete the relevant authorized flow and append a
+usefulness assessment (`helped`, `did_not_help`, `inconclusive`, or `blocked`)
+before the task handoff. Record what it contributed or failed to add, evidence
+references and measured overhead. The shared recorder keeps these
+agent-reported observations separate from canonical verdicts. Selection does
+not expand execution authority. Keep planning,
+provider-backed review, foreground browser execution, and measured benefit
+separate. See [agent skill operations](docs/development/agent-skills.md).
+
 ## Architecture notes
 - **Native desktop binary, no server.** SwiftUI/AppKit is the only desktop UI. It calls the bundled `codevetter` CLI through typed JSON receipts; the Rust engine lives in `crates/codevetter-core/`.
 - **Multi-LLM provider**: Anthropic, OpenAI, OpenRouter. Keys stored in user settings.
