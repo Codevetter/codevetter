@@ -1,0 +1,5095 @@
+{
+  "schema_version": "codevetter.repo-unpack-corpus/v1",
+  "repo": "encode/starlette",
+  "slug": "starlette",
+  "codevetter_version": "codevetter 1.15.0",
+  "collected_at": "2026-10-02T17:32:57.854Z",
+  "last_commit": {
+    "sha": "4e7fc04e5f2c69f60e418ff2107d0f6d9a0fe423",
+    "date": "2026-10-01",
+    "subject": "Bump urllib3 from 2.7.0 to 2.8.0 (#3609)"
+  },
+  "scan": {
+    "schema_version": "codevetter.unpack-scan/v1",
+    "report_id": "49c6b91e-86f9-425c-856b-b42888300ee7",
+    "status": "scan_only",
+    "created_at": "2026-10-02T17:32:57.845641+00:00",
+    "inventory": {
+      "repo_path": "[local clone path omitted from public export]",
+      "repo_name": "starlette",
+      "commit_sha": "4e7fc04e5f2c69f60e418ff2107d0f6d9a0fe423",
+      "branch": "main",
+      "remote_url": "https://github.com/encode/starlette.git",
+      "files_scanned": 143,
+      "files_skipped": 5,
+      "bytes_scanned": 1066815,
+      "max_files_hit": false,
+      "estimated_total_files": null,
+      "languages": [
+        {
+          "language": "Python",
+          "files": 84,
+          "bytes": 781249
+        },
+        {
+          "language": "Markdown",
+          "files": 32,
+          "bytes": 229145
+        },
+        {
+          "language": "YAML",
+          "files": 8,
+          "bytes": 12395
+        },
+        {
+          "language": "TOML",
+          "files": 2,
+          "bytes": 4049
+        },
+        {
+          "language": "HTML",
+          "files": 3,
+          "bytes": 2832
+        },
+        {
+          "language": "CSS",
+          "files": 1,
+          "bytes": 1613
+        }
+      ],
+      "manifests": [
+        {
+          "path": "pyproject.toml",
+          "kind": "pyproject.toml",
+          "name": "starlette",
+          "version": null,
+          "dependencies": [
+            "full",
+            "itsdangerous\"",
+            "jinja2\"",
+            "opentelemetry-api\"",
+            "python-multipart>=0.0.18\"",
+            "pyyaml\"",
+            "httpx>=0.27.0,<0.29.0\"",
+            "httpx2>=2.0.0\"",
+            "]"
+          ],
+          "scripts": []
+        }
+      ],
+      "entrypoints": [
+        {
+          "path": "README.md",
+          "kind": "docs",
+          "reason": "Repository readme"
+        },
+        {
+          "path": "AGENTS.md",
+          "kind": "docs",
+          "reason": "Agent instructions"
+        },
+        {
+          "path": ".github/workflows/publish.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/benchmark.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/zizmor.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        },
+        {
+          "path": ".github/workflows/main.yml",
+          "kind": "config",
+          "reason": "GitHub Actions workflow"
+        }
+      ],
+      "top_level_dirs": [
+        {
+          "path": "starlette",
+          "file_count": 37,
+          "bytes": 259188
+        },
+        {
+          "path": "tests",
+          "file_count": 36,
+          "bytes": 470923
+        },
+        {
+          "path": "docs",
+          "file_count": 31,
+          "bytes": 251572
+        },
+        {
+          "path": "benchmarks",
+          "file_count": 14,
+          "bytes": 58257
+        },
+        {
+          "path": ".github",
+          "file_count": 9,
+          "bytes": 10355
+        },
+        {
+          "path": "scripts",
+          "file_count": 7,
+          "bytes": 1467
+        }
+      ],
+      "docs": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 118,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "LICENSE.md",
+          "bytes": 1518,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "README.md",
+          "bytes": 4938,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/applications.md",
+          "bytes": 1786,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/authentication.md",
+          "bytes": 5484,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/background.md",
+          "bytes": 1989,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/config.md",
+          "bytes": 6960,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/contributing.md",
+          "bytes": 5610,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/database.md",
+          "bytes": 690,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/endpoints.md",
+          "bytes": 4243,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/exceptions.md",
+          "bytes": 5305,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/graphql.md",
+          "bytes": 612,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/index.md",
+          "bytes": 5202,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/lifespan.md",
+          "bytes": 4502,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/middleware.md",
+          "bytes": 42233,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/release-notes.md",
+          "bytes": 62473,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/requests.md",
+          "bytes": 7070,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/responses.md",
+          "bytes": 8091,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/routing.md",
+          "bytes": 10199,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/schemas.md",
+          "bytes": 3035,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/server-push.md",
+          "bytes": 1004,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/staticfiles.md",
+          "bytes": 2250,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/templates.md",
+          "bytes": 4620,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/testclient.md",
+          "bytes": 11549,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/third-party-packages.md",
+          "bytes": 12232,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/threadpool.md",
+          "bytes": 1384,
+          "preview": "[source preview omitted from public export]"
+        },
+        {
+          "path": "docs/websockets.md",
+          "bytes": 4820,
+          "preview": "[source preview omitted from public export]"
+        }
+      ],
+      "config_files": [
+        "wrangler.toml"
+      ],
+      "stack_tags": [
+        "Cloudflare Workers",
+        "GitHub Actions",
+        "Python"
+      ],
+      "workspace_units": [
+        {
+          "path": ".",
+          "name": "starlette",
+          "kind": "workspace",
+          "manifest_path": "pyproject.toml",
+          "build_system": "pyproject.toml",
+          "file_count": 143,
+          "languages": [
+            {
+              "language": "Python",
+              "files": 84,
+              "bytes": 781249
+            },
+            {
+              "language": "Markdown",
+              "files": 32,
+              "bytes": 229145
+            },
+            {
+              "language": "YAML",
+              "files": 8,
+              "bytes": 12395
+            },
+            {
+              "language": "HTML",
+              "files": 3,
+              "bytes": 2832
+            },
+            {
+              "language": "TOML",
+              "files": 2,
+              "bytes": 4049
+            }
+          ],
+          "scripts": [],
+          "entrypoints": [
+            ".github/workflows/benchmark.yml",
+            ".github/workflows/main.yml",
+            ".github/workflows/publish.yml",
+            ".github/workflows/zizmor.yml",
+            "AGENTS.md",
+            "README.md"
+          ],
+          "test_files": [],
+          "tags": [
+            "Cloudflare",
+            "Markdown",
+            "Python",
+            "YAML"
+          ]
+        }
+      ],
+      "qa_readiness": {
+        "score": 0,
+        "status": "missing",
+        "summary": "Repo does not expose enough local browser QA structure for a reliable Synthetic QA workflow yet.",
+        "signals": [
+          {
+            "id": "browser_runner",
+            "label": "Browser runner",
+            "status": "missing",
+            "detail": "No Playwright, Cypress, or browser runner config was found.",
+            "sources": []
+          },
+          {
+            "id": "user_flow_specs",
+            "label": "User-flow specs",
+            "status": "missing",
+            "detail": "No e2e/playwright/cypress spec files were found.",
+            "sources": []
+          },
+          {
+            "id": "local_app_command",
+            "label": "Local app command",
+            "status": "missing",
+            "detail": "No obvious package script for starting the app locally was found.",
+            "sources": []
+          },
+          {
+            "id": "qa_script",
+            "label": "QA script",
+            "status": "missing",
+            "detail": "No explicit QA/e2e/browser test script was found.",
+            "sources": []
+          },
+          {
+            "id": "artifact_trail",
+            "label": "Artifact trail",
+            "status": "missing",
+            "detail": "No browser QA artifacts or artifact-capable runner were found.",
+            "sources": []
+          },
+          {
+            "id": "targetable_routes",
+            "label": "Targetable surfaces",
+            "status": "missing",
+            "detail": "No obvious web entrypoint or route file was found.",
+            "sources": []
+          }
+        ],
+        "suggested_flows": []
+      },
+      "repo_graph": {
+        "schema_version": 2,
+        "nodes": [
+          {
+            "id": "file:github-issue-template-1-issue-md",
+            "kind": "file",
+            "label": ".github/ISSUE_TEMPLATE/1-issue.md",
+            "path": ".github/ISSUE_TEMPLATE/1-issue.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/ISSUE_TEMPLATE/1-issue.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-pull-request-template-md",
+            "kind": "file",
+            "label": ".github/pull_request_template.md",
+            "path": ".github/pull_request_template.md",
+            "detail": "source marker candidate",
+            "sources": [
+              ".github/pull_request_template.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-benchmark-yml",
+            "kind": "file",
+            "label": ".github/workflows/benchmark.yml",
+            "path": ".github/workflows/benchmark.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/benchmark.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-main-yml",
+            "kind": "file",
+            "label": ".github/workflows/main.yml",
+            "path": ".github/workflows/main.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/main.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-publish-yml",
+            "kind": "file",
+            "label": ".github/workflows/publish.yml",
+            "path": ".github/workflows/publish.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/publish.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:github-workflows-zizmor-yml",
+            "kind": "file",
+            "label": ".github/workflows/zizmor.yml",
+            "path": ".github/workflows/zizmor.yml",
+            "detail": "workspace entrypoint",
+            "sources": [
+              ".github/workflows/zizmor.yml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:agents-md",
+            "kind": "file",
+            "label": "AGENTS.md",
+            "path": "AGENTS.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "AGENTS.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:ai-policy-md",
+            "kind": "file",
+            "label": "AI_POLICY.md",
+            "path": "AI_POLICY.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "AI_POLICY.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:license-md",
+            "kind": "file",
+            "label": "LICENSE.md",
+            "path": "LICENSE.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "LICENSE.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:readme-md",
+            "kind": "file",
+            "label": "README.md",
+            "path": "README.md",
+            "detail": "workspace entrypoint",
+            "sources": [
+              "README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:benchmarks-readme-md",
+            "kind": "file",
+            "label": "benchmarks/README.md",
+            "path": "benchmarks/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "benchmarks/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-applications-md",
+            "kind": "file",
+            "label": "docs/applications.md",
+            "path": "docs/applications.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/applications.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-authentication-md",
+            "kind": "file",
+            "label": "docs/authentication.md",
+            "path": "docs/authentication.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/authentication.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-background-md",
+            "kind": "file",
+            "label": "docs/background.md",
+            "path": "docs/background.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/background.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-config-md",
+            "kind": "file",
+            "label": "docs/config.md",
+            "path": "docs/config.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/config.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-contributing-md",
+            "kind": "file",
+            "label": "docs/contributing.md",
+            "path": "docs/contributing.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/contributing.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-database-md",
+            "kind": "file",
+            "label": "docs/database.md",
+            "path": "docs/database.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/database.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-endpoints-md",
+            "kind": "file",
+            "label": "docs/endpoints.md",
+            "path": "docs/endpoints.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/endpoints.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-exceptions-md",
+            "kind": "file",
+            "label": "docs/exceptions.md",
+            "path": "docs/exceptions.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/exceptions.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-graphql-md",
+            "kind": "file",
+            "label": "docs/graphql.md",
+            "path": "docs/graphql.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/graphql.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-index-md",
+            "kind": "file",
+            "label": "docs/index.md",
+            "path": "docs/index.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/index.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-lifespan-md",
+            "kind": "file",
+            "label": "docs/lifespan.md",
+            "path": "docs/lifespan.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/lifespan.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-middleware-md",
+            "kind": "file",
+            "label": "docs/middleware.md",
+            "path": "docs/middleware.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/middleware.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-release-notes-md",
+            "kind": "file",
+            "label": "docs/release-notes.md",
+            "path": "docs/release-notes.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/release-notes.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-requests-md",
+            "kind": "file",
+            "label": "docs/requests.md",
+            "path": "docs/requests.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/requests.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-responses-md",
+            "kind": "file",
+            "label": "docs/responses.md",
+            "path": "docs/responses.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/responses.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-routing-md",
+            "kind": "file",
+            "label": "docs/routing.md",
+            "path": "docs/routing.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/routing.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-schemas-md",
+            "kind": "file",
+            "label": "docs/schemas.md",
+            "path": "docs/schemas.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/schemas.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-server-push-md",
+            "kind": "file",
+            "label": "docs/server-push.md",
+            "path": "docs/server-push.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/server-push.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-staticfiles-md",
+            "kind": "file",
+            "label": "docs/staticfiles.md",
+            "path": "docs/staticfiles.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/staticfiles.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-templates-md",
+            "kind": "file",
+            "label": "docs/templates.md",
+            "path": "docs/templates.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/templates.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-testclient-md",
+            "kind": "file",
+            "label": "docs/testclient.md",
+            "path": "docs/testclient.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/testclient.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-third-party-packages-md",
+            "kind": "file",
+            "label": "docs/third-party-packages.md",
+            "path": "docs/third-party-packages.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/third-party-packages.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-threadpool-md",
+            "kind": "file",
+            "label": "docs/threadpool.md",
+            "path": "docs/threadpool.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/threadpool.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:docs-websockets-md",
+            "kind": "file",
+            "label": "docs/websockets.md",
+            "path": "docs/websockets.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "docs/websockets.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "file:scripts-readme-md",
+            "kind": "file",
+            "label": "scripts/README.md",
+            "path": "scripts/README.md",
+            "detail": "source marker candidate",
+            "sources": [
+              "scripts/README.md"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "package:pyproject-toml",
+            "kind": "package",
+            "label": "starlette",
+            "path": "pyproject.toml",
+            "detail": "pyproject.toml manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-init-py",
+            "kind": "test",
+            "label": "tests/__init__.py",
+            "path": "tests/__init__.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/__init__.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-conftest-py",
+            "kind": "test",
+            "label": "tests/conftest.py",
+            "path": "tests/conftest.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/conftest.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-init-py",
+            "kind": "test",
+            "label": "tests/middleware/__init__.py",
+            "path": "tests/middleware/__init__.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/__init__.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-base-py",
+            "kind": "test",
+            "label": "tests/middleware/test_base.py",
+            "path": "tests/middleware/test_base.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_base.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-body-limit-py",
+            "kind": "test",
+            "label": "tests/middleware/test_body_limit.py",
+            "path": "tests/middleware/test_body_limit.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_body_limit.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-cors-py",
+            "kind": "test",
+            "label": "tests/middleware/test_cors.py",
+            "path": "tests/middleware/test_cors.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_cors.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-errors-py",
+            "kind": "test",
+            "label": "tests/middleware/test_errors.py",
+            "path": "tests/middleware/test_errors.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_errors.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-gzip-py",
+            "kind": "test",
+            "label": "tests/middleware/test_gzip.py",
+            "path": "tests/middleware/test_gzip.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_gzip.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-https-redirect-py",
+            "kind": "test",
+            "label": "tests/middleware/test_https_redirect.py",
+            "path": "tests/middleware/test_https_redirect.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_https_redirect.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-middleware-py",
+            "kind": "test",
+            "label": "tests/middleware/test_middleware.py",
+            "path": "tests/middleware/test_middleware.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_middleware.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-opentelemetry-py",
+            "kind": "test",
+            "label": "tests/middleware/test_opentelemetry.py",
+            "path": "tests/middleware/test_opentelemetry.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_opentelemetry.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-session-py",
+            "kind": "test",
+            "label": "tests/middleware/test_session.py",
+            "path": "tests/middleware/test_session.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_session.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-trusted-host-py",
+            "kind": "test",
+            "label": "tests/middleware/test_trusted_host.py",
+            "path": "tests/middleware/test_trusted_host.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_trusted_host.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-middleware-test-wsgi-py",
+            "kind": "test",
+            "label": "tests/middleware/test_wsgi.py",
+            "path": "tests/middleware/test_wsgi.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/middleware/test_wsgi.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-statics-example-txt",
+            "kind": "test",
+            "label": "tests/statics/example.txt",
+            "path": "tests/statics/example.txt",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/statics/example.txt"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-utils-py",
+            "kind": "test",
+            "label": "tests/test__utils.py",
+            "path": "tests/test__utils.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test__utils.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-applications-py",
+            "kind": "test",
+            "label": "tests/test_applications.py",
+            "path": "tests/test_applications.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_applications.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-authentication-py",
+            "kind": "test",
+            "label": "tests/test_authentication.py",
+            "path": "tests/test_authentication.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_authentication.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-background-py",
+            "kind": "test",
+            "label": "tests/test_background.py",
+            "path": "tests/test_background.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_background.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-concurrency-py",
+            "kind": "test",
+            "label": "tests/test_concurrency.py",
+            "path": "tests/test_concurrency.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_concurrency.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-config-py",
+            "kind": "test",
+            "label": "tests/test_config.py",
+            "path": "tests/test_config.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_config.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-convertors-py",
+            "kind": "test",
+            "label": "tests/test_convertors.py",
+            "path": "tests/test_convertors.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_convertors.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-datastructures-py",
+            "kind": "test",
+            "label": "tests/test_datastructures.py",
+            "path": "tests/test_datastructures.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_datastructures.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-endpoints-py",
+            "kind": "test",
+            "label": "tests/test_endpoints.py",
+            "path": "tests/test_endpoints.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_endpoints.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-exceptions-py",
+            "kind": "test",
+            "label": "tests/test_exceptions.py",
+            "path": "tests/test_exceptions.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_exceptions.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-formparsers-py",
+            "kind": "test",
+            "label": "tests/test_formparsers.py",
+            "path": "tests/test_formparsers.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_formparsers.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-requests-py",
+            "kind": "test",
+            "label": "tests/test_requests.py",
+            "path": "tests/test_requests.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_requests.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-responses-py",
+            "kind": "test",
+            "label": "tests/test_responses.py",
+            "path": "tests/test_responses.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_responses.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-routing-py",
+            "kind": "test",
+            "label": "tests/test_routing.py",
+            "path": "tests/test_routing.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_routing.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-schemas-py",
+            "kind": "test",
+            "label": "tests/test_schemas.py",
+            "path": "tests/test_schemas.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_schemas.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-staticfiles-py",
+            "kind": "test",
+            "label": "tests/test_staticfiles.py",
+            "path": "tests/test_staticfiles.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_staticfiles.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-status-py",
+            "kind": "test",
+            "label": "tests/test_status.py",
+            "path": "tests/test_status.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_status.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-templates-py",
+            "kind": "test",
+            "label": "tests/test_templates.py",
+            "path": "tests/test_templates.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_templates.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-testclient-py",
+            "kind": "test",
+            "label": "tests/test_testclient.py",
+            "path": "tests/test_testclient.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_testclient.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-test-websockets-py",
+            "kind": "test",
+            "label": "tests/test_websockets.py",
+            "path": "tests/test_websockets.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/test_websockets.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "test:tests-types-py",
+            "kind": "test",
+            "label": "tests/types.py",
+            "path": "tests/types.py",
+            "detail": "test/spec file",
+            "sources": [
+              "tests/types.py"
+            ],
+            "source_location": null,
+            "community": null
+          },
+          {
+            "id": "workspace:",
+            "kind": "workspace_unit",
+            "label": "starlette",
+            "path": null,
+            "detail": "workspace | 143 files | 84 Python, 32 Markdown, 8 YAML",
+            "sources": [
+              ".github/workflows/benchmark.yml",
+              ".github/workflows/main.yml",
+              "pyproject.toml"
+            ],
+            "source_location": null,
+            "community": null
+          }
+        ],
+        "edges": [
+          {
+            "from": "workspace:",
+            "to": "package:pyproject-toml",
+            "kind": "defines",
+            "evidence": "workspace unit owns this manifest",
+            "sources": [
+              "pyproject.toml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:agents-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "AGENTS.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-benchmark-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/benchmark.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-main-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/main.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-publish-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/publish.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:github-workflows-zizmor-yml",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              ".github/workflows/zizmor.yml"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          },
+          {
+            "from": "workspace:",
+            "to": "file:readme-md",
+            "kind": "entrypoint",
+            "evidence": "entrypoint belongs to this workspace unit",
+            "sources": [
+              "README.md"
+            ],
+            "trust": "extracted",
+            "origin": "codevetter",
+            "confidence_label": null
+          }
+        ],
+        "truncated": false
+      },
+      "history_brief": {
+        "schema_version": 2,
+        "summary": "Local history brief captured 12 recent commits, 0 decision markers, 12 test hints, and 7 co-change clusters for Repo Unpacked. Treat commit subjects as leads and rely on cited files for durable constraints.",
+        "recent_commits": [
+          {
+            "sha": "4e7fc04e5f2c",
+            "date": "2026-10-01",
+            "subject": "Bump urllib3 from 2.7.0 to 2.8.0 (#3609)",
+            "files": []
+          },
+          {
+            "sha": "f0b8f03fa67f",
+            "date": "2026-10-01",
+            "subject": "Bump the github-actions group with 4 updates (#3607)",
+            "files": [
+              ".github/workflows/benchmark.yml",
+              ".github/workflows/main.yml",
+              ".github/workflows/publish.yml",
+              ".github/workflows/zizmor.yml"
+            ]
+          },
+          {
+            "sha": "63c5760d8a67",
+            "date": "2026-09-29",
+            "subject": "docs: remove unnecessary f-strings from endpoint examples (#3596)",
+            "files": [
+              "docs/endpoints.md"
+            ]
+          },
+          {
+            "sha": "2284ff008cef",
+            "date": "2026-09-27",
+            "subject": "Stop file transfers when HTTP clients disconnect (#3523)",
+            "files": []
+          },
+          {
+            "sha": "85c3b7434fd6",
+            "date": "2026-09-27",
+            "subject": "Ignore Range when If-Range contains a weak ETag (#3567)",
+            "files": []
+          },
+          {
+            "sha": "56d8858633c8",
+            "date": "2026-09-27",
+            "subject": "Drop Python 3.10 support (#3592)",
+            "files": [
+              ".github/workflows/main.yml",
+              "pyproject.toml"
+            ]
+          },
+          {
+            "sha": "9774b08ef457",
+            "date": "2026-09-26",
+            "subject": "Stop multipart range responses on unexpected EOF (#3583)",
+            "files": []
+          },
+          {
+            "sha": "ba504c555fbd",
+            "date": "2026-09-26",
+            "subject": "Fix runnable background-task documentation examples (#3570)",
+            "files": [
+              "docs/background.md"
+            ]
+          },
+          {
+            "sha": "07715a3eba77",
+            "date": "2026-09-26",
+            "subject": "docs: add missing article in testclient raise_server_exceptions guidance (#3573)",
+            "files": [
+              "docs/testclient.md"
+            ]
+          },
+          {
+            "sha": "cc0f6ae0b13b",
+            "date": "2026-09-26",
+            "subject": "Update link to Authlib's Starlette integration docs (#3547)",
+            "files": [
+              "docs/third-party-packages.md"
+            ]
+          },
+          {
+            "sha": "fada3631d802",
+            "date": "2026-09-23",
+            "subject": "Make it possible to run the tests without blockbuster (#3576)",
+            "files": []
+          },
+          {
+            "sha": "2269e9a08c1e",
+            "date": "2026-09-23",
+            "subject": "Version 1.7.0 (#3575)",
+            "files": [
+              "docs/release-notes.md"
+            ]
+          }
+        ],
+        "decisions": [],
+        "test_hints": [
+          {
+            "path": "tests/test_datastructures.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_cors.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_gzip.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_middleware.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_trusted_host.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_opentelemetry.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_errors.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_session.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/__init__.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_body_limit.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_https_redirect.py",
+            "reason": "test/spec file anchors expected behavior"
+          },
+          {
+            "path": "tests/middleware/test_wsgi.py",
+            "reason": "test/spec file anchors expected behavior"
+          }
+        ],
+        "temporal_couplings": [
+          {
+            "files": [
+              ".github/workflows/benchmark.yml",
+              ".github/workflows/main.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "f0b8f03fa67f",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/benchmark.yml",
+              ".github/workflows/publish.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "f0b8f03fa67f",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/benchmark.yml",
+              ".github/workflows/zizmor.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "f0b8f03fa67f",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/main.yml",
+              ".github/workflows/publish.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "f0b8f03fa67f",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/main.yml",
+              ".github/workflows/zizmor.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "f0b8f03fa67f",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/main.yml",
+              "pyproject.toml"
+            ],
+            "commit_count": 2,
+            "last_commit": "56d8858633c8",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          },
+          {
+            "files": [
+              ".github/workflows/publish.yml",
+              ".github/workflows/zizmor.yml"
+            ],
+            "commit_count": 2,
+            "last_commit": "f0b8f03fa67f",
+            "reason": "These files changed together in 2 recent commits; inspect both when either side moves."
+          }
+        ],
+        "graph": {
+          "schema_version": 2,
+          "nodes": [
+            {
+              "id": "commit:07715a3eba77",
+              "kind": "commit",
+              "label": "docs: add missing article in testclient raise_server_exceptions guidance (#3573)",
+              "path": null,
+              "detail": "2026-09-26",
+              "citations": [
+                "git:07715a3eba77"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2269e9a08c1e",
+              "kind": "commit",
+              "label": "Version 1.7.0 (#3575)",
+              "path": null,
+              "detail": "2026-09-23",
+              "citations": [
+                "git:2269e9a08c1e"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:2284ff008cef",
+              "kind": "commit",
+              "label": "Stop file transfers when HTTP clients disconnect (#3523)",
+              "path": null,
+              "detail": "2026-09-27",
+              "citations": [
+                "git:2284ff008cef"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:4e7fc04e5f2c",
+              "kind": "commit",
+              "label": "Bump urllib3 from 2.7.0 to 2.8.0 (#3609)",
+              "path": null,
+              "detail": "2026-10-01",
+              "citations": [
+                "git:4e7fc04e5f2c"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:56d8858633c8",
+              "kind": "commit",
+              "label": "Drop Python 3.10 support (#3592)",
+              "path": null,
+              "detail": "2026-09-27",
+              "citations": [
+                "git:56d8858633c8"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:63c5760d8a67",
+              "kind": "commit",
+              "label": "docs: remove unnecessary f-strings from endpoint examples (#3596)",
+              "path": null,
+              "detail": "2026-09-29",
+              "citations": [
+                "git:63c5760d8a67"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:85c3b7434fd6",
+              "kind": "commit",
+              "label": "Ignore Range when If-Range contains a weak ETag (#3567)",
+              "path": null,
+              "detail": "2026-09-27",
+              "citations": [
+                "git:85c3b7434fd6"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:9774b08ef457",
+              "kind": "commit",
+              "label": "Stop multipart range responses on unexpected EOF (#3583)",
+              "path": null,
+              "detail": "2026-09-26",
+              "citations": [
+                "git:9774b08ef457"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:ba504c555fbd",
+              "kind": "commit",
+              "label": "Fix runnable background-task documentation examples (#3570)",
+              "path": null,
+              "detail": "2026-09-26",
+              "citations": [
+                "git:ba504c555fbd"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:cc0f6ae0b13b",
+              "kind": "commit",
+              "label": "Update link to Authlib's Starlette integration docs (#3547)",
+              "path": null,
+              "detail": "2026-09-26",
+              "citations": [
+                "git:cc0f6ae0b13b"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:f0b8f03fa67f",
+              "kind": "commit",
+              "label": "Bump the github-actions group with 4 updates (#3607)",
+              "path": null,
+              "detail": "2026-10-01",
+              "citations": [
+                "git:f0b8f03fa67f"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "commit:fada3631d802",
+              "kind": "commit",
+              "label": "Make it possible to run the tests without blockbuster (#3576)",
+              "path": null,
+              "detail": "2026-09-23",
+              "citations": [
+                "git:fada3631d802"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-benchmark-yml",
+              "kind": "file",
+              "label": ".github/workflows/benchmark.yml",
+              "path": ".github/workflows/benchmark.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/benchmark.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-main-yml",
+              "kind": "file",
+              "label": ".github/workflows/main.yml",
+              "path": ".github/workflows/main.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/main.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-publish-yml",
+              "kind": "file",
+              "label": ".github/workflows/publish.yml",
+              "path": ".github/workflows/publish.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:-github-workflows-zizmor-yml",
+              "kind": "file",
+              "label": ".github/workflows/zizmor.yml",
+              "path": ".github/workflows/zizmor.yml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                ".github/workflows/zizmor.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-background-md",
+              "kind": "file",
+              "label": "docs/background.md",
+              "path": "docs/background.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/background.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-endpoints-md",
+              "kind": "file",
+              "label": "docs/endpoints.md",
+              "path": "docs/endpoints.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/endpoints.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-release-notes-md",
+              "kind": "file",
+              "label": "docs/release-notes.md",
+              "path": "docs/release-notes.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/release-notes.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-testclient-md",
+              "kind": "file",
+              "label": "docs/testclient.md",
+              "path": "docs/testclient.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/testclient.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:docs-third-party-packages-md",
+              "kind": "file",
+              "label": "docs/third-party-packages.md",
+              "path": "docs/third-party-packages.md",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "docs/third-party-packages.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:pyproject-toml",
+              "kind": "file",
+              "label": "pyproject.toml",
+              "path": "pyproject.toml",
+              "detail": "Changed in recent local git history",
+              "citations": [
+                "pyproject.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "id": "file:tests-middleware---init---py",
+              "kind": "file",
+              "label": "tests/middleware/__init__.py",
+              "path": "tests/middleware/__init__.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/__init__.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-body-limit-py",
+              "kind": "file",
+              "label": "tests/middleware/test_body_limit.py",
+              "path": "tests/middleware/test_body_limit.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_body_limit.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-cors-py",
+              "kind": "file",
+              "label": "tests/middleware/test_cors.py",
+              "path": "tests/middleware/test_cors.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_cors.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-errors-py",
+              "kind": "file",
+              "label": "tests/middleware/test_errors.py",
+              "path": "tests/middleware/test_errors.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_errors.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-gzip-py",
+              "kind": "file",
+              "label": "tests/middleware/test_gzip.py",
+              "path": "tests/middleware/test_gzip.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_gzip.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-https-redirect-py",
+              "kind": "file",
+              "label": "tests/middleware/test_https_redirect.py",
+              "path": "tests/middleware/test_https_redirect.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_https_redirect.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-middleware-py",
+              "kind": "file",
+              "label": "tests/middleware/test_middleware.py",
+              "path": "tests/middleware/test_middleware.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_middleware.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-opentelemetry-py",
+              "kind": "file",
+              "label": "tests/middleware/test_opentelemetry.py",
+              "path": "tests/middleware/test_opentelemetry.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_opentelemetry.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-session-py",
+              "kind": "file",
+              "label": "tests/middleware/test_session.py",
+              "path": "tests/middleware/test_session.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_session.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-trusted-host-py",
+              "kind": "file",
+              "label": "tests/middleware/test_trusted_host.py",
+              "path": "tests/middleware/test_trusted_host.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_trusted_host.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-middleware-test-wsgi-py",
+              "kind": "file",
+              "label": "tests/middleware/test_wsgi.py",
+              "path": "tests/middleware/test_wsgi.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/middleware/test_wsgi.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "file:tests-test-datastructures-py",
+              "kind": "file",
+              "label": "tests/test_datastructures.py",
+              "path": "tests/test_datastructures.py",
+              "detail": "Verification source",
+              "citations": [
+                "tests/test_datastructures.py"
+              ],
+              "trust": "source_backed"
+            },
+            {
+              "id": "test:tests-middleware---init---py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/__init__.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/__init__.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-body-limit-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_body_limit.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_body_limit.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-cors-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_cors.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_cors.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-errors-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_errors.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_errors.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-gzip-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_gzip.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_gzip.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-https-redirect-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_https_redirect.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_https_redirect.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-middleware-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_middleware.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_middleware.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-opentelemetry-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_opentelemetry.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_opentelemetry.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-session-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_session.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_session.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-trusted-host-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_trusted_host.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_trusted_host.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-middleware-test-wsgi-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/middleware/test_wsgi.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/middleware/test_wsgi.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "id": "test:tests-test-datastructures-py-test-spec-file-anchors-expected-behavior",
+              "kind": "test",
+              "label": "test/spec file anchors expected behavior",
+              "path": "tests/test_datastructures.py",
+              "detail": "Likely verification lead",
+              "citations": [
+                "tests/test_datastructures.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "edges": [
+            {
+              "from": "commit:07715a3eba77",
+              "to": "file:docs-testclient-md",
+              "kind": "changed",
+              "evidence": "07715a3eba77 changed this file",
+              "citations": [
+                "git:07715a3eba77",
+                "docs/testclient.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:2269e9a08c1e",
+              "to": "file:docs-release-notes-md",
+              "kind": "changed",
+              "evidence": "2269e9a08c1e changed this file",
+              "citations": [
+                "git:2269e9a08c1e",
+                "docs/release-notes.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56d8858633c8",
+              "to": "file:-github-workflows-main-yml",
+              "kind": "changed",
+              "evidence": "56d8858633c8 changed this file",
+              "citations": [
+                "git:56d8858633c8",
+                ".github/workflows/main.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:56d8858633c8",
+              "to": "file:pyproject-toml",
+              "kind": "changed",
+              "evidence": "56d8858633c8 changed this file",
+              "citations": [
+                "git:56d8858633c8",
+                "pyproject.toml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:63c5760d8a67",
+              "to": "file:docs-endpoints-md",
+              "kind": "changed",
+              "evidence": "63c5760d8a67 changed this file",
+              "citations": [
+                "git:63c5760d8a67",
+                "docs/endpoints.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:ba504c555fbd",
+              "to": "file:docs-background-md",
+              "kind": "changed",
+              "evidence": "ba504c555fbd changed this file",
+              "citations": [
+                "git:ba504c555fbd",
+                "docs/background.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:cc0f6ae0b13b",
+              "to": "file:docs-third-party-packages-md",
+              "kind": "changed",
+              "evidence": "cc0f6ae0b13b changed this file",
+              "citations": [
+                "git:cc0f6ae0b13b",
+                "docs/third-party-packages.md"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f0b8f03fa67f",
+              "to": "file:-github-workflows-benchmark-yml",
+              "kind": "changed",
+              "evidence": "f0b8f03fa67f changed this file",
+              "citations": [
+                "git:f0b8f03fa67f",
+                ".github/workflows/benchmark.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f0b8f03fa67f",
+              "to": "file:-github-workflows-main-yml",
+              "kind": "changed",
+              "evidence": "f0b8f03fa67f changed this file",
+              "citations": [
+                "git:f0b8f03fa67f",
+                ".github/workflows/main.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f0b8f03fa67f",
+              "to": "file:-github-workflows-publish-yml",
+              "kind": "changed",
+              "evidence": "f0b8f03fa67f changed this file",
+              "citations": [
+                "git:f0b8f03fa67f",
+                ".github/workflows/publish.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "commit:f0b8f03fa67f",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "changed",
+              "evidence": "f0b8f03fa67f changed this file",
+              "citations": [
+                "git:f0b8f03fa67f",
+                ".github/workflows/zizmor.yml"
+              ],
+              "trust": "git_observed"
+            },
+            {
+              "from": "file:-github-workflows-benchmark-yml",
+              "to": "file:-github-workflows-main-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f0b8f03fa67f"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-benchmark-yml",
+              "to": "file:-github-workflows-publish-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f0b8f03fa67f"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-benchmark-yml",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f0b8f03fa67f"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-main-yml",
+              "to": "file:-github-workflows-publish-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f0b8f03fa67f"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-main-yml",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f0b8f03fa67f"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-main-yml",
+              "to": "file:pyproject-toml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:56d8858633c8"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:-github-workflows-publish-yml",
+              "to": "file:-github-workflows-zizmor-yml",
+              "kind": "co_changes_with",
+              "evidence": "These files changed together in 2 recent commits; inspect both when either side moves.",
+              "citations": [
+                "git:f0b8f03fa67f"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware---init---py",
+              "to": "test:tests-middleware---init---py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/__init__.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-body-limit-py",
+              "to": "test:tests-middleware-test-body-limit-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_body_limit.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-cors-py",
+              "to": "test:tests-middleware-test-cors-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_cors.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-errors-py",
+              "to": "test:tests-middleware-test-errors-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_errors.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-gzip-py",
+              "to": "test:tests-middleware-test-gzip-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_gzip.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-https-redirect-py",
+              "to": "test:tests-middleware-test-https-redirect-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_https_redirect.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-middleware-py",
+              "to": "test:tests-middleware-test-middleware-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_middleware.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-opentelemetry-py",
+              "to": "test:tests-middleware-test-opentelemetry-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_opentelemetry.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-session-py",
+              "to": "test:tests-middleware-test-session-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_session.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-trusted-host-py",
+              "to": "test:tests-middleware-test-trusted-host-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_trusted_host.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-middleware-test-wsgi-py",
+              "to": "test:tests-middleware-test-wsgi-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/middleware/test_wsgi.py"
+              ],
+              "trust": "navigation_lead"
+            },
+            {
+              "from": "file:tests-test-datastructures-py",
+              "to": "test:tests-test-datastructures-py-test-spec-file-anchors-expected-behavior",
+              "kind": "verified_by",
+              "evidence": "test/spec file anchors expected behavior",
+              "citations": [
+                "tests/test_datastructures.py"
+              ],
+              "trust": "navigation_lead"
+            }
+          ],
+          "truncated": false
+        },
+        "sources": [
+          "tests/test_datastructures.py",
+          "tests/middleware/test_cors.py",
+          "tests/middleware/test_gzip.py",
+          "tests/middleware/test_middleware.py",
+          "tests/middleware/test_trusted_host.py",
+          "tests/middleware/test_opentelemetry.py",
+          "tests/middleware/test_errors.py",
+          "tests/middleware/test_session.py",
+          "tests/middleware/__init__.py",
+          "tests/middleware/test_body_limit.py",
+          "tests/middleware/test_https_redirect.py",
+          "tests/middleware/test_wsgi.py",
+          ".github/workflows/benchmark.yml",
+          ".github/workflows/main.yml",
+          ".github/workflows/publish.yml",
+          ".github/workflows/zizmor.yml",
+          "pyproject.toml"
+        ],
+        "truncated": true
+      },
+      "repo_health": {
+        "schema_version": 1,
+        "summary": "Deterministic scan scored 49 source files across simple size, churn, structural, test-adjacency, and performance-risk signals. 6 hotspots surfaced; average score is 7.6/10. Treat these as review leads, not proof of a bug.",
+        "average_score": 7.6,
+        "hotspot_count": 6,
+        "files_analyzed": 49,
+        "files_with_test_signal": 0,
+        "top_files": [
+          {
+            "path": "starlette/testclient.py",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 562,
+            "bytes": 21446,
+            "churn": 978,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "562 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "starlette/testclient.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/testclient.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 978 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/testclient.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/testclient.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "starlette/testclient.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "starlette/routing.py",
+            "score": 5.9,
+            "bucket": "hotspot",
+            "lines": 765,
+            "bytes": 30472,
+            "churn": 765,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "765 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "starlette/routing.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/routing.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 765 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/routing.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/routing.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "starlette/routing.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "starlette/datastructures.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 704,
+            "bytes": 23200,
+            "churn": 704,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "704 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "starlette/datastructures.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/datastructures.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 704 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/datastructures.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/datastructures.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "starlette/responses.py",
+            "score": 6.2,
+            "bucket": "hotspot",
+            "lines": 613,
+            "bytes": 23576,
+            "churn": 631,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "large_file",
+                "label": "Large file",
+                "dimension": "maintainability",
+                "severity": "medium",
+                "detail": "613 lines in one source file; changes here may be harder to review.",
+                "sources": [
+                  "starlette/responses.py"
+                ]
+              },
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/responses.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 631 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/responses.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/responses.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "benchmarks/json_benchmark.py",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 156,
+            "bytes": 5117,
+            "churn": 156,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "benchmarks/json_benchmark.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 156 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "benchmarks/json_benchmark.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "benchmarks/json_benchmark.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "benchmarks/json_benchmark.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "benchmarks/json_benchmark.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "starlette/endpoints.py",
+            "score": 6.4,
+            "bucket": "hotspot",
+            "lines": 127,
+            "bytes": 5304,
+            "churn": 135,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/endpoints.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "Moderate churn",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "Recent git history shows 135 changed lines in this file; it is a change hotspot.",
+                "sources": [
+                  "starlette/endpoints.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/endpoints.py"
+                ]
+              },
+              {
+                "id": "io_in_loop",
+                "label": "I/O inside loop",
+                "dimension": "performance",
+                "severity": "medium",
+                "detail": "Loop-shaped code appears near filesystem, subprocess, database, or network I/O; inspect for N+1 or repeated setup work.",
+                "sources": [
+                  "starlette/endpoints.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "starlette/endpoints.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior.",
+              "Hoist repeated I/O or batch loop work where behavior allows."
+            ]
+          },
+          {
+            "path": "starlette/requests.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 348,
+            "bytes": 12708,
+            "churn": 348,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/requests.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 348 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/requests.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/requests.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "starlette/requests.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "starlette/middleware/errors.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 259,
+            "bytes": 8126,
+            "churn": 261,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 10; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/middleware/errors.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 261 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/middleware/errors.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/middleware/errors.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "starlette/middleware/errors.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "starlette/middleware/base.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 248,
+            "bytes": 10500,
+            "churn": 252,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/middleware/base.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 252 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/middleware/base.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/middleware/base.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "starlette/middleware/base.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "benchmarks/multipart_benchmark.py",
+            "score": 6.6,
+            "bucket": "watch",
+            "lines": 210,
+            "bytes": 7233,
+            "churn": 210,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 12; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "benchmarks/multipart_benchmark.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 210 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "benchmarks/multipart_benchmark.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "benchmarks/multipart_benchmark.py"
+                ]
+              },
+              {
+                "id": "io_boundary",
+                "label": "I/O or process boundary",
+                "dimension": "defect",
+                "severity": "low",
+                "detail": "File touches filesystem, network, database, or subprocess boundaries; changes need concrete runtime proof.",
+                "sources": [
+                  "benchmarks/multipart_benchmark.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "starlette/middleware/opentelemetry.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 126,
+            "bytes": 5719,
+            "churn": 320,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 14; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "starlette/middleware/opentelemetry.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 320 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "starlette/middleware/opentelemetry.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "starlette/middleware/opentelemetry.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          },
+          {
+            "path": "benchmarks/gzip_benchmark.py",
+            "score": 6.9,
+            "bucket": "watch",
+            "lines": 316,
+            "bytes": 12314,
+            "churn": 316,
+            "has_test_signal": false,
+            "findings": [
+              {
+                "id": "deep_nesting",
+                "label": "Deep nesting",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Maximum indentation depth is about 8; deeply nested branches are bug-prone review targets.",
+                "sources": [
+                  "benchmarks/gzip_benchmark.py"
+                ]
+              },
+              {
+                "id": "churn_hotspot",
+                "label": "High churn",
+                "dimension": "defect",
+                "severity": "high",
+                "detail": "Recent git history shows 316 changed lines in this file; combine review with history and tests.",
+                "sources": [
+                  "benchmarks/gzip_benchmark.py"
+                ]
+              },
+              {
+                "id": "untested_hotspot",
+                "label": "No adjacent test signal",
+                "dimension": "defect",
+                "severity": "medium",
+                "detail": "No obvious sibling test/spec file was found for a large or churny source file.",
+                "sources": [
+                  "benchmarks/gzip_benchmark.py"
+                ]
+              }
+            ],
+            "refactoring_targets": [
+              "Flatten guard-heavy branches before adding behavior."
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "all_files": [],
+      "ignored_dirs": [
+        ".git"
+      ],
+      "coverage": {
+        "schema_version": 1,
+        "strategy": "full_walk",
+        "sampled_files": 143,
+        "total_files": null,
+        "sample_percent": null,
+        "languages": [
+          {
+            "language": "Python",
+            "files": 84,
+            "bytes": 781249
+          },
+          {
+            "language": "Markdown",
+            "files": 32,
+            "bytes": 229145
+          },
+          {
+            "language": "YAML",
+            "files": 8,
+            "bytes": 12395
+          },
+          {
+            "language": "HTML",
+            "files": 3,
+            "bytes": 2832
+          },
+          {
+            "language": "TOML",
+            "files": 2,
+            "bytes": 4049
+          },
+          {
+            "language": "CSS",
+            "files": 1,
+            "bytes": 1613
+          }
+        ],
+        "top_level_dirs": [
+          {
+            "path": "starlette",
+            "file_count": 37,
+            "bytes": 259188
+          },
+          {
+            "path": "tests",
+            "file_count": 36,
+            "bytes": 470923
+          },
+          {
+            "path": "docs",
+            "file_count": 31,
+            "bytes": 251572
+          },
+          {
+            "path": "benchmarks",
+            "file_count": 14,
+            "bytes": 58257
+          },
+          {
+            "path": ".github",
+            "file_count": 9,
+            "bytes": 10355
+          },
+          {
+            "path": "scripts",
+            "file_count": 7,
+            "bytes": 1467
+          }
+        ],
+        "notes": [
+          "Full local walk covered the repo within the scan cap."
+        ]
+      },
+      "all_files_capped": false,
+      "dir_tree_preview": {
+        "name": "",
+        "path": "",
+        "is_dir": true,
+        "file_count": 143,
+        "children": [
+          {
+            "name": ".github",
+            "path": ".github",
+            "is_dir": true,
+            "file_count": 9,
+            "children": [
+              {
+                "name": "ISSUE_TEMPLATE",
+                "path": ".github/ISSUE_TEMPLATE",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "1-issue.md",
+                    "path": ".github/ISSUE_TEMPLATE/1-issue.md",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "config.yml",
+                    "path": ".github/ISSUE_TEMPLATE/config.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "workflows",
+                "path": ".github/workflows",
+                "is_dir": true,
+                "file_count": 4,
+                "children": [
+                  {
+                    "name": "benchmark.yml",
+                    "path": ".github/workflows/benchmark.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "main.yml",
+                    "path": ".github/workflows/main.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "publish.yml",
+                    "path": ".github/workflows/publish.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "zizmor.yml",
+                    "path": ".github/workflows/zizmor.yml",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "FUNDING.yml",
+                "path": ".github/FUNDING.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "dependabot.yml",
+                "path": ".github/dependabot.yml",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "pull_request_template.md",
+                "path": ".github/pull_request_template.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "benchmarks",
+            "path": "benchmarks",
+            "is_dir": true,
+            "file_count": 14,
+            "children": [
+              {
+                "name": "README.md",
+                "path": "benchmarks/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "__init__.py",
+                "path": "benchmarks/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "_utils.py",
+                "path": "benchmarks/_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "conftest.py",
+                "path": "benchmarks/conftest.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "file_response_benchmark.py",
+                "path": "benchmarks/file_response_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "gzip_benchmark.py",
+                "path": "benchmarks/gzip_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "json_benchmark.py",
+                "path": "benchmarks/json_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "multipart_benchmark.py",
+                "path": "benchmarks/multipart_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "request_benchmark.py",
+                "path": "benchmarks/request_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "response_benchmark.py",
+                "path": "benchmarks/response_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "routing_benchmark.py",
+                "path": "benchmarks/routing_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "streaming_response_benchmark.py",
+                "path": "benchmarks/streaming_response_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "urlencoded_benchmark.py",
+                "path": "benchmarks/urlencoded_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "websocket_benchmark.py",
+                "path": "benchmarks/websocket_benchmark.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "docs",
+            "path": "docs",
+            "is_dir": true,
+            "file_count": 31,
+            "children": [
+              {
+                "name": "css",
+                "path": "docs/css",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "custom.css",
+                    "path": "docs/css/custom.css",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "img",
+                "path": "docs/img",
+                "is_dir": true,
+                "file_count": 2,
+                "children": [
+                  {
+                    "name": "starlette.svg",
+                    "path": "docs/img/starlette.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "starlette_dark.svg",
+                    "path": "docs/img/starlette_dark.svg",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "overrides",
+                "path": "docs/overrides",
+                "is_dir": true,
+                "file_count": 3,
+                "children": [
+                  {
+                    "name": "partials",
+                    "path": "docs/overrides/partials",
+                    "is_dir": true,
+                    "file_count": 2,
+                    "children": [
+                      {
+                        "name": "nav.html",
+                        "path": "docs/overrides/partials/nav.html",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      },
+                      {
+                        "name": "toc-item.html",
+                        "path": "docs/overrides/partials/toc-item.html",
+                        "is_dir": false,
+                        "file_count": 1,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "main.html",
+                    "path": "docs/overrides/main.html",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "CNAME",
+                "path": "docs/CNAME",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "applications.md",
+                "path": "docs/applications.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "authentication.md",
+                "path": "docs/authentication.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "background.md",
+                "path": "docs/background.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "config.md",
+                "path": "docs/config.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "contributing.md",
+                "path": "docs/contributing.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "database.md",
+                "path": "docs/database.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "endpoints.md",
+                "path": "docs/endpoints.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "exceptions.md",
+                "path": "docs/exceptions.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "graphql.md",
+                "path": "docs/graphql.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "index.md",
+                "path": "docs/index.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "lifespan.md",
+                "path": "docs/lifespan.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "middleware.md",
+                "path": "docs/middleware.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "release-notes.md",
+                "path": "docs/release-notes.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "requests.md",
+                "path": "docs/requests.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "responses.md",
+                "path": "docs/responses.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "routing.md",
+                "path": "docs/routing.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "schemas.md",
+                "path": "docs/schemas.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "server-push.md",
+                "path": "docs/server-push.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "staticfiles.md",
+                "path": "docs/staticfiles.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "templates.md",
+                "path": "docs/templates.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "testclient.md",
+                "path": "docs/testclient.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "third-party-packages.md",
+                "path": "docs/third-party-packages.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "threadpool.md",
+                "path": "docs/threadpool.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "websockets.md",
+                "path": "docs/websockets.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "scripts",
+            "path": "scripts",
+            "is_dir": true,
+            "file_count": 7,
+            "children": [
+              {
+                "name": "README.md",
+                "path": "scripts/README.md",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "check",
+                "path": "scripts/check",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "docs",
+                "path": "scripts/docs",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "install",
+                "path": "scripts/install",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "lint",
+                "path": "scripts/lint",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "sync-version",
+                "path": "scripts/sync-version",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test",
+                "path": "scripts/test",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "starlette",
+            "path": "starlette",
+            "is_dir": true,
+            "file_count": 37,
+            "children": [
+              {
+                "name": "middleware",
+                "path": "starlette/middleware",
+                "is_dir": true,
+                "file_count": 13,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "starlette/middleware/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "authentication.py",
+                    "path": "starlette/middleware/authentication.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "base.py",
+                    "path": "starlette/middleware/base.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "body_limit.py",
+                    "path": "starlette/middleware/body_limit.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "cors.py",
+                    "path": "starlette/middleware/cors.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "errors.py",
+                    "path": "starlette/middleware/errors.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "exceptions.py",
+                    "path": "starlette/middleware/exceptions.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "gzip.py",
+                    "path": "starlette/middleware/gzip.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "httpsredirect.py",
+                    "path": "starlette/middleware/httpsredirect.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "opentelemetry.py",
+                    "path": "starlette/middleware/opentelemetry.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "sessions.py",
+                    "path": "starlette/middleware/sessions.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "trustedhost.py",
+                    "path": "starlette/middleware/trustedhost.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "wsgi.py",
+                    "path": "starlette/middleware/wsgi.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "starlette/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "_exception_handler.py",
+                "path": "starlette/_exception_handler.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "_utils.py",
+                "path": "starlette/_utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "applications.py",
+                "path": "starlette/applications.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "authentication.py",
+                "path": "starlette/authentication.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "background.py",
+                "path": "starlette/background.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "concurrency.py",
+                "path": "starlette/concurrency.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "config.py",
+                "path": "starlette/config.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "convertors.py",
+                "path": "starlette/convertors.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "datastructures.py",
+                "path": "starlette/datastructures.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "endpoints.py",
+                "path": "starlette/endpoints.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "exceptions.py",
+                "path": "starlette/exceptions.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "formparsers.py",
+                "path": "starlette/formparsers.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "py.typed",
+                "path": "starlette/py.typed",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "requests.py",
+                "path": "starlette/requests.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "responses.py",
+                "path": "starlette/responses.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "routing.py",
+                "path": "starlette/routing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "schemas.py",
+                "path": "starlette/schemas.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "staticfiles.py",
+                "path": "starlette/staticfiles.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "status.py",
+                "path": "starlette/status.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "templating.py",
+                "path": "starlette/templating.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "testclient.py",
+                "path": "starlette/testclient.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "types.py",
+                "path": "starlette/types.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "websockets.py",
+                "path": "starlette/websockets.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": "tests",
+            "path": "tests",
+            "is_dir": true,
+            "file_count": 36,
+            "children": [
+              {
+                "name": "middleware",
+                "path": "tests/middleware",
+                "is_dir": true,
+                "file_count": 12,
+                "children": [
+                  {
+                    "name": "__init__.py",
+                    "path": "tests/middleware/__init__.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_base.py",
+                    "path": "tests/middleware/test_base.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_body_limit.py",
+                    "path": "tests/middleware/test_body_limit.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_cors.py",
+                    "path": "tests/middleware/test_cors.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_errors.py",
+                    "path": "tests/middleware/test_errors.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_gzip.py",
+                    "path": "tests/middleware/test_gzip.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_https_redirect.py",
+                    "path": "tests/middleware/test_https_redirect.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_middleware.py",
+                    "path": "tests/middleware/test_middleware.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_opentelemetry.py",
+                    "path": "tests/middleware/test_opentelemetry.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_session.py",
+                    "path": "tests/middleware/test_session.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_trusted_host.py",
+                    "path": "tests/middleware/test_trusted_host.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  },
+                  {
+                    "name": "test_wsgi.py",
+                    "path": "tests/middleware/test_wsgi.py",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "statics",
+                "path": "tests/statics",
+                "is_dir": true,
+                "file_count": 1,
+                "children": [
+                  {
+                    "name": "example.txt",
+                    "path": "tests/statics/example.txt",
+                    "is_dir": false,
+                    "file_count": 1,
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "__init__.py",
+                "path": "tests/__init__.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "conftest.py",
+                "path": "tests/conftest.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test__utils.py",
+                "path": "tests/test__utils.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_applications.py",
+                "path": "tests/test_applications.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_authentication.py",
+                "path": "tests/test_authentication.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_background.py",
+                "path": "tests/test_background.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_concurrency.py",
+                "path": "tests/test_concurrency.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_config.py",
+                "path": "tests/test_config.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_convertors.py",
+                "path": "tests/test_convertors.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_datastructures.py",
+                "path": "tests/test_datastructures.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_endpoints.py",
+                "path": "tests/test_endpoints.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_exceptions.py",
+                "path": "tests/test_exceptions.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_formparsers.py",
+                "path": "tests/test_formparsers.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_requests.py",
+                "path": "tests/test_requests.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_responses.py",
+                "path": "tests/test_responses.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_routing.py",
+                "path": "tests/test_routing.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_schemas.py",
+                "path": "tests/test_schemas.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_staticfiles.py",
+                "path": "tests/test_staticfiles.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_status.py",
+                "path": "tests/test_status.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_templates.py",
+                "path": "tests/test_templates.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_testclient.py",
+                "path": "tests/test_testclient.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "test_websockets.py",
+                "path": "tests/test_websockets.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              },
+              {
+                "name": "types.py",
+                "path": "tests/types.py",
+                "is_dir": false,
+                "file_count": 1,
+                "children": []
+              }
+            ]
+          },
+          {
+            "name": ".gitignore",
+            "path": ".gitignore",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "AGENTS.md",
+            "path": "AGENTS.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "AI_POLICY.md",
+            "path": "AI_POLICY.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "CITATION.cff",
+            "path": "CITATION.cff",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "LICENSE.md",
+            "path": "LICENSE.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "README.md",
+            "path": "README.md",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "mkdocs.yml",
+            "path": "mkdocs.yml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "pyproject.toml",
+            "path": "pyproject.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          },
+          {
+            "name": "wrangler.toml",
+            "path": "wrangler.toml",
+            "is_dir": false,
+            "file_count": 1,
+            "children": []
+          }
+        ]
+      }
+    },
+    "profiles": [
+      {
+        "stage": "full_scan",
+        "total_ms": 37278,
+        "peak_rss_bytes": 29523968,
+        "steps": [
+          {
+            "id": "git_metadata",
+            "label": "Git metadata",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "file_walk",
+            "label": "Parallel file walk",
+            "ms": 6,
+            "pct": 0.016095284081764045
+          },
+          {
+            "id": "languages",
+            "label": "Language breakdown",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "manifests",
+            "label": "Manifest parsing",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "docs",
+            "label": "Doc previews",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "aggregates",
+            "label": "Dirs, configs, stack tags",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "entrypoints",
+            "label": "Entrypoints, workspace units & QA readiness",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "source_previews",
+            "label": "Source preview cache",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "repo_graph",
+            "label": "Deterministic graph scan",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "history",
+            "label": "Git history & decision scan",
+            "ms": 14,
+            "pct": 0.037555662857449434
+          },
+          {
+            "id": "repo_health",
+            "label": "Deterministic health scoring",
+            "ms": 37254,
+            "pct": 99.93561886367294
+          },
+          {
+            "id": "dir_tree",
+            "label": "Directory tree preview",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      },
+      {
+        "stage": "local_scan_persist",
+        "total_ms": 4,
+        "peak_rss_bytes": 29917184,
+        "steps": [
+          {
+            "id": "serialize",
+            "label": "JSON serialize (inventory → SQLite)",
+            "ms": 0,
+            "pct": 0
+          },
+          {
+            "id": "db_insert",
+            "label": "SQLite insert",
+            "ms": 3,
+            "pct": 75
+          },
+          {
+            "id": "touch_project",
+            "label": "Update repo project metadata",
+            "ms": 0,
+            "pct": 0
+          }
+        ]
+      }
+    ]
+  },
+  "report": {
+    "overview": "Starlette is a Python ASGI framework and toolkit for developers building asynchronous HTTP and WebSocket services. At commit 4e7fc04e5f2c69f60e418ff2107d0f6d9a0fe423, its composable application, routing, middleware, request, and response objects support both complete applications and independently mounted components. AnyIO provides concurrency boundaries, while optional packages supply forms, templates, signed sessions, telemetry, and testing; Cloudflare configuration serves the documentation site.",
+    "agent_prompt": "Onboard to Starlette at commit 4e7fc04e5f2c69f60e418ff2107d0f6d9a0fe423. Treat this checkout as the authority: its package version is 1.7.0, Python requirement is >=3.11, and TestClient prefers httpx2 with a deprecated httpx fallback. This is a reusable Python ASGI library. The Cloudflare configuration publishes generated documentation assets rather than running the framework.\n\nBegin with AGENTS.md, pyproject.toml, README.md, starlette/types.py, starlette/applications.py, and the relevant tests. Documentation headings must have explanatory text before code examples. Follow the existing uv lockfile and dependency groups. AnyIO is the principal runtime dependency; templates, forms, sessions, telemetry, and schema generation require optional packages. Keep changes small and preserve standalone component behavior alongside behavior inside Starlette.\n\nTrace requests through Starlette.__call__, build_middleware_stack, Router.__call__, Router.app, Route.matches, Route.handle, request_response, the endpoint, and Response.__call__. The stack contains outer ServerErrorMiddleware, an optional application body limiter, user middleware, and inner ExceptionMiddleware. Router dispatch respects route order, prioritizes full matches over remembered method mismatches, and performs slash redirects before its default handler. Mount mutates root_path and preserves app_root_path for reverse URLs. Synchronous endpoint functions run through AnyIO worker threads.\n\nFor lifecycle changes, read Router.lifespan and TestClient.__enter__, wait_startup, and wait_shutdown. Lifespan resources belong to the supplied context manager; request state receives a shallow copy. Use TestClient as a context manager when startup and teardown matter. Its in-process transport buffers responses and cannot establish live-server networking or backpressure behavior.\n\nFor request changes, distinguish stream consumption from cached body and JSON access. Follow Request.form into FormParser or MultiPartParser, then UploadFile and FormData.close. Multipart files spool after a memory threshold; that threshold is not an upload-size cap. Total body limits are optional and nested route or mount limits can override them. Preserve cleanup during parser failures and cancellation.\n\nFor persistence changes, sessions are signed, base64-encoded JSON cookies. Cookie emission depends on Session.modified, and access affects Vary: Cookie. Review nested mutations explicitly. For file delivery, preserve StaticFiles containment and symlink semantics, FileResponse range handling, HEAD, pathsend, disconnect handling, and shielded closure. For middleware changes, account for BaseHTTPMiddleware context-variable limitations and errors after response start. Background tasks execute sequentially after sending the response and stop when a task raises.\n\nTests and CI were inspected for this brief, not executed. Inspection was bounded; test presence and coverage configuration do not prove passing results or exhaustive coverage. Under the current read-only mandate, use only rtk-prefixed source reads and searches: do not execute code, install dependencies, run tests, access credentials, or write files. If a later task authorizes execution, start with the relevant test module, then use the repository checks. scripts/test also invokes checks and the global coverage gate outside GitHub Actions. Report exact validation results and remaining uncertainty; do not infer vulnerabilities or performance gains from source inspection alone.",
+    "system_map": {
+      "summary": "The runtime contract is ASGI: a server supplies a mutable scope and asynchronous receive/send channels. Starlette composes a router and middleware, while individual components can also act as ASGI applications. State is held in application or connection mappings, upload temporary files, and signed client cookies; database selection belongs to consuming applications. Packaging and documentation deployment are separate from serving developer applications.",
+      "claims": [
+        {
+          "claim": "ASGIApp is Callable[[Scope, Receive, Send], Awaitable[None]]; users instantiate Starlette and supply an external ASGI server, illustrated by uvicorn main:app.",
+          "sources": [
+            "starlette/types.py#L12-L22",
+            "README.md#L54-L81"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Starlette.__call__ sets scope['app'] and lazily caches a stack ordered as ServerErrorMiddleware, optional RequestBodyLimitMiddleware, user middleware, ExceptionMiddleware, then Router.",
+          "sources": [
+            "starlette/applications.py#L63-L96"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Router.app handles HTTP, WebSocket, and lifespan scopes; Route, WebSocketRoute, Mount, and Host provide endpoint adaptation, subapplication composition, and host-based dispatch.",
+          "sources": [
+            "starlette/routing.py#L199-L242",
+            "starlette/routing.py#L299-L327",
+            "starlette/routing.py#L370-L390",
+            "starlette/routing.py#L468-L478"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Synchronous endpoints and background callbacks cross into AnyIO worker threads through run_in_threadpool; synchronous streaming iterators use iterate_in_threadpool.",
+          "sources": [
+            "starlette/routing.py#L47-L65",
+            "starlette/concurrency.py#L32-L59",
+            "starlette/background.py#L12-L23",
+            "starlette/responses.py#L225-L243"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "State wraps an in-memory dictionary, multipart uploads use SpooledTemporaryFile, and SessionMiddleware stores signed JSON in cookies; documentation leaves database implementation to the consuming application.",
+          "sources": [
+            "starlette/datastructures.py#L664-L695",
+            "starlette/formparsers.py#L222-L240",
+            "starlette/middleware/sessions.py#L50-L78",
+            "docs/database.md#L1-L10"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "The package requires Python >=3.11, anyio>=4,<5, and conditional typing_extensions; the full extra adds itsdangerous, Jinja2, OpenTelemetry API, python-multipart, PyYAML, httpx, and httpx2.",
+          "sources": [
+            "pyproject.toml#L12-L12",
+            "pyproject.toml#L33-L47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hatchling builds the distribution using the version in starlette/__init__.py; scripts/install uses uv sync --frozen, scripts/check runs version consistency, Ruff and mypy checks, and scripts/build runs uv build, Twine, and Zensical.",
+          "sources": [
+            "pyproject.toml#L1-L3",
+            "pyproject.toml#L86-L111",
+            "scripts/install#L1-L5",
+            "scripts/build#L1-L7"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Publish CI builds package and documentation artifacts, publishes PyPI only for tags, and deploys documentation to GitHub Pages and Cloudflare; wrangler.toml points Cloudflare assets at ./site.",
+          "sources": [
+            ".github/workflows/publish.yml#L27-L48",
+            ".github/workflows/publish.yml#L64-L97",
+            ".github/workflows/publish.yml#L99-L121",
+            "wrangler.toml#L1-L7"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "feature_catalog": {
+      "summary": "The public surface centers on developer APIs for composing web services. Routing supports function endpoints, endpoint classes, mounted applications, typed parameters, method restrictions, and reverse URLs. Requests, responses, WebSockets, rendering, authentication, and middleware provide the main service capabilities. Lifecycle handlers, background callbacks, configuration, and an in-process client complete the inspected toolkit.",
+      "claims": [
+        {
+          "claim": "Route supports typed path matching, names, method sets, automatic HEAD inclusion for GET, per-route middleware, and body limits; HTTPEndpoint dispatches method handlers including QUERY and falls back from HEAD to get.",
+          "sources": [
+            "starlette/routing.py#L199-L282",
+            "starlette/endpoints.py#L17-L55"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request exposes URLs, headers, repeated query parameters, cookies, client addresses, streamed or buffered bodies, JSON, and forms; Config resolves prefixed environment values before file values and defaults, with optional casts.",
+          "sources": [
+            "starlette/requests.py#L105-L167",
+            "starlette/requests.py#L234-L311",
+            "starlette/datastructures.py#L378-L402",
+            "starlette/config.py#L94-L140"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response variants supply HTML, text, compact JSON, redirects, streaming, and files; cookie APIs support expiry, Secure, HttpOnly, SameSite, and partitioning, with Response.set_cookie partitioning restricted to Python >=3.14.",
+          "sources": [
+            "starlette/responses.py#L90-L155",
+            "starlette/responses.py#L176-L243",
+            "starlette/responses.py#L299-L342"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebSocket supports acceptance with subprotocols and headers, text/bytes/JSON send and receive, asynchronous iterators, close reasons, and HTTP denial responses when the server advertises websocket.http.response.",
+          "sources": [
+            "starlette/websockets.py#L106-L193"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "StaticFiles serves configured directories or package assets with HTML index/404 handling and conditional responses; Jinja2Templates adds rendering and context processors, while SchemaGenerator builds OpenAPI paths from YAML docstrings and gates QUERY on OpenAPI >=3.2.",
+          "sources": [
+            "starlette/staticfiles.py#L40-L86",
+            "starlette/staticfiles.py#L115-L193",
+            "starlette/templating.py#L117-L156",
+            "starlette/schemas.py#L98-L152"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AuthenticationMiddleware delegates identity to an AuthenticationBackend and exposes auth/user through scope; requires enforces scopes with HTTP errors or named-route redirects, while SessionMiddleware provides signed cookie sessions.",
+          "sources": [
+            "starlette/middleware/authentication.py#L16-L52",
+            "starlette/authentication.py#L25-L98",
+            "starlette/middleware/sessions.py#L16-L91"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware includes CORS preflight/private-network policy, GZip negotiation and media exclusions, trusted-host validation, HTTPS/WSS redirection, total request-body limits, and experimental OpenTelemetry HTTP spans.",
+          "sources": [
+            "starlette/middleware/cors.py#L15-L145",
+            "starlette/middleware/gzip.py#L12-L78",
+            "starlette/middleware/trustedhost.py#L13-L66",
+            "starlette/middleware/opentelemetry.py#L18-L30"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lifespan context managers manage startup/shutdown resources; BackgroundTask and BackgroundTasks attach post-response callbacks, and TestClient offers synchronous HTTP calls, WebSocket sessions, asyncio/trio backends, and lifecycle management.",
+          "sources": [
+            "starlette/routing.py#L645-L670",
+            "starlette/background.py#L12-L36",
+            "starlette/testclient.py#L384-L410",
+            "starlette/testclient.py#L473-L562"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "data_flow": {
+      "summary": "ASGI scope and message streams carry input through middleware and routing into connection objects. Parsing and rendering are generally lazy or explicit, with cached request bodies distinct from consumed streams. Uploads, lifespan state, and sessions have different ownership and cleanup boundaries. Outputs pass through send wrappers, which can modify headers, enforce limits, or collect telemetry before reaching the server.",
+      "claims": [
+        {
+          "claim": "Router.app records scope['router'] and the selected route, then merges child_scope; Route.matches converts regex captures into typed path_params, while Mount.matches updates root_path and preserves app_root_path.",
+          "sources": [
+            "starlette/routing.py#L244-L260",
+            "starlette/routing.py#L396-L427",
+            "starlette/routing.py#L678-L709"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request.stream consumes http.request chunks until more_body is false and raises ClientDisconnect on disconnect; body joins and caches chunks, and json decodes that cached body with json.loads.",
+          "sources": [
+            "starlette/requests.py#L234-L266"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Request._get_form dispatches by Content-Type; FormParser percent-decodes URL-encoded field names and values into FormData, enforcing field count and combined encoded name/value size through parser callbacks.",
+          "sources": [
+            "starlette/requests.py#L268-L311",
+            "starlette/formparsers.py#L78-L102",
+            "starlette/formparsers.py#L108-L146"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Multipart filename parts become UploadFile objects backed by spooled temporary files; callbacks queue bytes, parse awaits writes and rewinds completed files, and UploadFile offloads writes that would roll onto disk.",
+          "sources": [
+            "starlette/formparsers.py#L222-L245",
+            "starlette/formparsers.py#L274-L301",
+            "starlette/datastructures.py#L436-L470"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Multipart parsing closes all tracked temporary files on BaseException; successful form ownership passes to FormData, whose close method closes uploads, and Request.close delegates to it.",
+          "sources": [
+            "starlette/formparsers.py#L293-L301",
+            "starlette/datastructures.py#L482-L497",
+            "starlette/requests.py#L313-L326",
+            "starlette/_utils.py#L92-L98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Router.lifespan merges yielded mappings into lifespan scope state; connection.state wraps the request scope dictionary, and TestClient copies app_state shallowly into HTTP and WebSocket scopes.",
+          "sources": [
+            "starlette/routing.py#L650-L660",
+            "starlette/requests.py#L188-L196",
+            "starlette/testclient.py#L246-L277",
+            "docs/lifespan.md#L73-L82"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "SessionMiddleware verifies timestamped cookie signatures and decodes base64 JSON into scope['session']; response-start handling adds Vary on access, signs modified nonempty sessions, and expires cleared existing sessions.",
+          "sources": [
+            "starlette/middleware/sessions.py#L47-L91",
+            "starlette/requests.py#L169-L176"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response renders bytes before sending start/body messages, while StreamingResponse emits chunks with more_body; TestClient captures these messages into BytesIO and returns a buffered httpx-compatible Response, discarding HEAD bodies.",
+          "sources": [
+            "starlette/responses.py#L34-L54",
+            "starlette/responses.py#L166-L173",
+            "starlette/responses.py#L251-L258",
+            "starlette/testclient.py#L316-L376"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "behavior_traces": {
+      "summary": "The inspected flows follow explicit protocol transitions rather than a standalone executable entrypoint. Startup establishes resources, HTTP routing adapts endpoints, and session persistence occurs when response headers start. Upload and static-file paths cross filesystem boundaries with distinct cleanup and containment rules. WebSocket and exception paths enforce state-dependent behavior that is material to callers.",
+      "claims": [
+        {
+          "claim": "Startup: TestClient.__enter__ starts a BlockingPortal and lifespan task → wait_startup sends lifespan.startup → Starlette.__call__ builds its stack → Router.app selects lifespan → Router.lifespan enters the context and sends startup.complete; exit triggers shutdown and context teardown, with failures distinguished by startup state.",
+          "sources": [
+            "starlette/testclient.py#L496-L562",
+            "starlette/applications.py#L92-L96",
+            "starlette/routing.py#L645-L685"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTP success: Starlette.__call__ → middleware stack → Router.app → Route.matches → scope update → Route.handle → request_response creates Request → endpoint runs asynchronously or in a worker thread → returned Response sends headers/body and then awaits its background callback.",
+          "sources": [
+            "starlette/applications.py#L92-L96",
+            "starlette/routing.py#L47-L65",
+            "starlette/routing.py#L244-L282",
+            "starlette/responses.py#L166-L173"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Routing fallback: Router.app returns on the first FULL match, remembers the first PARTIAL match for 405, otherwise tries a slash-adjusted scope and RedirectResponse, then calls default; unmatched WebSockets close and unmatched HTTP inside Starlette raises HTTPException(404).",
+          "sources": [
+            "starlette/routing.py#L622-L635",
+            "starlette/routing.py#L688-L728",
+            "starlette/routing.py#L273-L282"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload: endpoint calls Request.form → _get_form selects MultiPartParser → parse streams chunks into callbacks → on_headers_finished creates UploadFile → queued writes and seek(0) complete → FormData returns; parser failures close temporary files, while form context exit closes successful uploads.",
+          "sources": [
+            "starlette/requests.py#L268-L322",
+            "starlette/formparsers.py#L222-L245",
+            "starlette/formparsers.py#L250-L301",
+            "starlette/_utils.py#L92-L98"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session persistence: SessionMiddleware loads and verifies an incoming cookie → request.session marks access → Session.__setitem__ marks modification → endpoint returns Response → send_wrapper observes http.response.start and signs JSON into Set-Cookie; read-only access adds Vary without rewriting the cookie.",
+          "sources": [
+            "starlette/middleware/sessions.py#L47-L91",
+            "starlette/middleware/sessions.py#L94-L107",
+            "starlette/requests.py#L169-L176",
+            "tests/middleware/test_session.py#L248-L289"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static delivery: Mount updates root_path → StaticFiles.__call__ checks configuration and normalizes the path → get_response runs lookup_path in a thread → file_response selects 304 or FileResponse → FileResponse handles HEAD, pathsend, full content, or byte ranges; malformed and unsatisfiable ranges return 400 and 416.",
+          "sources": [
+            "starlette/routing.py#L396-L427",
+            "starlette/staticfiles.py#L88-L138",
+            "starlette/staticfiles.py#L181-L193",
+            "starlette/responses.py#L344-L410"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "WebSocket endpoint: WebSocketRoute adapts a function through websocket_session → endpoint calls WebSocket.accept, which first receives connect if necessary → receive_text/bytes/json validates accepted state → send methods validate application state → close transitions to disconnected; denial responses require the advertised server extension.",
+          "sources": [
+            "starlette/routing.py#L70-L84",
+            "starlette/routing.py#L313-L327",
+            "starlette/websockets.py#L41-L116",
+            "starlette/websockets.py#L122-L193"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Error handling: ExceptionMiddleware installs handlers in scope → wrap_app_handling_exceptions chooses HTTP status then exception-MRO handlers, rejecting replacement after response start → unhandled HTTP errors reach ServerErrorMiddleware, which emits a debug/custom/default 500 only before start and always re-raises.",
+          "sources": [
+            "starlette/middleware/exceptions.py#L47-L69",
+            "starlette/_exception_handler.py#L16-L63",
+            "starlette/middleware/errors.py#L149-L186"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "testing_signals": {
+      "summary": "Tests and CI were inspected, not executed; no passing result or measured coverage is established here. The inspected suite uses pytest, AnyIO backends, in-process TestClient calls, and direct ASGI message tests. Assertions cover lifecycle, body-limit branches, upload cleanup, file containment, ranges, sessions, and background execution. Coverage excludes selected branches, and this bounded inspection does not establish exhaustive scenario or deployment coverage.",
+      "claims": [
+        {
+          "claim": "The pytest harness builds TestClient with AnyIO backend fixtures and optionally activates BlockBuster for Starlette blocking-call detection; lifespan tests assert startup inside the client context and teardown after exit.",
+          "sources": [
+            "tests/conftest.py#L8-L48",
+            "tests/test_applications.py#L390-L409"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Test Suite CI defines Ubuntu jobs for Python 3.11–3.15, installs dependencies, builds package/docs, runs scripts/test and scripts/coverage, and skips scripts/check specifically on Python 3.14; these definitions were inspected, not run.",
+          "sources": [
+            ".github/workflows/main.yml#L14-L47"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Coverage measures branches in both starlette and tests and scripts/coverage requires 100%; overloads, NotImplementedError, and explicit pragma exclusions limit what that gate measures, so README's coverage statement is not a verified result.",
+          "sources": [
+            "pyproject.toml#L126-L134",
+            "scripts/coverage#L1-L5",
+            "starlette/applications.py#L98-L124",
+            "README.md#L35-L46"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Upload tests assert spool rollover occurs outside the application thread and temporary files close after stream failure or simulated disk-full OSError; these are executable assertions, not observed successes.",
+          "sources": [
+            "tests/test_formparsers.py#L349-L365",
+            "tests/test_formparsers.py#L1018-L1040",
+            "tests/test_formparsers.py#L1043-L1077"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Body-limit tests exercise rejection before receive, accumulated bytes without reliable Content-Length, failure after response start, enforcement before user middleware, and route limits that raise or lower the application limit.",
+          "sources": [
+            "tests/middleware/test_body_limit.py#L76-L141",
+            "tests/middleware/test_body_limit.py#L145-L170",
+            "tests/middleware/test_body_limit.py#L244-L292"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Static-file tests call ASGI helpers directly for traversal because the client normalizes paths; response tests assert 100-range acceptance, over-limit fallback to full 200, malformed-range 400, and unsatisfiable-range 416.",
+          "sources": [
+            "tests/test_staticfiles.py#L606-L656",
+            "tests/test_responses.py#L964-L1025"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session tests distinguish modification-driven Set-Cookie from read-only access and verify Vary: Cookie; background tests assert sequential callbacks and that a failing first task prevents the next task from executing.",
+          "sources": [
+            "tests/middleware/test_session.py#L248-L329",
+            "tests/test_background.py#L47-L89"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "CodSpeed CI selects ten benchmark modules in simulation,memory mode on Python 3.14 with fixed allocator/hash settings; routing fixtures compare 20/120-route tables using fresh scopes and status assertions. Neither benchmarks nor CI were executed, and in-process transport evidence does not establish live-server behavior.",
+          "sources": [
+            ".github/workflows/benchmark.yml#L14-L55",
+            "benchmarks/routing_benchmark.py#L16-L71",
+            "starlette/testclient.py#L348-L376"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "risk_map": {
+      "summary": "These findings are source observations and explicitly labeled hypotheses, not confirmed vulnerabilities. Material boundaries include optional body limits, client-readable signed sessions, filesystem serving, diagnostic output, and telemetry export. Middleware task boundaries and response-start state create compatibility-sensitive behavior. Existing tests cover several of these boundaries, but they were not executed during this inspection.",
+      "claims": [
+        {
+          "claim": "Total request-body size is unlimited by default, Request.body buffers all chunks, and multipart max_part_size applies to non-file parts; spool_max_size is a disk-rollover threshold rather than a file-size cap. Nested limit responders replace the active limit rather than always choosing the minimum.",
+          "sources": [
+            "starlette/applications.py#L49-L58",
+            "starlette/requests.py#L254-L260",
+            "starlette/formparsers.py#L149-L191",
+            "starlette/middleware/body_limit.py#L71-L80"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Session payloads are base64 JSON protected by TimestampSigner, without encryption in this path; HttpOnly and SameSite=lax are defaults, while Secure requires https_only=True.",
+          "sources": [
+            "starlette/middleware/sessions.py#L16-L40",
+            "starlette/middleware/sessions.py#L50-L78"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Hypothesis: mutating a nested dictionary or list in request.session without assigning through Session can leave modified false and omit Set-Cookie, because tracking covers top-level dict operations rather than recursively wrapped values; the inspected tests do not settle this nested-mutation behavior.",
+          "sources": [
+            "starlette/middleware/sessions.py#L65-L79",
+            "starlette/middleware/sessions.py#L94-L137",
+            "tests/middleware/test_session.py#L292-L329"
+          ],
+          "kind": "inference"
+        },
+        {
+          "claim": "StaticFiles rejects absolute paths and checks resolved containment by default, but follow_symlink=True uses lexical absolute paths; FileResponse separately accepts application-supplied filesystem paths without applying StaticFiles directory containment.",
+          "sources": [
+            "starlette/staticfiles.py#L160-L179",
+            "starlette/responses.py#L303-L321",
+            "starlette/responses.py#L351-L360"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "debug=True sends exception tracebacks to clients, choosing HTML from the Accept header or plain text otherwise; ServerErrorMiddleware still re-raises after generating its response.",
+          "sources": [
+            "starlette/applications.py#L35-L36",
+            "starlette/middleware/errors.py#L163-L186",
+            "starlette/middleware/errors.py#L246-L256"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Experimental OpenTelemetryMiddleware records query strings, client addresses, and user agents on spans and extracts incoming trace context; its API and emitted telemetry explicitly may change in minor releases without deprecation.",
+          "sources": [
+            "starlette/middleware/opentelemetry.py#L18-L30",
+            "starlette/middleware/opentelemetry.py#L64-L95"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BaseHTTPMiddleware introduces task-group and receive-cache boundaries; the suite explicitly marks backward context-variable propagation as xfail, and consumed streams are forwarded downstream as an empty body rather than replayed.",
+          "sources": [
+            "starlette/middleware/base.py#L20-L25",
+            "starlette/middleware/base.py#L61-L93",
+            "starlette/middleware/base.py#L112-L153",
+            "tests/middleware/test_base.py#L229-L251"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "BackgroundTasks stop on the first exception after response delivery, when exception handlers cannot replace started responses; the deprecated WSGI adapter also buffers the whole request and uses an unbounded memory stream, making these distinct compatibility and resource-review hotspots.",
+          "sources": [
+            "starlette/background.py#L34-L36",
+            "starlette/_exception_handler.py#L55-L63",
+            "tests/test_background.py#L68-L89",
+            "starlette/middleware/wsgi.py#L18-L23",
+            "starlette/middleware/wsgi.py#L92-L108"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "extension_points": {
+      "summary": "Composition occurs through ordinary Python interfaces and ASGI callables. Route lists, converter registries, middleware factories, authentication backends, and lifespan context managers are explicit insertion points. Rendering and schema classes support specialization without replacing application dispatch. Optional integrations and mounted third-party applications keep concerns such as databases and GraphQL outside the core lifecycle.",
+      "claims": [
+        {
+          "claim": "Custom routing components implement BaseRoute.matches, url_path_for, and handle; Router accepts an ordered route sequence and a custom default ASGI handler.",
+          "sources": [
+            "starlette/routing.py#L169-L196",
+            "starlette/routing.py#L579-L594"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "register_url_convertor inserts Convertor instances into CONVERTOR_TYPES; compile_path consumes their regex and Route.matches uses convert, while reverse URL generation uses the converter contract.",
+          "sources": [
+            "starlette/convertors.py#L10-L17",
+            "starlette/convertors.py#L79-L89",
+            "starlette/routing.py#L129-L146",
+            "starlette/routing.py#L244-L271"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware stores a factory and positional/keyword arguments; Starlette, Router, Route, and Mount construct wrappers in reversed declaration order, allowing scoped middleware composition.",
+          "sources": [
+            "starlette/middleware/__init__.py#L17-L29",
+            "starlette/applications.py#L74-L83",
+            "starlette/routing.py#L229-L233",
+            "starlette/routing.py#L379-L388"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "AuthenticationBackend.authenticate returns credentials/user or None, AuthenticationMiddleware accepts on_error, and BaseUser defines authenticated/display-name/identity properties for custom identity implementations.",
+          "sources": [
+            "starlette/authentication.py#L105-L126",
+            "starlette/middleware/authentication.py#L16-L52"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Exception mappings accept status codes or exception classes; the wrapper resolves class handlers through exception MRO, while Starlette reserves 500 and Exception mappings for outer server-error handling.",
+          "sources": [
+            "starlette/applications.py#L63-L78",
+            "starlette/middleware/exceptions.py#L36-L45",
+            "starlette/_exception_handler.py#L16-L20"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "HTTPEndpoint subclasses supply HTTP method functions; WebSocketEndpoint subclasses override on_connect, on_receive, on_disconnect, and encoding, with dispatch invoking those hooks around the receive loop.",
+          "sources": [
+            "starlette/endpoints.py#L17-L46",
+            "starlette/endpoints.py#L58-L89",
+            "starlette/endpoints.py#L119-L127"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Response.render is a serializer override point; Jinja2Templates accepts a custom Environment and context processors, and BaseSchemaGenerator defines get_schema with reusable endpoint/docstring extraction.",
+          "sources": [
+            "starlette/responses.py#L34-L54",
+            "starlette/responses.py#L184-L204",
+            "starlette/templating.py#L84-L112",
+            "starlette/schemas.py#L36-L40"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Lifespan supplies an async context manager that can yield shared resources; Mount accepts arbitrary ASGI applications, supporting external database ownership and third-party GraphQL integrations documented after built-in GraphQL removal.",
+          "sources": [
+            "starlette/types.py#L20-L22",
+            "starlette/routing.py#L370-L390",
+            "docs/database.md#L1-L10",
+            "docs/graphql.md#L1-L8"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    },
+    "agent_handoff": {
+      "summary": "This brief is based on bounded source inspection at the requested commit; tests, benchmarks, and CI were inspected, not executed. Start edits from the ASGI contract and the relevant implementation/test pair, then follow cross-module state and message ownership. Preserve differences between standalone components, composed applications, and server-supported extensions. Existing repository scripts define future validation, but the current task authorizes read-only inspection only.",
+      "claims": [
+        {
+          "claim": "Use tests and workflow definitions as intended checks, not passing evidence: this investigation executed neither tests nor CI. TestClient invokes the application in process and buffers output, so its assertions have a different boundary from deployed server validation.",
+          "sources": [
+            "scripts/test#L1-L13",
+            ".github/workflows/main.yml#L33-L47",
+            "starlette/testclient.py#L348-L376"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Read types.py, applications.py, routing.py, requests.py, responses.py, and exception handling before cross-cutting changes; preserve ASGI scope mutation, lazy stack construction, and the response-start barrier.",
+          "sources": [
+            "starlette/types.py#L12-L26",
+            "starlette/applications.py#L63-L96",
+            "starlette/routing.py#L678-L709",
+            "starlette/_exception_handler.py#L31-L63"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Routing edits must retain first-full-match precedence, partial-match 405 handling, slash redirects, mount root_path semantics, and reverse URLs; synthetic routing benchmarks provide early/late/miss/wrong-method scenarios for later authorized measurement.",
+          "sources": [
+            "starlette/routing.py#L396-L451",
+            "starlette/routing.py#L688-L728",
+            "benchmarks/routing_benchmark.py#L44-L71"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For request/upload changes, review stream reuse, total limits versus spool thresholds, worker-thread rollover, and cleanup on stream or disk failure; prioritize tests/test_requests.py, tests/test_formparsers.py, and tests/middleware/test_body_limit.py in a later executable task.",
+          "sources": [
+            "starlette/requests.py#L234-L266",
+            "starlette/formparsers.py#L149-L191",
+            "tests/test_formparsers.py#L349-L365",
+            "tests/middleware/test_body_limit.py#L76-L141"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Middleware changes require both HTTP and non-HTTP scope review; BaseHTTPMiddleware has a documented-in-test context propagation limitation, while session persistence and file delivery require their own mutation/header and containment/range checks.",
+          "sources": [
+            "starlette/middleware/base.py#L96-L109",
+            "tests/middleware/test_base.py#L229-L251",
+            "tests/middleware/test_session.py#L248-L289",
+            "tests/test_staticfiles.py#L606-L656"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Follow uv.lock and scripts/install's frozen synchronization; preserve strict mypy and Ruff's 120-character line policy, and test optional dependency/import behavior when changing integrations, including TestClient's httpx2 preference and deprecated httpx fallback.",
+          "sources": [
+            "scripts/install#L1-L5",
+            "uv.lock#L1-L13",
+            "pyproject.toml#L89-L111",
+            "starlette/testclient.py#L26-L45"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "For later authorized verification, the direct targeted form is uv run coverage run -m pytest <test-file>; scripts/test additionally invokes scripts/check and the global 100% coverage report outside GitHub Actions. A targeted run alone may not satisfy that global threshold.",
+          "sources": [
+            "scripts/test#L5-L13",
+            "scripts/check#L3-L10",
+            "scripts/coverage#L1-L5",
+            "pyproject.toml#L126-L134"
+          ],
+          "kind": "evidence"
+        },
+        {
+          "claim": "Documentation headings require explanatory text before snippets; version authority is starlette/__init__.py and sync-version compares it with release notes. Contributing docs contain stale examples naming tests/test_application.py and __version__.py, so verify actual tracked paths before following examples or release instructions.",
+          "sources": [
+            "AGENTS.md#L1-L3",
+            "starlette/__init__.py#L1-L1",
+            "scripts/sync-version#L3-L9",
+            "docs/contributing.md#L64-L70",
+            "docs/contributing.md#L153-L158"
+          ],
+          "kind": "evidence"
+        }
+      ]
+    }
+  },
+  "analysis": {
+    "agent": "codex",
+    "model": "cli:codex",
+    "runtime_ms": 399273,
+    "cost_usd": null,
+    "collected_at": "2026-10-02T17:42:23.210221+00:00",
+    "source_commit_sha": "4e7fc04e5f2c69f60e418ff2107d0f6d9a0fe423",
+    "citation_validation": {
+      "status": "passed",
+      "claim_count": 64,
+      "path_and_line_bounds": true,
+      "semantic_correctness_established": false
+    },
+    "runtime_verification": {
+      "tests_executed": false,
+      "upstream_code_executed": false
+    },
+    "source_review": {
+      "status": "reviewed_bounded",
+      "all_claim_text_screened": true,
+      "independently_source_checked_claim_count": 59,
+      "private_review_receipt_sha256": "84ed8f039cc745d69bf4405563e999c34463448c2892b69f00a41fde7f86d5cb",
+      "full_semantic_correctness_established": false
+    }
+  },
+  "public_export": {
+    "private_original_record_sha256": "1a3717b4bf74cd43178f3fe0fd7c20c66de338cc623bf54b4f921dc97b415898",
+    "omitted_local_fields": [
+      "scan.inventory.repo_path"
+    ],
+    "original_record_retained_privately": true,
+    "note": "Public corpus projection; embedded scan omits the local clone path. Hash identifies the original corpus record, not raw CLI stdout."
+  }
+}

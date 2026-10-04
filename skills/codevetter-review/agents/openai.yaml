@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeVetter Review"
+  short_description: "Review exact changes with executable evidence"
+  default_prompt: "Use $codevetter-review for this repository and preserve the evidence and limitations."
+policy:
+  allow_implicit_invocation: true
