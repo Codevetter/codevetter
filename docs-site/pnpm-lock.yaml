@@ -31,7 +31,7 @@ overrides:
 
 patchedDependencies:
   http-cache-semantics@4.3.0:
-    hash: dc6aee07d0633d90be8b909c023c8715b82aed5e2965be67a6d67ff9acd3bf7a
+    hash: 1bde1fe699a4c0f618ade5961734d1d414333292a27feacc6780a501009c0c74
     path: ../patches/http-cache-semantics@4.3.0.patch
 
 importers:
