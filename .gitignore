@@ -32,6 +32,7 @@ crates/codevetter-core/resources/rustsec-advisory-db/snapshot/
 # Local agent/tool state and output — not shared repo content.
 .claude/projects/
 .fleet/
+.fleet-local/
 .impeccable/
 
 # IDE
