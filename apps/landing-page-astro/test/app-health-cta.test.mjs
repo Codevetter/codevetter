@@ -66,7 +66,8 @@ test('newsletter markup and hosted loader require an explicit project key', asyn
   assert.match(footer, /import\.meta\.env\.PUBLIC_SAASMAKER_NEWSLETTER_KEY\?\.trim\(\)/u);
   assert.match(footer, /\{newsletterProjectKey && \(/u);
   assert.match(footer, /project-key=\{newsletterProjectKey\}/u);
+  assert.match(footer, /kind="newsletter"\s+layout="compact"\s+integrated\s+privacy-url=/u);
   assert.match(layout, /\{newsletterProjectKey && \(/u);
-  assert.match(layout, /https:\/\/sassmaker\.com\/newsletter-capture\.js/u);
+  assert.match(layout, /https:\/\/sassmaker\.com\/newsletter-capture\.js\?v=precise-b0adaa67/u);
   assert.doesNotMatch(`${footer}\n${layout}`, /pk_(?:example|test)/u);
 });

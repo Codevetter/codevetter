@@ -1,0 +1,16 @@
+{
+  "product": "CodeVetter",
+  "asset": "/footer-art/codevetter-evidence-workbench-v1.webp",
+  "sha256": "84b3c8ac49343d24ebdb021e160f4c52af260c8d6bc6dabf0d962b58ba8b2ee0",
+  "bytes": 177942,
+  "dimensions": {
+    "width": 2172,
+    "height": 724
+  },
+  "alt": "An illustrated verification workbench connects a code change, test results, and a review verdict.",
+  "credit": "Original illustration for CodeVetter",
+  "sourceAttribution": "Original product-concept illustration generated for the selected C Precise direction and retained with its source provenance in private owner evidence.",
+  "sourceSha256": "a68ee88c59362aea603569ced0ee1ec94505d0df272aaca5cb1d2b8872fa744c",
+  "encoding": "WebP derivative produced from the retained original with cwebp -q 88 -m 6.",
+  "purpose": "Concept artwork only; it does not depict an actual CodeVetter execution or verification result."
+}

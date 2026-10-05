@@ -37,6 +37,74 @@ const routes = [...sitemap.matchAll(/<loc>\s*([^<]+)\s*<\/loc>/g)].map((match) =
 const routeSet = new Set(routes.map(canonicalUrl));
 const failures = [];
 
+// The Precise footer assets are shipped from Astro's public directory. Verify
+// the actual deployment bundle, not only the source tree, so a future copy or
+// build change cannot silently drop or alter its local art/font files.
+for (const [assetPath, provenancePath] of [
+  ['footer-art/codevetter-evidence-workbench-v1.webp', 'footer-art/provenance.json'],
+  ['fonts/fleet-footer-precise-v1/geist.woff2', 'fonts/fleet-footer-precise-v1/provenance.json'],
+  [
+    'fonts/fleet-footer-precise-v1/geistmono.woff2',
+    'fonts/fleet-footer-precise-v1/provenance.json',
+  ],
+  [
+    'fonts/fleet-footer-precise-v1/newsreader.woff2',
+    'fonts/fleet-footer-precise-v1/provenance.json',
+  ],
+  ['fonts/fleet-footer-precise-v1/geist-OFL.txt', 'fonts/fleet-footer-precise-v1/provenance.json'],
+  [
+    'fonts/fleet-footer-precise-v1/geistmono-OFL.txt',
+    'fonts/fleet-footer-precise-v1/provenance.json',
+  ],
+  [
+    'fonts/fleet-footer-precise-v1/newsreader-OFL.txt',
+    'fonts/fleet-footer-precise-v1/provenance.json',
+  ],
+]) {
+  const artifact = path.join(dist, assetPath);
+  const provenanceFile = path.join(dist, provenancePath);
+  if (!fs.existsSync(artifact) || !fs.existsSync(provenanceFile)) {
+    failures.push(`Precise footer bundle is missing ${assetPath} or its provenance`);
+    continue;
+  }
+  const bytes = fs.readFileSync(artifact);
+  const digest = createHash('sha256').update(bytes).digest('hex');
+  const provenance = JSON.parse(fs.readFileSync(provenanceFile, 'utf8'));
+  const assetName = path.basename(assetPath);
+  const font = provenance.fonts?.find(
+    (entry) => entry.asset === assetName || entry.license === assetName
+  );
+  const isLicense = font?.license === assetName;
+  const expectedHash = provenance.sha256 ?? (isLicense ? font?.licenseSha256 : font?.sha256);
+  const expectedBytes = provenance.bytes ?? (isLicense ? font?.licenseBytes : font?.bytes);
+  if (digest !== expectedHash || bytes.length !== expectedBytes) {
+    failures.push(`Precise footer bundle bytes do not match provenance for ${assetPath}`);
+  }
+}
+const builtLandingHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+for (const required of [
+  'data-fleet-footer-project="codevetter"',
+  'font-base="/fonts/fleet-footer-precise-v1/"',
+  'art-src="/footer-art/codevetter-evidence-workbench-v1.webp"',
+  'project-strip.js?v=precise-b0adaa67',
+  'ai-chat-footer.js?v=precise-b0adaa67',
+  'data-project="codevetter"',
+  'data-theme="dark"',
+  'data-host-only="true"',
+  'data-surface="web"',
+]) {
+  if (!builtLandingHtml.includes(required))
+    failures.push(`Built landing page is missing ${required}`);
+}
+const builtScriptTags = [...builtLandingHtml.matchAll(/<script\b[^>]*>/g)].map((match) => match[0]);
+for (const name of ['project-strip', 'ai-chat-footer']) {
+  const count = builtScriptTags.filter((tag) =>
+    new RegExp(`src="[^"]*${name}\\.js(?:\\?[^"]*)?"`).test(tag)
+  ).length;
+  if (count !== 1)
+    failures.push(`Built landing page contains ${count} ${name} loaders; expected one`);
+}
+
 const aiCatalog = JSON.parse(
   fs.readFileSync(path.join(dist, '.well-known', 'ai-catalog.json'), 'utf8')
 );
