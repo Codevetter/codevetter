@@ -64,51 +64,53 @@ const year = new Date().getFullYear();
     art-position="50% 52%"
     art-credit="Original illustration for CodeVetter"
   >
-    <div slot="navigation" class="cv-precise-navigation">
-      <div class="cv-precise-identity">
-        <a href="/" aria-label="CodeVetter home" class="cv-precise-wordmark">CodeVetter</a>
-        <p>
-          Execution-backed verification for coding-agent changes. Preserve the task, exact
-          change, executable evidence, limitations, and measurable verdict.
-        </p>
-      </div>
+    <div slot="navigation" class="cv-precise-navigation-frame">
+      <div class="cv-precise-navigation">
+        <div class="cv-precise-identity">
+          <a href="/" aria-label="CodeVetter home" class="cv-precise-wordmark">CodeVetter</a>
+          <p>
+            Execution-backed verification for coding-agent changes. Preserve the task, exact
+            change, executable evidence, limitations, and measurable verdict.
+          </p>
+        </div>
 
-      <nav aria-label="CodeVetter footer navigation" class="cv-precise-links">
-        {cols.map((c) => (
-          <div>
-            <h2>{c.label}</h2>
-            <ul>
-              {c.items.map((it) => (
-                <li>
-                  <a
-                    href={it.h}
-                    aria-label={it.iconOnly ? 'GitHub repository' : undefined}
-                    title={it.iconOnly ? 'GitHub repository' : undefined}
-                    target={it.iconOnly ? '_blank' : undefined}
-                    rel={it.iconOnly ? 'noopener noreferrer' : undefined}
-                  >
-                    {it.iconOnly ? (
-                      <GitHubIcon width={20} height={20} />
-                    ) : (
-                      <>
-                        {it.icon && <Icon name={it.icon} width={14} height={14} />}
-                        {it.l}
-                      </>
-                    )}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </nav>
+        <nav aria-label="CodeVetter footer navigation" class="cv-precise-links">
+          {cols.map((c) => (
+            <div>
+              <h2>{c.label}</h2>
+              <ul>
+                {c.items.map((it) => (
+                  <li>
+                    <a
+                      href={it.h}
+                      aria-label={it.iconOnly ? 'GitHub repository' : undefined}
+                      title={it.iconOnly ? 'GitHub repository' : undefined}
+                      target={it.iconOnly ? '_blank' : undefined}
+                      rel={it.iconOnly ? 'noopener noreferrer' : undefined}
+                    >
+                      {it.iconOnly ? (
+                        <GitHubIcon width={20} height={20} />
+                      ) : (
+                        <>
+                          {it.icon && <Icon name={it.icon} width={14} height={14} />}
+                          {it.l}
+                        </>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
 
-      <div class="cv-precise-legal">
-        <span>© {year} CodeVetter · ISC License</span>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-        <a href="https://sarthakagrawal.dev">Sarthak</a>
-        <span>Review suggests. Evidence decides.</span>
+        <div class="cv-precise-legal">
+          <span>© {year} CodeVetter · ISC License</span>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="https://sarthakagrawal.dev">Sarthak</a>
+          <span>Review suggests. Evidence decides.</span>
+        </div>
       </div>
     </div>
 
@@ -151,6 +153,12 @@ const year = new Date().getFullYear();
     width: 100%;
     color: #e6e8eb;
     background: #050505;
+  }
+
+  .cv-precise-navigation-frame {
+    width: 100%;
+    min-width: 0;
+    container-type: inline-size;
   }
 
   .cv-precise-navigation {
@@ -268,7 +276,7 @@ const year = new Date().getFullYear();
     text-underline-offset: 0.22em;
   }
 
-  @media (min-width: 48rem) {
+  @container (min-width: 42rem) {
     .cv-precise-navigation {
       grid-template-columns: minmax(12rem, 0.9fr) minmax(0, 2fr);
       gap: 2.5rem;

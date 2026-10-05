@@ -96,7 +96,9 @@ for (const required of [
   if (!builtLandingHtml.includes(required))
     failures.push(`Built landing page is missing ${required}`);
 }
-const builtScriptTags = [...builtLandingHtml.matchAll(/<script\b[^>]*>/g)].map((match) => match[0]);
+const builtScriptTags = [...builtLandingHtml.matchAll(/<script\b[^>]*>/gi)].map(
+  (match) => match[0]
+);
 for (const name of ['project-strip', 'ai-chat-footer']) {
   const count = builtScriptTags.filter((tag) =>
     new RegExp(`src="[^"]*${name}\\.js(?:\\?[^"]*)?"`).test(tag)
