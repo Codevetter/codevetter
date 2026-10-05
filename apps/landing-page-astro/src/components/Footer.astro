@@ -29,8 +29,6 @@ const cols = [
       { l: 'vs CodeRabbit', h: '/codevetter-vs-coderabbit' },
       { l: 'vs Greptile', h: '/codevetter-vs-greptile' },
       { l: 'Benchmark', h: '/benchmark' },
-      { l: 'Privacy', h: '/privacy' },
-      { l: 'Terms', h: '/terms' },
     ],
   },
   {
@@ -38,6 +36,8 @@ const cols = [
     items: [
       { l: 'About', h: '/about' },
       { l: 'Contact', h: '/contact' },
+      { l: 'Privacy', h: '/privacy' },
+      { l: 'Terms', h: '/terms' },
       { l: 'Source', h: 'https://github.com/Codevetter/codevetter', icon: 'github', iconOnly: true },
       { l: 'Twitter', h: 'https://x.com/sarthakcodes', icon: 'twitter' },
       { l: 'Email', h: 'mailto:hello@codevetter.dev', icon: 'mail' },
@@ -48,86 +48,247 @@ const cols = [
 const year = new Date().getFullYear();
 ---
 
-<footer class="relative border-t border-white/5 bg-[#050505] pt-24 pb-12 overflow-hidden">
-  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-
-  <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-6 gap-12">
-    <div class="col-span-2 space-y-6">
-      <div class="flex items-center gap-2.5">
-        <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 border border-blue-500/20">
-          <Icon name="search-code" class="w-4 h-4 text-blue-400" width={16} height={16} />
+<footer class="cv-precise-footer" aria-label="CodeVetter footer">
+  <fleet-footer-extension
+    data-fleet-footer-project="codevetter"
+    product-name="CodeVetter"
+    theme="dark"
+    surface="web"
+    font-base="/fonts/fleet-footer-precise-v1/"
+    signature-font="inherit"
+    signature-name="CodeVetter"
+    art-src="/footer-art/codevetter-evidence-workbench-v1.webp"
+    art-alt="An illustrated verification workbench connects a code change, test results, and a review verdict."
+    art-width="2172"
+    art-height="724"
+    art-position="50% 52%"
+    art-credit="Original illustration for CodeVetter"
+  >
+    <div slot="navigation" class="cv-precise-navigation-frame">
+      <div class="cv-precise-navigation">
+        <div class="cv-precise-identity">
+          <a href="/" aria-label="CodeVetter home" class="cv-precise-wordmark">CodeVetter</a>
+          <p>
+            Execution-backed verification for coding-agent changes. Preserve the task, exact
+            change, executable evidence, limitations, and measurable verdict.
+          </p>
         </div>
-        <span class="font-display text-lg font-bold tracking-tight text-white">
-          CodeVetter
-        </span>
+
+        <nav aria-label="CodeVetter footer navigation" class="cv-precise-links">
+          {cols.map((c) => (
+            <div>
+              <h2>{c.label}</h2>
+              <ul>
+                {c.items.map((it) => (
+                  <li>
+                    <a
+                      href={it.h}
+                      aria-label={it.iconOnly ? 'GitHub repository' : undefined}
+                      title={it.iconOnly ? 'GitHub repository' : undefined}
+                      target={it.iconOnly ? '_blank' : undefined}
+                      rel={it.iconOnly ? 'noopener noreferrer' : undefined}
+                    >
+                      {it.iconOnly ? (
+                        <GitHubIcon width={20} height={20} />
+                      ) : (
+                        <>
+                          {it.icon && <Icon name={it.icon} width={14} height={14} />}
+                          {it.l}
+                        </>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        <div class="cv-precise-legal">
+          <span>© {year} CodeVetter · ISC License</span>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="https://sarthakagrawal.dev">Sarthak</a>
+          <span>Review suggests. Evidence decides.</span>
+        </div>
       </div>
-      <p class="text-sm text-gray-400 max-w-xs leading-relaxed">
-        Execution-backed verification for coding-agent changes. Preserve the
-        task, exact change, executable evidence, limitations, and measurable verdict.
-      </p>
-      <a href="/benchmark" data-log="benchmark_opened" class="inline-flex text-xs font-mono text-[--color-accent] hover:underline">Inspect public evidence →</a>
     </div>
 
-    {cols.map((c) => (
-      <div class="col-span-1">
-        <div class="text-xs font-bold text-white uppercase tracking-widest mb-6">
-          {c.label}
-        </div>
-        <ul class="space-y-4">
-          {c.items.map((it) => (
-            <li>
-              <a
-                href={it.h}
-                aria-label={it.iconOnly ? 'GitHub repository' : undefined}
-                title={it.iconOnly ? 'GitHub repository' : undefined}
-                target={it.iconOnly ? '_blank' : undefined}
-                rel={it.iconOnly ? 'noopener noreferrer' : undefined}
-                class="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors group"
-              >
-                {it.iconOnly ? (
-                  <span class="text-gray-400 group-hover:text-blue-300 transition-colors">
-                    <GitHubIcon width={20} height={20} />
-                  </span>
-                ) : (
-                  <>
-                    {it.icon && (
-                      <span class="text-gray-400 group-hover:text-blue-300 transition-colors">
-                        <Icon name={it.icon} width={14} height={14} class="w-3.5 h-3.5" />
-                      </span>
-                    )}
-                    {it.l}
-                  </>
-                )}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ))}
-  </div>
+    <div slot="cta" class="cv-precise-cta">
+      <p>Check the record behind a verdict.</p>
+      <a href="/benchmark" data-log="benchmark_opened">Inspect public evidence →</a>
+    </div>
 
-  {newsletterProjectKey && (
-    <div class="max-w-7xl mx-auto px-6 mt-12">
+    {newsletterProjectKey && (
       <saas-maker-newsletter-capture
+        slot="capture"
         product-name="CodeVetter"
         project-key={newsletterProjectKey}
         source="codevetter-footer"
         kind="newsletter"
+        layout="compact"
+        integrated
         privacy-url="https://codevetter.com/privacy"
         theme="dark"
       ></saas-maker-newsletter-capture>
-    </div>
-  )}
+    )}
+  </fleet-footer-extension>
 
-  <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400 font-medium">
-    <div class="flex items-center gap-6">
-      <span>© {year} CodeVetter · ISC License</span>
-      <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
-      <a href="/terms" class="hover:text-white transition-colors">Terms</a>
-      <a href="https://sarthakagrawal.dev" class="hover:text-white transition-colors">Sarthak</a>
-    </div>
-    <div class="flex items-center gap-2">
-      <span>Review suggests. Evidence decides.</span>
-    </div>
-  </div>
 </footer>
+
+<style>
+  .cv-precise-footer {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: clip;
+    border: 0;
+    background: #050505;
+    color: #e6e8eb;
+  }
+
+  fleet-footer-extension {
+    display: block;
+    width: 100%;
+    color: #e6e8eb;
+    background: #050505;
+  }
+
+  .cv-precise-navigation-frame {
+    width: 100%;
+    min-width: 0;
+    container-type: inline-size;
+  }
+
+  .cv-precise-navigation {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+    width: 100%;
+    min-width: 0;
+    color: #e6e8eb;
+    font: 0.875rem/1.55 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .cv-precise-identity {
+    max-width: 34rem;
+  }
+
+  .cv-precise-wordmark {
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    text-decoration: none;
+  }
+
+  .cv-precise-identity p {
+    max-width: 34rem;
+    margin: 0.75rem 0 0;
+    color: #9aa0aa;
+  }
+
+  .cv-precise-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
+    min-width: 0;
+  }
+
+  .cv-precise-links h2 {
+    margin: 0 0 0.65rem;
+    color: #9aa0aa;
+    font: 600 0.7rem/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .cv-precise-links ul {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cv-precise-links a,
+  .cv-precise-legal a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.45rem;
+    color: #c8cbd1;
+    text-decoration: none;
+    text-underline-offset: 0.22em;
+  }
+
+  .cv-precise-links a:hover,
+  .cv-precise-links a:focus-visible,
+  .cv-precise-legal a:hover,
+  .cv-precise-legal a:focus-visible {
+    color: #fbbf24;
+    text-decoration: underline;
+  }
+
+  .cv-precise-wordmark:focus-visible,
+  .cv-precise-links a:focus-visible,
+  .cv-precise-legal a:focus-visible,
+  .cv-precise-cta a:focus-visible {
+    outline: 2px solid #fbbf24;
+    outline-offset: 4px;
+  }
+
+  .cv-precise-legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(255 255 255 / 9%);
+    color: #9298a2;
+    font: 0.7rem/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .cv-precise-legal a {
+    min-height: 2.75rem;
+  }
+
+  .cv-precise-cta {
+    display: grid;
+    gap: 0.65rem;
+    max-width: 24rem;
+    color: #c8cbd1;
+  }
+
+  .cv-precise-cta p {
+    margin: 0;
+    color: #9aa0aa;
+  }
+
+  .cv-precise-cta a {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 2.75rem;
+    align-items: center;
+    color: #fbbf24;
+    font-weight: 600;
+    text-underline-offset: 0.22em;
+  }
+
+  @container (min-width: 42rem) {
+    .cv-precise-navigation {
+      grid-template-columns: minmax(12rem, 0.9fr) minmax(0, 2fr);
+      gap: 2.5rem;
+    }
+
+    .cv-precise-links {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+
+    .cv-precise-legal {
+      grid-column: 1 / -1;
+    }
+  }
+</style>
