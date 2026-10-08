@@ -151,7 +151,8 @@ pub(crate) async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceSco
     match input.consumer {
         EvidenceScopeConsumer::Testing => scored.retain(|candidate| candidate.testing_supported),
         EvidenceScopeConsumer::Performance => {
-            scored.retain(|candidate| candidate.performance_supported)
+            scored.retain(|candidate| candidate.performance_supported);
+            prioritize_dedicated_benchmarks(&mut scored);
         }
     }
     let candidate_count = scored.len();
@@ -160,6 +161,14 @@ pub(crate) async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceSco
         limitations.push(format!(
             "Candidate portfolio was capped at {MAX_CANDIDATES} of {candidate_count} runnable targets."
         ));
+        if input.consumer == EvidenceScopeConsumer::Performance
+            && scored.iter().any(is_dedicated_benchmark)
+        {
+            limitations.push(
+                "Dedicated benchmark targets were ranked ahead of other targets with equal confidence before the cap."
+                    .to_string(),
+            );
+        }
     }
     if files.len() == MAX_FILES {
         limitations.push(format!(
@@ -194,6 +203,27 @@ pub(crate) async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceSco
         uncovered_paths,
         limitations,
     })
+}
+
+/// Stable reorder: confidence still dominates; at equal confidence a dedicated benchmark ranks
+/// first so the capped performance portfolio does not drop it for alphabetically earlier tests.
+fn prioritize_dedicated_benchmarks(candidates: &mut [EvidenceScopeCandidate]) {
+    candidates.sort_by_key(|candidate| {
+        (
+            std::cmp::Reverse(candidate.confidence_milli),
+            !is_dedicated_benchmark(candidate),
+        )
+    });
+}
+
+fn is_dedicated_benchmark(candidate: &EvidenceScopeCandidate) -> bool {
+    candidate.adapter == "go-bench"
+        || candidate.target.split(['/', '.', '-', '_']).any(|token| {
+            matches!(
+                token.to_ascii_lowercase().as_str(),
+                "bench" | "benches" | "benchmark" | "benchmarks" | "perf" | "performance"
+            )
+        })
 }
 
 fn canonical_repository(value: &str) -> Result<PathBuf, String> {
@@ -347,16 +377,22 @@ fn discover_targets(root: &Path, files: &[String]) -> Vec<DiscoveredTarget> {
         };
         let content = bounded_file_text(root, path, &mut remaining_bytes);
         let lower = path.to_ascii_lowercase();
-        if classification.0 != "go-test"
-            && classification.0 != "playwright"
-            && !lower.ends_with(".ts")
-            && !lower.ends_with(".tsx")
-        {
+        if classification.0 != "go-test" {
+            // TypeScript and Playwright-path targets keep their established heuristic unless an
+            // explicit Playwright or Vitest import decides the runner.
+            let import_decides = classification.0 != "playwright"
+                && !lower.ends_with(".ts")
+                && !lower.ends_with(".tsx");
             match javascript_runner(path, &content) {
-                Ok(Some(adapter)) => classification.0 = adapter,
-                Ok(None) => {}
+                Ok(Some(adapter))
+                    if import_decides || matches!(adapter, "playwright" | "vitest") =>
+                {
+                    classification.0 = adapter
+                }
+                Ok(_) => {}
                 // Conflicting runners or invalid syntax cannot support a closed choice.
-                Err(()) => continue,
+                Err(()) if import_decides => continue,
+                Err(()) => {}
             }
         }
         targets.push(DiscoveredTarget {
@@ -831,14 +867,26 @@ mod tests {
 
     fn fixture_repository() -> tempfile::TempDir {
         let fixture = surface_parity_fixture();
-        let repo = tempfile::tempdir().unwrap();
-        for (relative_path, content) in fixture["repository"]["files"]
+        let files = fixture["repository"]["files"]
             .as_object()
             .expect("fixture files")
-        {
+            .iter()
+            .map(|(path, content)| {
+                (
+                    path.clone(),
+                    content.as_str().expect("fixture file content").to_string(),
+                )
+            })
+            .collect::<Vec<_>>();
+        committed_repository(&files)
+    }
+
+    fn committed_repository(files: &[(String, String)]) -> tempfile::TempDir {
+        let repo = tempfile::tempdir().unwrap();
+        for (relative_path, content) in files {
             let path = repo.path().join(relative_path);
             std::fs::create_dir_all(path.parent().expect("fixture file parent")).unwrap();
-            std::fs::write(path, content.as_str().expect("fixture file content")).unwrap();
+            std::fs::write(path, content).unwrap();
         }
         for args in [
             vec!["init", "-q"],
@@ -1044,6 +1092,168 @@ require(runnerName); require(`node:test`);
                 );
             }
         }
+    }
+
+    #[test]
+    fn explicit_playwright_and_vitest_imports_decide_typescript_and_e2e_runners() {
+        let repo = tempfile::tempdir().unwrap();
+        let fixtures = [
+            (
+                "tests/example.spec.ts",
+                "import { test, expect } from '@playwright/test';\ntest('home', async ({ page }) => { await page.goto('/'); });",
+                "playwright",
+            ),
+            (
+                "tests/view.spec.tsx",
+                "import { test } from '@playwright/test'; const view = <div />;",
+                "playwright",
+            ),
+            (
+                "e2e/unit.spec.ts",
+                "import { test } from 'vitest'; test('pure', () => {});",
+                "vitest",
+            ),
+            (
+                "e2e/helper.spec.mjs",
+                "import { test } from 'vitest'; test('pure', () => {});",
+                "vitest",
+            ),
+            // Established TypeScript selection is preserved without an explicit runner choice.
+            (
+                "tests/typed.test.ts",
+                "import test from 'node:test'; const count: number = 1;",
+                "vitest",
+            ),
+            (
+                "tests/broken.spec.ts",
+                "import { test } from '@playwright/test'; const unfinished = (",
+                "vitest",
+            ),
+        ];
+        for (path, content, _) in fixtures {
+            let target = repo.path().join(path);
+            std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+            std::fs::write(target, content).unwrap();
+        }
+        for has_playwright_config in [false, true] {
+            let mut files = fixtures
+                .iter()
+                .map(|(path, _, _)| path.to_string())
+                .collect::<Vec<_>>();
+            if has_playwright_config {
+                files.push("playwright.config.ts".into());
+            }
+            let targets = discover_targets(repo.path(), &files);
+            for (path, _, expected) in fixtures {
+                let target = targets
+                    .iter()
+                    .find(|target| target.target == path)
+                    .unwrap_or_else(|| panic!("{path} was not discovered"));
+                assert_eq!(
+                    target.adapter, expected,
+                    "{path}, Playwright config: {has_playwright_config}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn dedicated_benchmarks_rank_first_at_equal_confidence() {
+        let repo = tempfile::tempdir().unwrap();
+        let mut files = (0..13)
+            .map(|index| format!("a{index:02}.test.mjs"))
+            .collect::<Vec<_>>();
+        files.extend([
+            "perfect.test.mjs".to_string(),
+            "zz-render-performance.test.mjs".to_string(),
+            "zz/benchmarks/parse.test.mjs".to_string(),
+        ]);
+        for path in &files {
+            let target = repo.path().join(path);
+            std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+            std::fs::write(target, "import test from 'node:test';").unwrap();
+        }
+        let mut candidates = score_targets(
+            EvidenceScopeKind::Codebase,
+            None,
+            &[],
+            discover_targets(repo.path(), &files),
+        );
+        prioritize_dedicated_benchmarks(&mut candidates);
+        candidates.truncate(MAX_CANDIDATES);
+        let targets = candidates
+            .iter()
+            .map(|candidate| candidate.target.as_str())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            &targets[..3],
+            [
+                "zz-render-performance.test.mjs",
+                "zz/benchmarks/parse.test.mjs",
+                "a00.test.mjs"
+            ]
+        );
+        assert!(!targets.contains(&"perfect.test.mjs"));
+
+        let mut ranked = vec![
+            EvidenceScopeCandidate {
+                confidence_milli: 900,
+                ..candidates[2].clone()
+            },
+            EvidenceScopeCandidate {
+                confidence_milli: 600,
+                ..candidates[0].clone()
+            },
+        ];
+        prioritize_dedicated_benchmarks(&mut ranked);
+        assert_eq!(
+            ranked[0].target, "a00.test.mjs",
+            "confidence still dominates"
+        );
+    }
+
+    #[tokio::test]
+    async fn capped_performance_portfolio_keeps_dedicated_benchmarks() {
+        let mut files = (0..13)
+            .map(|index| {
+                (
+                    format!("a{index:02}.test.mjs"),
+                    "import test from 'node:test';".to_string(),
+                )
+            })
+            .collect::<Vec<_>>();
+        files.push((
+            "zz-render-performance.test.mjs".into(),
+            "import test from 'node:test';".into(),
+        ));
+        let repo = committed_repository(&files);
+        let input = |consumer| EvidenceScopeInput {
+            repo_path: repo.path().to_string_lossy().into_owned(),
+            kind: EvidenceScopeKind::Codebase,
+            value: None,
+            consumer,
+        };
+        let performance = resolve(input(EvidenceScopeConsumer::Performance))
+            .await
+            .unwrap();
+        assert_eq!(performance.candidates.len(), MAX_CANDIDATES);
+        assert_eq!(
+            performance.candidates[0].target,
+            "zz-render-performance.test.mjs"
+        );
+        assert!(performance
+            .limitations
+            .iter()
+            .any(|entry| entry.starts_with("Dedicated benchmark targets were ranked")));
+
+        let testing = resolve(input(EvidenceScopeConsumer::Testing))
+            .await
+            .unwrap();
+        assert_eq!(testing.candidates[0].target, "a00.test.mjs");
+        assert!(!testing
+            .limitations
+            .iter()
+            .any(|entry| entry.starts_with("Dedicated benchmark")));
     }
 
     #[test]
