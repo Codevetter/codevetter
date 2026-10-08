@@ -92,12 +92,12 @@ final class InvocationLedgerUITests: XCTestCase {
         // along the straight native edges, retaining real mouse interaction.
         let bottom = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 1))
           .withOffset(CGVector(dx: 0, dy: -1))
-        bottom.press(
+        bottom.click(
           forDuration: 0.1,
           thenDragTo: bottom.withOffset(CGVector(dx: 0, dy: 700 - before.height)))
         let right = window.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
           .withOffset(CGVector(dx: -1, dy: 0))
-        right.press(
+        right.click(
           forDuration: 0.1,
           thenDragTo: right.withOffset(CGVector(dx: width - window.frame.width, dy: 0)))
         capture(app, name: "resize-attempt-\(Int(width))-\(appearance)", window: window)
