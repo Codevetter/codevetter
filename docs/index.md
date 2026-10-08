@@ -13,7 +13,7 @@ is only the presentation and search layer.
 
 - **Short current view**: [`STATUS.md`](https://github.com/Codevetter/codevetter/blob/main/STATUS.md)
 - **Deep timeline + feature log**: [`PROJECT_STATUS.md`](https://github.com/Codevetter/codevetter/blob/main/PROJECT_STATUS.md)
-- **Agent bootloader**: [`agents.md`](https://github.com/Codevetter/codevetter/blob/main/agents.md)
+- **Agent bootloader**: [`AGENTS.md`](https://github.com/Codevetter/codevetter/blob/main/AGENTS.md)
 - **Product readme**: [`README.md`](https://github.com/Codevetter/codevetter/blob/main/README.md)
 
 ## Product
