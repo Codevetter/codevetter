@@ -119,9 +119,10 @@ final class InvocationLedgerUITests: XCTestCase {
         ])
     }
     app.launchEnvironment["CODEVETTER_CLI_PATH"] = executable.path
-    app.launchArguments = ["--ui-test-section", "Runs", "--ui-test-appearance", appearance]
+    app.launchArguments = ["--ui-test-section", "Runs", "--appearance", appearance]
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
     XCTAssertTrue(app.buttons["Choose ledger…"].waitForExistence(timeout: 10))
     capture(app, name: "before-chooser-\(appearance)")
     app.buttons["Choose ledger…"].click()
@@ -157,6 +158,20 @@ final class InvocationLedgerUITests: XCTestCase {
   private func capture(_ app: XCUIApplication, name: String, window: XCUIElement? = nil) {
     retainNativeRuntimeEvidence(testCase: self, app: app, name: name, window: window)
   }
+}
+
+@MainActor
+func dismissNativeFirstRunIfPresented(testCase: XCTestCase, app: XCUIApplication) {
+  // With the actual CLI present, its incomplete onboarding receipt opens the
+  // real first-run sheet. Use the product's dismissal action before testing
+  // workbench controls underneath; do not force model state or hide the sheet.
+  let onboarding = app.descendants(matching: .any)["native-onboarding"]
+  guard onboarding.waitForExistence(timeout: 5) else { return }
+  retainNativeRuntimeEvidence(testCase: testCase, app: app, name: "first-run-onboarding")
+  let notNow = app.buttons["Not now"]
+  XCTAssertTrue(notNow.isHittable, "First-run dismissal must be reachable")
+  notNow.click()
+  XCTAssertTrue(onboarding.waitForNonExistence(timeout: 5), "First-run sheet did not dismiss")
 }
 
 @MainActor

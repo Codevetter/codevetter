@@ -29,6 +29,7 @@ final class CodeVetterUITests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
     XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
     for destination in [
       "Explore", "Review", "Testing", "Performance", "Runs", "Settings",
@@ -53,6 +54,7 @@ final class CodeVetterUITests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
     XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
 
     let palette = app.descendants(matching: .any)["command-palette"]
@@ -86,6 +88,7 @@ final class CodeVetterUITests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
     app.buttons["Testing"].click()
 
@@ -115,6 +118,7 @@ final class CodeVetterUITests: XCTestCase {
     ]
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
     assertSelected(app.buttons["Testing"])
     for workspace in [
@@ -143,6 +147,7 @@ final class CodeVetterUITests: XCTestCase {
     app.launchArguments = ["--ui-test-section", "Usage"]
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
     assertSelected(app.buttons["Explore"])
     XCTAssertFalse(app.buttons["Usage"].exists)
   }
@@ -152,6 +157,7 @@ final class CodeVetterUITests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
     app.buttons["Explore"].click()
     assertSelected(app.buttons["Explore"])
@@ -176,6 +182,7 @@ final class CodeVetterUITests: XCTestCase {
     ]
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
     assertSelected(app.buttons["Review"])
     app.buttons["Verify a local change"].click()
@@ -200,6 +207,7 @@ final class CodeVetterUITests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
     app.buttons["Settings"].click()
 
@@ -240,6 +248,7 @@ final class CodeVetterUITests: XCTestCase {
     let app = XCUIApplication()
     app.launch()
     app.activate()
+    dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
     app.buttons["Performance"].click()
 
