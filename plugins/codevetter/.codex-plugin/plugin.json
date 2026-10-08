@@ -1,0 +1,11 @@
+{
+  "name": "codevetter",
+  "version": "0.1.0",
+  "description": "Verify coding-agent changes with review, testing and performance evidence; retain candid usefulness logs.",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "CodeVetter",
+    "shortDescription": "Verification evidence and honest value tracking"
+  }
+}
