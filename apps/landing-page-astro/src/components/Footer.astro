@@ -136,6 +136,38 @@ const year = new Date().getFullYear();
 
 </footer>
 
+<script>
+  // A partly visible shadow-DOM link can retain focus without native scrolling.
+  // Reveal its label and focus outline in the existing studio viewport.
+  for (const footer of document.querySelectorAll('.cv-precise-footer')) {
+    const observer = new MutationObserver(bindStudioFocus);
+    function bindStudioFocus() {
+      const strip = footer.querySelector('portfolio-project-strip');
+      const root = strip?.shadowRoot;
+      if (!root) return;
+      // Focus moving between links is retargeted to the same host outside this root.
+      root.addEventListener('focusin', (event) => {
+        const link = event.target;
+        if (!(link instanceof HTMLAnchorElement) || strip.getAttribute('layout') !== 'studio') return;
+        const viewport = link.closest<HTMLElement>('[role="region"]');
+        if (!viewport) return;
+
+        const bounds = viewport.getBoundingClientRect();
+        const focused = link.getBoundingClientRect();
+        const inset = 8;
+        if (focused.right > bounds.right - inset) {
+          viewport.scrollLeft += focused.right - bounds.right + inset;
+        } else if (focused.left < bounds.left + inset) {
+          viewport.scrollLeft -= bounds.left - focused.left + inset;
+        }
+      });
+      observer.disconnect();
+    }
+    observer.observe(footer, { childList: true, subtree: true });
+    void customElements.whenDefined('portfolio-project-strip').then(bindStudioFocus);
+  }
+</script>
+
 <style>
   .cv-precise-footer {
     display: block;
