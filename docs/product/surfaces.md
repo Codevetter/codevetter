@@ -17,7 +17,7 @@ language, loading/empty/error treatment, and keyboard-sized click targets.
 | Review | `NavigatorWorkspaceView.swift`, `PremiumWorkbench.swift` | Pinned GitHub/local diffs and exact source links, alongside the existing executable verification and handoff receipts. |
 | Testing | `PremiumTestingView.swift` plus focused testing views | Preview, changed verification, scenarios, differential runs, warm verification, and opt-in PR watchers. |
 | Performance | `PremiumPerformanceView.swift` | Exact local workload, baseline/candidate measurements, limits, cleanup, and optimization verdict. |
-| Runs | `PremiumWorkbench.swift` | Verification receipts, source identities, and recorded limitations. |
+| Runs | `PremiumInvocationRunsView.swift`, `PremiumWorkbench.swift` | Explicit skill invocation history and integrity inspection; saved verification receipts remain separate. |
 | Settings | `PremiumSettingsView.swift` | Accounts, agents, MCP, rubrics, memories, history roots, updater/about, and other configuration. |
 
 The app source lives in

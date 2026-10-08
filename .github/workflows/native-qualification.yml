@@ -78,11 +78,15 @@ jobs:
             --out-root artifacts/native-owner-review-ci
           pnpm test:native-review-render
 
+      - name: Build current CLI for invocation interaction qualification
+        if: ${{ !cancelled() && inputs.run_interaction && (steps.background.outcome == 'success' || steps.background.outcome == 'failure') }}
+        run: cargo build --locked --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --bin codevetter
+
       - name: Run interaction qualification on isolated desktop
         # Collect independent interaction evidence even when a performance gate
         # fails. The background failure still fails the job; never mask it.
         if: ${{ !cancelled() && inputs.run_interaction && (steps.background.outcome == 'success' || steps.background.outcome == 'failure') }}
-        run: pnpm test:native:ui -- --foreground --desktop-idle
+        run: swift scripts/run-native-ci-desktop.swift pnpm test:native:ui -- --foreground --desktop-idle
 
       - name: Build coverage-free Release application
         run: pnpm native:build:release
@@ -117,6 +121,9 @@ jobs:
           find "$HOME/Library/Developer/XcodeBuildMCP" \
             -path '*/logs/*' -type f -name '*.log' \
             -exec cp {} artifacts/native-tool-logs/ \;
+          if [ '${{ inputs.run_interaction }}' = 'true' ]; then
+            node scripts/collect-native-runtime-evidence.mjs
+          fi
 
       - name: Upload unsigned qualification evidence
         if: always()

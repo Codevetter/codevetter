@@ -175,12 +175,29 @@ extra elapsed time and measured cost visible.
 An invocation is activity. A test receipt is evidence for a check. A measured
 workload speedup is a code outcome. Improved agent productivity requires a
 controlled task-level comparison. These facts must remain separate in the
-planned Runs dashboard.
+Runs invocation ledger.
 
 [Issue #348](https://github.com/Codevetter/codevetter/issues/348) owns the
-skillification and value-dashboard work. The dashboard is not implemented; the owner requested plain evidence of value
-before further visual work. The usefulness log operates without a dashboard. Current evidence and
-limits are recorded in the
+skillification and value-dashboard work. The native Runs viewer now consumes the Rust-owned `codevetter.invocation-events/v1`
+projection. Choose an explicit recorder directory; no personal transcript
+discovery or legacy backfill occurs. Repository, task UUID, skill, state and
+observation filters are applied by Rust before 100-row pagination. Page totals,
+unreadable/unattributed records, ingestion issues and provenance remain visible.
+The inspector separates hash integrity and agent observations from independent
+benefit, which remains unknown without a qualified comparison. Recorded receipt
+paths are informational and never followed by the viewer. Explicit receipt
+inspection asks Rust to read only the selected session’s fixed receipt.json
+after checking scope, identity, schema and its captured hash. An optional JSON
+pointer selects one field; the UI clips display at 16 KiB and can export the
+complete selected view. Page export preserves the exact projected bytes; neither
+export rewrites receipts or synthesizes benefits.
+Saved verification results remain accessible in a separate tab, including
+existing exact-run handoffs.
+
+This source implementation has background fixture/contract checks. Actual
+native interaction qualification and controlled with/without agent trials are
+separate gates; an offscreen fixture render is not installed-app evidence.
+Current value evidence and limits are recorded in the
 [value baseline](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/codevetter-value-baseline-2026-10-02.md).
 The completed [Fleet performance trial](https://github.com/Codevetter/codevetter/blob/main/evidence/performance/fleet-performance-skill-trial-2026-10-02.md)
 records all 43 project outcomes, including blockers and a disputed source

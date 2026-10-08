@@ -51,7 +51,7 @@ public struct PremiumWorkbenchRootView: View {
       case .performance:
         PremiumPerformanceView(model: model)
       case .runs:
-        PremiumRunsView(model: model)
+        RunsWorkspaceView(model: model)
       case .settings:
         PremiumSettingsView(model: model)
       }
@@ -79,7 +79,7 @@ public struct PremiumWorkbenchRootView: View {
   }
 }
 
-private struct PremiumRunsView: View {
+struct PremiumRunsView: View {
   @Bindable var model: WorkbenchModel
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var exportIssue: String?
