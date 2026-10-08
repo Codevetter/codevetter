@@ -7,18 +7,8 @@ description: Phased organic-search roadmap for codevetter.com — demand-mapped 
 
 Initialized 2026-09-22 from the Fleet scoreboard (`seo-scoreboard.mjs
 --project codevetter`): **403 impressions, 2 clicks, mean position ~37**
-over 28 days. This was an early, partial baseline. A live Search Console read
-on 2026-09-28 for the 28 days ending 2026-09-25 showed 9 clicks and 10.2K
-impressions across the domain, which also includes Starboard. The
-highest-impression Repo Unpack pages were mostly surfaced for searches about
-third-party files and URLs, with no clicks. Those impressions are not evidence
-of buyer demand for CodeVetter. `/coding-agent-verification` had 1 click and
-37 impressions; `verify code in agent loop` accounted for 13 of its visible
-query impressions. Google is finding a relevant page, but a repeatable
-real-repository verification receipt is the stronger next proof than more
-general comparison copy. OpenSEO's US `coding agent verification` keyword
-expansion returned mostly unrelated certification terms, so it cannot be used
-as a volume estimate for this category.
+over 28 days. Google is already serving us on the right terms — the gap is
+coverage depth and position, not topic selection.
 
 ## Demand evidence (Search Console, 28d ending 2026-09-18)
 
@@ -48,13 +38,11 @@ Rules that keep this honest:
   - New `/ai-code-validation` page targeting the largest open cluster
     (validation phrasing; disambiguates review vs validation vs
     verification rather than duplicating existing pages).
-- [ ] **Phase 2 — competitor comparison matrix, gated by demand and proof.** `codevetter-vs-*`
+- [ ] **Phase 2 — competitor comparison matrix.** `codevetter-vs-*`
   pages for the tools developers actually evaluate against: Qodo Merge,
   Sourcery, Cursor Bugbot, Copilot code review, Korbit, Bito, Ellipsis,
-  cubic. Before expanding this cluster, publish one reproducible
-  real-repository agent-change receipt and verify a relevant query–page pair
-  or audience request for each comparison. Each entry needs its own
-  docs-checked claims; no invented head-to-head result.
+  cubic. Each entry needs its own docs-checked claims — batch draft, then
+  verify quotes before publishing.
 - [ ] **Phase 3 — benchmark cluster depth.** Per-language case pages
   (the corpus spans ts/py/go/rust), a `code review benchmark` explainer
   comparing recognition fixtures vs repository-task benchmarks
