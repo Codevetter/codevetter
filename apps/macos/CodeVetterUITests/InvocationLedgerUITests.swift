@@ -155,27 +155,44 @@ final class InvocationLedgerUITests: XCTestCase {
 
   @MainActor
   private func capture(_ app: XCUIApplication, name: String, window: XCUIElement? = nil) {
-    let window = window ?? app.windows.firstMatch
-    let screenshot = window.screenshot()
-    let attachment = XCTAttachment(screenshot: screenshot)
-    attachment.name = name
-    attachment.lifetime = .keepAlways
-    add(attachment)
-    let output = repositoryRoot.appendingPathComponent(
-      "artifacts/native-owner-review-ci/runtime-invocations")
-    do {
-      try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
-      try screenshot.pngRepresentation.write(to: output.appendingPathComponent(name + ".png"))
-      try app.debugDescription.write(
-        to: output.appendingPathComponent(name + ".accessibility.txt"),
-        atomically: true, encoding: .utf8)
-      let dimensions: [String: Any] = [
-        "width": window.frame.width, "height": window.frame.height,
-        "method": "XCUIApplication actual window capture on dedicated CI desktop",
-        "content": "synthetic recorder fixture; independent benefit remains unknown",
-      ]
-      try JSONSerialization.data(withJSONObject: dimensions, options: [.sortedKeys])
-        .write(to: output.appendingPathComponent(name + ".json"))
-    } catch { XCTFail("Could not retain runtime capture: \(error)") }
+    retainNativeRuntimeEvidence(testCase: self, app: app, name: name, window: window)
   }
+}
+
+@MainActor
+func retainNativeRuntimeEvidence(
+  testCase: XCTestCase, app: XCUIApplication, name: String, window: XCUIElement? = nil
+) {
+  let window = window ?? app.windows.firstMatch
+  let screenshot = window.screenshot()
+  let attachment = XCTAttachment(screenshot: screenshot)
+  attachment.name = name
+  attachment.lifetime = .keepAlways
+  testCase.add(attachment)
+  let tree = XCTAttachment(string: app.debugDescription)
+  tree.name = name + " accessibility"
+  tree.lifetime = .keepAlways
+  testCase.add(tree)
+  // The hosted UI-test runner cannot write into the source checkout. Keep its
+  // own permitted temporary directory and collect these files after the test.
+  let output = FileManager.default.temporaryDirectory.resolvingSymlinksInPath()
+    .appendingPathComponent(
+      "codevetter-runtime-invocations-\(ProcessInfo.processInfo.processIdentifier)")
+  let safeName = name.map { $0.isLetter || $0.isNumber || $0 == "-" ? $0 : "_" }
+  let stem = String(safeName)
+  do {
+    try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+    print("CODEVETTER_RUNTIME_CAPTURE_ROOT=\(output.path)")
+    try screenshot.pngRepresentation.write(to: output.appendingPathComponent(stem + ".png"))
+    try app.debugDescription.write(
+      to: output.appendingPathComponent(stem + ".accessibility.txt"),
+      atomically: true, encoding: .utf8)
+    let dimensions: [String: Any] = [
+      "width": window.frame.width, "height": window.frame.height,
+      "method": "XCUIApplication actual window capture on dedicated CI desktop",
+      "content": "synthetic recorder fixture; independent benefit remains unknown",
+    ]
+    try JSONSerialization.data(withJSONObject: dimensions, options: [.sortedKeys])
+      .write(to: output.appendingPathComponent(stem + ".json"))
+  } catch { XCTFail("Could not retain runtime capture: \(error)") }
 }

@@ -124,6 +124,7 @@ final class CodeVetterUITests: XCTestCase {
       ("PR watcher", "trex-watcher-workspace"),
     ] {
       app.menuButtons["Testing tools"].click()
+      retainNativeRuntimeEvidence(testCase: self, app: app, name: "testing-tools-\(workspace.0)")
       let trigger = app.menuItems[workspace.0]
       XCTAssertTrue(trigger.waitForExistence(timeout: 3), "Missing \(workspace.0) trigger")
       XCTAssertTrue(trigger.isEnabled, "\(workspace.0) should be reachable with a repository")
@@ -178,6 +179,7 @@ final class CodeVetterUITests: XCTestCase {
 
     assertSelected(app.buttons["Review"])
     app.buttons["Verify a local change"].click()
+    retainNativeRuntimeEvidence(testCase: self, app: app, name: "review-strategy-after-click")
     let strategy = app.descendants(matching: .any)["review-strategy"]
     XCTAssertTrue(strategy.waitForExistence(timeout: 3))
     XCTAssertTrue(app.radioButtons["Claude"].exists)
@@ -323,6 +325,8 @@ final class CodeVetterUITests: XCTestCase {
     file: StaticString = #filePath,
     line: UInt = #line
   ) {
+    retainNativeRuntimeEvidence(
+      testCase: self, app: XCUIApplication(), name: "\(name)-selection-\(element.identifier)")
     XCTAssertTrue(
       waitUntilSelected(element, timeout: timeout),
       "Selection did not settle",
