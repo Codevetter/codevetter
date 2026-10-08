@@ -88,10 +88,19 @@ final class InvocationLedgerUITests: XCTestCase {
       let window = app.windows.firstMatch
       for width in [980.0, 1180.0, 1380.0] {
         let before = window.frame
-        let corner = window.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 1))
-          .withOffset(CGVector(dx: -2, dy: -2))
-        let target = corner.withOffset(CGVector(dx: width - before.width, dy: 700 - before.height))
-        corner.press(forDuration: 0.1, thenDragTo: target)
+        // Rounded corners fall outside the actual window's hit region. Resize
+        // along the straight native edges, retaining real mouse interaction.
+        let bottom = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 1))
+          .withOffset(CGVector(dx: 0, dy: -1))
+        bottom.press(
+          forDuration: 0.1,
+          thenDragTo: bottom.withOffset(CGVector(dx: 0, dy: 700 - before.height)))
+        let right = window.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
+          .withOffset(CGVector(dx: -1, dy: 0))
+        right.press(
+          forDuration: 0.1,
+          thenDragTo: right.withOffset(CGVector(dx: width - window.frame.width, dy: 0)))
+        capture(app, name: "resize-attempt-\(Int(width))-\(appearance)", window: window)
         let resized = NSPredicate { _, _ in abs(window.frame.width - width) <= 1 }
         XCTAssertEqual(
           XCTWaiter.wait(

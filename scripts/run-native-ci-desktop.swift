@@ -21,7 +21,7 @@ else { fatalError("The isolated runner has no readable virtual display modes.") 
 print(
   "Native CI display modes: \(modes.map { "\($0.width)x\($0.height)" }.joined(separator: ", "))")
 guard
-  let target = modes.filter({ $0.width >= 1600 && $0.height >= 900 })
+  let target = modes.filter({ $0.width >= 1920 && $0.height >= 1080 })
     .min(by: { $0.width * $0.height < $1.width * $1.height })
 else {
   fatalError("The isolated runner cannot fit the required 980/1180/1380-point actual windows.")
