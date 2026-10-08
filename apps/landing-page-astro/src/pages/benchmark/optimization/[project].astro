@@ -22,7 +22,7 @@ const { study } = Astro.props;
 const decisionTone = study.decision === 'rejected' ? 'text-[--color-danger]' : 'text-[--color-ok]';
 ---
 
-<Layout
+<Layout hasProductFooter
   title={`${study.project} optimization case study — CodeVetter`}
   description={`${study.project}: ${study.summary}`}
   path={`/benchmark/optimization/${study.slug}`}

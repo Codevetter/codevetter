@@ -15,7 +15,7 @@ import Footer from '@/components/Footer.astro';
 // CodeVetter landing — execution-backed verification positioning.
 ---
 
-<Layout
+<Layout hasProductFooter
   title="CodeVetter — Execution-backed agent verification"
   description="Verify whether a coding agent completed its task. CodeVetter binds the exact change to executable checks, inspectable evidence, limitations, and a measurable verdict."
   path="/"
@@ -30,8 +30,7 @@ import Footer from '@/components/Footer.astro';
     <div class="cv-below-fold"><HowItWorks /></div>
     <div class="cv-below-fold"><Providers /></div>
     <div class="cv-below-fold"><Availability /></div>
-    <div class="cv-below-fold"><CTA /></div>
     <div class="cv-below-fold"><FAQ /></div>
-    <div class="cv-below-fold"><Footer /></div>
+    <div class="cv-below-fold"><Footer><CTA slot="cta" /></Footer></div>
   </main>
 </Layout>

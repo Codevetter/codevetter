@@ -11,7 +11,7 @@ export function getStaticPaths() {
 const { example } = Astro.props;
 ---
 
-<Layout
+<Layout hasProductFooter
   title={`${example.title} — Agent PR X-Ray`}
   description={example.finding.summary}
   path={`/xray/${example.id}`}

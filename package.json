@@ -88,7 +88,7 @@
     "test:retrieval": "node --test scripts/context-retrieval/*.test.mjs scripts/context-retrieval/adapters/*.test.mjs",
     "test:runtime-failure-capsule": "node --test scripts/runtime-failure-capsule/*.test.mjs",
     "test:verification-receipts": "node --test scripts/verification-receipts/*.test.mjs",
-    "test:automation": "node --test scripts/app-health-landing.test.mjs scripts/emit-foundry-receipt.test.mjs scripts/run-biome-sarif.test.mjs scripts/check-unpack-batch.test.mjs scripts/repo-unpack-corpus.test.mjs scripts/install-agent-skills.test.mjs && python3 -m unittest discover -s skills/codevetter-evaluate/scripts -p 'test_*.py'",
+    "test:automation": "node --test scripts/app-health-landing.test.mjs scripts/emit-foundry-receipt.test.mjs scripts/run-biome-sarif.test.mjs scripts/check-unpack-batch.test.mjs scripts/repo-unpack-corpus.test.mjs scripts/install-agent-skills.test.mjs scripts/build-agent-plugin.test.mjs && python3 -m unittest discover -s skills/codevetter-evaluate/scripts -p 'test_*.py' && python3 -m unittest discover -s scripts/agent-plugin -p 'test_*.py'",
     "test:native-data-continuity": "node --test scripts/qualify-native-data-continuity.test.mjs",
     "test:native-installed-upgrade": "node --test scripts/qualify-native-installed-upgrade.test.mjs",
     "test:native-package": "node --test scripts/qualify-native-package.test.mjs",
@@ -126,7 +126,9 @@
     "quality:vulnerabilities": "node scripts/run-osv-offline.mjs",
     "quality:workflows": "actionlint",
     "quality:duplication": "node scripts/check-duplication.mjs",
-    "retrieval:discover": "node scripts/context-retrieval/discover-candidates.mjs --registry benchmarks/context-retrieval/candidates.json --fresh-since 2026-02-22"
+    "retrieval:discover": "node scripts/context-retrieval/discover-candidates.mjs --registry benchmarks/context-retrieval/candidates.json --fresh-since 2026-02-22",
+    "plugin:build": "node scripts/build-agent-plugin.mjs",
+    "test:agent-plugin": "node --test scripts/build-agent-plugin.test.mjs && python3 -m unittest discover -s scripts/agent-plugin -p 'test_*.py'"
   },
   "license": "ISC",
   "lint-staged": {

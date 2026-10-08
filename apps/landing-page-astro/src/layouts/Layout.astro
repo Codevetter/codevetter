@@ -4,6 +4,8 @@ import '@/styles/globals.css';
 const newsletterProjectKey = import.meta.env.PUBLIC_SAASMAKER_NEWSLETTER_KEY?.trim();
 
 interface Props {
+  /** This route renders its own declarative product footer. */
+  hasProductFooter?: boolean;
   title?: string;
   description?: string;
   path?: string;
@@ -58,6 +60,7 @@ const markdownAlternate = `${SITE_URL}${markdownPath}`;
 // asset if we publish one to public/og.png later. For now, keep the
 // existing visual contract.
 const OG_IMAGE = `${SITE_URL}/og-image.png`;
+const hasProductFooter = Astro.props.hasProductFooter === true;
 ---
 
 <!doctype html>
@@ -112,6 +115,7 @@ const OG_IMAGE = `${SITE_URL}/og-image.png`;
 </head>
   <body>
     <slot />
+    {!hasProductFooter && <fleet-footer-extension product-name="CodeVetter" art-src="https://sassmaker.com/footer-art/codevetter.webp" surface="app"></fleet-footer-extension>}
     {newsletterProjectKey && (
       <script
         is:inline

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "codevetter",
+  "version": "0.1.0",
+  "description": "Verify coding-agent changes with review, testing and performance evidence; retain candid usefulness logs."
+}

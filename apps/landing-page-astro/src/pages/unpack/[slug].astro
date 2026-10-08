@@ -11,7 +11,7 @@ export function getStaticPaths() {
 const { report } = Astro.props;
 ---
 
-<Layout
+<Layout hasProductFooter
   title={`${report.repo} — codebase unpack`}
   description={`Deterministic Repo Unpack evidence scan of ${report.repo} at commit ${report.commit.sha.slice(0, 7)}: languages, structure, entrypoints, health signals, and recent history.`}
   path={`/unpack/${report.slug}`}

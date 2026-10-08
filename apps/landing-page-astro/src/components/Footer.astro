@@ -48,7 +48,21 @@ const cols = [
 const year = new Date().getFullYear();
 ---
 
-<footer class="relative border-t border-white/5 bg-[#050505] pt-24 pb-12 overflow-hidden">
+<fleet-footer-extension product-name="CodeVetter" art-src="https://sassmaker.com/footer-art/codevetter.webp">
+  <slot name="cta" />
+  {newsletterProjectKey && (
+    <div slot="capture" class="max-w-7xl mx-auto px-6 mt-12">
+      <saas-maker-newsletter-capture
+        product-name="CodeVetter"
+        project-key={newsletterProjectKey}
+        source="codevetter-footer"
+        kind="newsletter"
+        privacy-url="https://codevetter.com/privacy"
+        theme="dark"
+      ></saas-maker-newsletter-capture>
+    </div>
+  )}
+<footer slot="navigation" data-fleet-footer-navigation class="relative border-t border-white/5 bg-[#050505] pt-24 pb-12 overflow-hidden">
   <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 
   <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-6 gap-12">
@@ -106,18 +120,7 @@ const year = new Date().getFullYear();
     ))}
   </div>
 
-  {newsletterProjectKey && (
-    <div class="max-w-7xl mx-auto px-6 mt-12">
-      <saas-maker-newsletter-capture
-        product-name="CodeVetter"
-        project-key={newsletterProjectKey}
-        source="codevetter-footer"
-        kind="newsletter"
-        privacy-url="https://codevetter.com/privacy"
-        theme="dark"
-      ></saas-maker-newsletter-capture>
-    </div>
-  )}
+  
 
   <div class="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-400 font-medium">
     <div class="flex items-center gap-6">
@@ -131,3 +134,4 @@ const year = new Date().getFullYear();
     </div>
   </div>
 </footer>
+</fleet-footer-extension>

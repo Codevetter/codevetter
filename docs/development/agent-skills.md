@@ -18,7 +18,9 @@ Selection does not authorize every execution mode in the skill.
 | [codevetter-performance](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-performance/SKILL.md) | Workload planning, bounded diagnosis and paired optimization verification. |
 | [codevetter-evaluate](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-evaluate/SKILL.md) | Whether these flows improve agent outcomes enough to justify their overhead. |
 
-The tracked sources live in `skills/`. User-level installation uses
+The tracked sources live in `skills/`. The CodeVetter plugin bundles these
+same sources and their recorder; it is the preferred distribution path.
+Standalone user-level installation uses
 links to those sources; an existing unrelated skill must never be overwritten.
 Install them with `pnpm skills:install`; `--destination` on the underlying
 script can select an isolated skill directory. The installer checks every
@@ -26,6 +28,55 @@ collision before creating links and refuses to replace unrelated state.
 A new Codex session may be needed for its skill inventory to discover the
 installation. The current conversation can load the source files explicitly.
 The `agents/openai.yaml` files keep implicit invocation enabled.
+
+## CodeVetter plugin
+
+Build a new local marketplace package, without overwriting an existing one:
+
+```bash
+pnpm plugin:build --output artifacts/codevetter-plugin-local
+codex plugin marketplace add ./artifacts/codevetter-plugin-local
+codex plugin add codevetter@codevetter-local --json
+```
+
+The builder copies an explicit public file allowlist into
+`plugins/codevetter` inside that output directory. It includes portable and
+Codex compatibility manifests, four skills, recorder dependencies and a local
+stdio MCP bridge. It omits tests, caches, private artifacts, repository code
+and dependency directories. Sources must be regular files, never symlinks.
+`package-receipt.json` binds each packaged file to its SHA-256.
+Keep the marketplace directory for refreshes. For an update, increment both
+manifest versions together and build a new directory. Codex refuses to add
+the same marketplace name from a different source: remove its registration
+with `codex plugin marketplace remove codevetter-local`, register the new
+directory, then run the install command again. This does not delete the old
+package or the invocation ledger. Do not overwrite a qualified package.
+
+The local plugin requires Python 3 and the installed CodeVetter CLI; it does
+not bundle the desktop application or install dependencies. No provider key
+or remote server is needed for its MCP tools. Local stdio is for compatible
+local clients, not a hosted ChatGPT connector or public directory submission.
+The install command uses Codex's plugin manager rather than editing settings.
+Start a new session after installation to discover its tools and skills.
+Implicit selection remains host/model behavior and must be evaluated on real
+tasks; package qualification alone does not prove automatic selection.
+
+The bridge exposes `discover_targets`, `plan_performance`,
+`list_invocations`, `inspect_invocation` and `assess_invocation`.
+Discovery and planning launch only those fixed CLI operations, with a
+60-second recorder timeout; project/runtime/provider execution remains in the
+existing authorized skill flows. There is no arbitrary command, executable,
+ledger override or lifecycle hook in the tool input schema. Planning targets
+must stay within the supplied repository. The local bridge serializes calls;
+long execution and background jobs are deliberately not exposed through it.
+
+CLI attempts use the existing recorder and ledger, including launch failures
+and negative assessments. Ledger inspection and assessment do not fabricate
+new verification runs. Existing standalone installation and receipts remain
+compatible. When both skill sources are visible, follow one workflow and run
+each command once; do not count the two installation paths as two invocations.
+Use the shared [use-and-log procedure](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-evaluate/references/usage-loop.md)
+for transport selection and closing feedback.
 
 ## Invocation evidence
 
@@ -191,6 +242,7 @@ prioritizes measured experiments; neither report establishes agent productivity.
 
 ```bash
 pnpm test:agent-skills
+pnpm test:agent-plugin
 python3 -m unittest discover \
   -s skills/codevetter-evaluate/scripts -p 'test_*.py'
 ```
