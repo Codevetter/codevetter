@@ -1,1 +1,9 @@
-# No active vulnerability suppressions.
+[[IgnoredVulns]]
+id = "GHSA-hp3w-g68c-fv3c"
+ignoreUntil = 2026-11-09
+reason = "sprintf-js has no published fixed release; it reaches the docs build only through argparse@1 under js-yaml@3 and formats repository-owned CLI help text, never untrusted input"
+
+[[IgnoredVulns]]
+id = "CVE-2026-97058"
+ignoreUntil = 2026-11-09
+reason = "Alias of GHSA-hp3w-g68c-fv3c; sprintf-js has no published fixed release and only formats repository-owned argparse help text during the static docs build"
