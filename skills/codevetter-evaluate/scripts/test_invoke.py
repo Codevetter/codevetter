@@ -145,6 +145,44 @@ class InvocationTests(unittest.TestCase):
         self.assertNotIn("private-stderr-marker", json.dumps(self.rows()) + result.stderr)
         self.assertFalse(list(self.ledger.glob("*/*.tmp")))
 
+    def test_unsupported_scope_and_blocked_admission_use_receipt_status(self):
+        cases = [
+            ('{"schema_version":1,"status":"no_runnable_scope","candidates":[],"limitations":["private-scope-marker"]}',
+             "unsupported_scope"),
+            ('{"schema_version":"desktop-performance/v1","state":"completed","result":{"decision":{"status":"blocked","blockers":["private-blocker-marker"]}}}',
+             "admission_blocked"),
+        ]
+        for receipt, code in cases:
+            with self.subTest(code=code):
+                cli = self.fake_cli(f"import sys\nprint({receipt!r})\nprint('private-stderr-marker', file=sys.stderr)\nsys.exit(2)\n")
+                self.assertEqual(self.run_recorder(cli).returncode, 2)
+                row = next(r for r in self.rows() if r["failure_reason"]["code"] == code)
+                self.assertEqual(row["state"], "failed")
+                self.assertIsNotNone(row["receipt_sha256"])
+                self.assertNotRegex(json.dumps(row), "private-(scope|blocker|stderr)-marker")
+
+    def test_receipt_without_failure_status_keeps_generic_code(self):
+        cli = self.fake_cli('import sys\nprint(\'{"schema_version":1,"status":"ready"}\')\nsys.exit(1)\n')
+        self.assertEqual(self.run_recorder(cli).returncode, 1)
+        self.assertEqual(self.rows()[0]["failure_reason"]["code"], "cli_failure")
+
+    def test_missing_receipt_is_distinguished_without_retaining_stderr(self):
+        for body, cli_exit in [('print("private-non-receipt-output")\n', 0),
+                               ('import sys\nprint("private-stderr-marker", file=sys.stderr)\nsys.exit(3)\n', 3)]:
+            with self.subTest(cli_exit=cli_exit):
+                self.assertNotEqual(self.run_recorder(self.fake_cli(body)).returncode, 0)
+                row = next(r for r in self.rows() if r["cli_exit_code"] == cli_exit)
+                self.assertEqual(row["failure_reason"]["code"], "missing_receipt")
+                self.assertIsNone(row["receipt_path"])
+                self.assertNotIn("private-", json.dumps(row))
+
+    def test_unresolved_git_revision_is_classified(self):
+        cli = self.fake_cli('import sys\nprint("codevetter: Git could not resolve the requested scope: fatal: private-revision-marker", file=sys.stderr)\nsys.exit(2)\n')
+        self.assertEqual(self.run_recorder(cli).returncode, 2)
+        row = self.rows()[0]
+        self.assertEqual(row["failure_reason"]["code"], "git_revision_unavailable")
+        self.assertNotIn("private-revision-marker", json.dumps(row))
+
     def test_oversized_output_is_rejected(self):
         cli = self.fake_cli('print("x" * (2 * 1024 * 1024 + 1))\n')
         self.assertEqual(self.run_recorder(cli).returncode, 2)

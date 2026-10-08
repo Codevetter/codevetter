@@ -213,6 +213,7 @@ def invoke(skill, repo, command, root, cli="codevetter", timeout_seconds=1200,
                 time.sleep(0.05)
             exit_code = child.wait()
             record["cli_exit_code"] = exit_code
+        parsed = None
         if max(capture.stat().st_size, error_capture.stat().st_size) > MAX_RECEIPT_BYTES:
             record.update(state="output_limit", limitation="Canonical receipt exceeded the capture bound.")
         else:
@@ -230,11 +231,13 @@ def invoke(skill, repo, command, root, cli="codevetter", timeout_seconds=1200,
                 record.update(receipt_path=str(receipt_path), receipt_sha256=hashlib.sha256(raw).hexdigest(),
                               receipt_schema_version=schema)
             except (ValueError, UnicodeError):
+                parsed = None
                 record["limitation"] = "CLI returned no complete canonical JSON receipt. Raw output was not retained."
-        if exit_code != 0:
+        if exit_code != 0 or (data is None and record["state"] == "running"):
             with error_capture.open("rb") as errors:
                 error_text = errors.read(8192).decode("utf-8", errors="replace")
-            record["failure_reason"] = classify_failure(error_text)
+            record["failure_reason"] = classify_failure(error_text, parsed if data else None,
+                                                        exit_code, data is not None)
         if record["state"] == "running":
             record["state"] = "completed" if exit_code == 0 and data else "failed"
         if record["state"] == "interrupted":
@@ -277,18 +280,45 @@ def invoke(skill, repo, command, root, cli="codevetter", timeout_seconds=1200,
     return exit_code, record, data
 
 
-def classify_failure(text):
+RECEIPT_FAILURES = {
+    "no_runnable_scope": ("unsupported_scope", "No supported runnable target matched this scope; the receipt retains the uncovered paths."),
+    "blocked": ("admission_blocked", "Execution admission blocked the workload before project code ran; the receipt retains the blockers."),
+}
+
+
+def receipt_failure(receipt):
+    # Only fixed status vocabulary from the canonical receipt is mapped; free text is never copied.
+    if not isinstance(receipt, dict):
+        return None
+    result = receipt.get("result")
+    decision = result.get("decision") if isinstance(result, dict) else None
+    for status in (receipt.get("status"), decision.get("status") if isinstance(decision, dict) else None):
+        if isinstance(status, str) and status in RECEIPT_FAILURES:
+            code, message = RECEIPT_FAILURES[status]
+            return {"code": code, "message": message}
+    return None
+
+
+def classify_failure(text, receipt=None, exit_code=None, has_receipt=None):
     # Only fixed allowlisted messages enter metadata; raw stderr/paths/arguments never do.
+    from_receipt = receipt_failure(receipt)
+    if from_receipt:
+        return from_receipt
     reasons = [
         ("requires a clean checkout", "dirty_checkout", "A clean immutable checkout is required."),
         ("packaged local performance runtime is unavailable", "runtime_unavailable", "The installed performance runtime could not be located."),
         ("Node.js is required", "node_unavailable", "Node.js is required for this runtime."),
+        ("Git could not resolve the requested scope", "git_revision_unavailable", "Git could not resolve the repository revision or requested scope, for example in a repository without commits."),
         ("unknown argument", "invalid_arguments", "The installed CLI rejected an argument."),
         ("unknown option", "invalid_arguments", "The installed CLI rejected an option."),
     ]
     for marker, code, message in reasons:
         if marker in text:
             return {"code": code, "message": message}
+    if has_receipt is False:
+        if exit_code == 0:
+            return {"code": "missing_receipt", "message": "The CLI exited successfully without a complete canonical receipt."}
+        return {"code": "missing_receipt", "message": "The CLI failed without a complete canonical receipt; no safe specific blocker was recognized."}
     return {"code": "cli_failure", "message": "The CLI failed; no safe specific blocker was recognized."}
 
 
