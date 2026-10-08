@@ -128,11 +128,11 @@ final class InvocationLedgerUITests: XCTestCase {
     app.buttons["Choose ledger…"].click()
     app.typeKey("g", modifierFlags: [.command, .shift])
     capture(app, name: "go-to-ledger-\(appearance)")
-    let pathField = app.sheets.textFields.firstMatch
+    let pathField = app.sheets["GoToWindow"].textFields["PathTextField"]
     XCTAssertTrue(pathField.waitForExistence(timeout: 5))
     pathField.typeText(ledgerDirectory.path)
     app.typeKey(.return, modifierFlags: [])
-    let open = app.buttons["Open"]
+    let open = app.dialogs["open-panel"].buttons["OKButton"]
     XCTAssertTrue(open.waitForExistence(timeout: 5))
     open.click()
     return app
@@ -140,12 +140,21 @@ final class InvocationLedgerUITests: XCTestCase {
 
   @MainActor
   private func finishSavePanel(_ app: XCUIApplication, destination: URL) throws {
+    capture(app, name: "before-save-\(destination.lastPathComponent)")
     app.typeKey("g", modifierFlags: [.command, .shift])
-    let pathField = app.sheets.textFields.firstMatch
+    let pathField = app.sheets["GoToWindow"].textFields["PathTextField"]
     XCTAssertTrue(pathField.waitForExistence(timeout: 5))
-    pathField.typeText(destination.path)
+    pathField.typeText(destination.deletingLastPathComponent().path)
     app.typeKey(.return, modifierFlags: [])
-    let save = app.buttons["Save"]
+    let filename = app.dialogs.textFields.matching(
+      NSPredicate(format: "value BEGINSWITH %@", "codevetter-invocation")
+    ).firstMatch
+    XCTAssertTrue(filename.waitForExistence(timeout: 5))
+    filename.click()
+    filename.typeKey("a", modifierFlags: .command)
+    filename.typeText(destination.lastPathComponent)
+    capture(app, name: "ready-save-\(destination.lastPathComponent)")
+    let save = app.dialogs.buttons["Save"]
     XCTAssertTrue(save.waitForExistence(timeout: 5))
     save.click()
     let written = NSPredicate { _, _ in FileManager.default.fileExists(atPath: destination.path) }

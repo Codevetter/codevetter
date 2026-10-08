@@ -86,7 +86,7 @@ jobs:
         # Collect independent interaction evidence even when a performance gate
         # fails. The background failure still fails the job; never mask it.
         if: ${{ !cancelled() && inputs.run_interaction && (steps.background.outcome == 'success' || steps.background.outcome == 'failure') }}
-        run: pnpm test:native:ui -- --foreground --desktop-idle
+        run: swift scripts/run-native-ci-desktop.swift pnpm test:native:ui -- --foreground --desktop-idle
 
       - name: Build coverage-free Release application
         run: pnpm native:build:release

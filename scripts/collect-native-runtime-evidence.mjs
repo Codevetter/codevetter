@@ -46,7 +46,7 @@ for (const root of roots) {
     if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 4 * 1024 * 1024) {
       throw new Error('Unexpected UI-test capture file.');
     }
-    if (++count > 120) throw new Error('UI-test capture count exceeds the bounded packet.');
+    if (++count > 180) throw new Error('UI-test capture count exceeds the bounded packet.');
     copyFileSync(source, join(output, basename(path) + '-' + name));
   }
 }
