@@ -82,27 +82,31 @@ final class InvocationLedgerUITests: XCTestCase {
 
   @MainActor
   func testRuntimeLedgerWindowsAtThreeLogicalWidths() throws {
-    let app = try launchLedger()
-    XCTAssertTrue(app.staticTexts["1–100 of 130 invocations"].waitForExistence(timeout: 10))
-    let window = app.windows.firstMatch
-    for width in [980.0, 1180.0, 1380.0] {
-      let before = window.frame
-      let corner = window.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 1))
-        .withOffset(CGVector(dx: -2, dy: -2))
-      let target = corner.withOffset(CGVector(dx: width - before.width, dy: 700 - before.height))
-      corner.press(forDuration: 0.1, thenDragTo: target)
-      let resized = NSPredicate { _, _ in abs(window.frame.width - width) <= 1 }
-      XCTAssertEqual(
-        XCTWaiter.wait(
-          for: [XCTNSPredicateExpectation(predicate: resized, object: nil)], timeout: 3), .completed
-      )
-      XCTAssertEqual(window.frame.width, width, accuracy: 1)
-      capture(app, name: "ledger-\(Int(width))", window: window)
+    for appearance in ["dark", "light"] {
+      let app = try launchLedger(appearance: appearance)
+      XCTAssertTrue(app.staticTexts["1–100 of 130 invocations"].waitForExistence(timeout: 10))
+      let window = app.windows.firstMatch
+      for width in [980.0, 1180.0, 1380.0] {
+        let before = window.frame
+        let corner = window.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 1))
+          .withOffset(CGVector(dx: -2, dy: -2))
+        let target = corner.withOffset(CGVector(dx: width - before.width, dy: 700 - before.height))
+        corner.press(forDuration: 0.1, thenDragTo: target)
+        let resized = NSPredicate { _, _ in abs(window.frame.width - width) <= 1 }
+        XCTAssertEqual(
+          XCTWaiter.wait(
+            for: [XCTNSPredicateExpectation(predicate: resized, object: nil)], timeout: 3),
+          .completed
+        )
+        XCTAssertEqual(window.frame.width, width, accuracy: 1)
+        capture(app, name: "ledger-\(Int(width))-\(appearance)", window: window)
+      }
+      app.terminate()
     }
   }
 
   @MainActor
-  private func launchLedger() throws -> XCUIApplication {
+  private func launchLedger(appearance: String = "dark") throws -> XCUIApplication {
     let app = XCUIApplication()
     let executable = repositoryRoot.appendingPathComponent(
       "crates/codevetter-core/target/debug/codevetter")
@@ -115,11 +119,14 @@ final class InvocationLedgerUITests: XCTestCase {
         ])
     }
     app.launchEnvironment["CODEVETTER_CLI_PATH"] = executable.path
-    app.launchArguments = ["--ui-test-section", "Runs"]
+    app.launchArguments = ["--ui-test-section", "Runs", "--ui-test-appearance", appearance]
     app.launch()
+    app.activate()
     XCTAssertTrue(app.buttons["Choose ledger…"].waitForExistence(timeout: 10))
+    capture(app, name: "before-chooser-\(appearance)")
     app.buttons["Choose ledger…"].click()
     app.typeKey("g", modifierFlags: [.command, .shift])
+    capture(app, name: "go-to-ledger-\(appearance)")
     let pathField = app.sheets.textFields.firstMatch
     XCTAssertTrue(pathField.waitForExistence(timeout: 5))
     pathField.typeText(ledgerDirectory.path)
@@ -159,6 +166,9 @@ final class InvocationLedgerUITests: XCTestCase {
     do {
       try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
       try screenshot.pngRepresentation.write(to: output.appendingPathComponent(name + ".png"))
+      try app.debugDescription.write(
+        to: output.appendingPathComponent(name + ".accessibility.txt"),
+        atomically: true, encoding: .utf8)
       let dimensions: [String: Any] = [
         "width": window.frame.width, "height": window.frame.height,
         "method": "XCUIApplication actual window capture on dedicated CI desktop",

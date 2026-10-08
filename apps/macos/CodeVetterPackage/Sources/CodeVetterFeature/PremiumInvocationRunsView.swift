@@ -92,6 +92,7 @@ struct PremiumInvocationRunsView: View {
       if let exportIssue { Text(exportIssue).foregroundStyle(EvidenceStyle.warning).padding(12) }
     }
     .background(EvidenceStyle.canvas)
+    .accessibilityElement(children: .contain)
     .accessibilityIdentifier("skill-invocation-ledger")
     .onChange(of: repositoryPath) {
       if currentRepositoryOnly {

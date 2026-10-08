@@ -28,6 +28,7 @@ final class CodeVetterUITests: XCTestCase {
   func testPrimaryWorkbenchIsVisible() throws {
     let app = XCUIApplication()
     app.launch()
+    app.activate()
     XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
     for destination in [
       "Explore", "Review", "Testing", "Performance", "Runs", "Settings",
@@ -51,8 +52,8 @@ final class CodeVetterUITests: XCTestCase {
   func testCommandPaletteSearchesAndOpensAWorkspaceFromTheKeyboard() throws {
     let app = XCUIApplication()
     app.launch()
-    XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
     app.activate()
+    XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
 
     let palette = app.descendants(matching: .any)["command-palette"]
     openCommandPaletteWithKeyboard(app, palette: palette)
@@ -84,6 +85,7 @@ final class CodeVetterUITests: XCTestCase {
   func testTestingWorkspaceExposesTheDirectPreviewContract() throws {
     let app = XCUIApplication()
     app.launch()
+    app.activate()
 
     app.buttons["Testing"].click()
 
@@ -112,6 +114,7 @@ final class CodeVetterUITests: XCTestCase {
       "--ui-test-section", "Testing",
     ]
     app.launch()
+    app.activate()
 
     assertSelected(app.buttons["Testing"])
     for workspace in [
@@ -138,6 +141,7 @@ final class CodeVetterUITests: XCTestCase {
     let app = XCUIApplication()
     app.launchArguments = ["--ui-test-section", "Usage"]
     app.launch()
+    app.activate()
     assertSelected(app.buttons["Explore"])
     XCTAssertFalse(app.buttons["Usage"].exists)
   }
@@ -146,6 +150,7 @@ final class CodeVetterUITests: XCTestCase {
   func testExploreStartsWithReadOnlyGitHubImport() throws {
     let app = XCUIApplication()
     app.launch()
+    app.activate()
 
     app.buttons["Explore"].click()
     assertSelected(app.buttons["Explore"])
@@ -169,6 +174,7 @@ final class CodeVetterUITests: XCTestCase {
       "--ui-test-section", "Review",
     ]
     app.launch()
+    app.activate()
 
     assertSelected(app.buttons["Review"])
     app.buttons["Verify a local change"].click()
@@ -191,6 +197,7 @@ final class CodeVetterUITests: XCTestCase {
   func testSettingsWorkspaceExcludesSecretsAndPreservesEverySection() throws {
     let app = XCUIApplication()
     app.launch()
+    app.activate()
 
     app.buttons["Settings"].click()
 
@@ -230,6 +237,7 @@ final class CodeVetterUITests: XCTestCase {
   func testPerformanceWorkspaceExposesTheRustAdmissionContract() throws {
     let app = XCUIApplication()
     app.launch()
+    app.activate()
 
     app.buttons["Performance"].click()
 
@@ -298,7 +306,8 @@ final class CodeVetterUITests: XCTestCase {
     print("SETTINGS_RAIL_CLICK section=\(section) button=\(button.frame) rail=\(rail.frame)")
     button.click()
     assertSelected(button, file: file, line: line)
-    XCTAssertTrue(button.isHittable, "Selected section is not hittable: \(section)", file: file, line: line)
+    XCTAssertTrue(
+      button.isHittable, "Selected section is not hittable: \(section)", file: file, line: line)
     XCTAssertTrue(
       !button.frame.isEmpty && rail.frame.intersects(button.frame),
       "Selected section \(section) remains clipped: button=\(button.frame), rail=\(rail.frame)",
