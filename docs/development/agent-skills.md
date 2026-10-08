@@ -99,7 +99,10 @@ The recorder stores private per-invocation metadata and canonical JSON in
 `~/.local/share/codevetter/skill-invocations/` elsewhere. `--ledger-dir` selects
 an isolated destination for qualification. It stores no argument values or
 raw stderr in the summary index; fixed allowlisted blocker codes explain
-recognized failures. Full canonical receipts remain local evidence.
+recognized failures. A failing receipt's fixed status maps to
+`unsupported_scope` (`no_runnable_scope`) or `admission_blocked` (blocked
+execution plan); a run without a complete receipt is `missing_receipt`, never
+a measurement. Full canonical receipts remain local evidence.
 The CLI's existing receipt redaction remains authoritative.
 
 Records include originating skill, repository, command/operation, timestamps,
