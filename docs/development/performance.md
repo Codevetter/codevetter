@@ -39,6 +39,13 @@ codevetter scope --consumer performance --help
 Native Performance calls the same receipt contracts. MCP can resolve scope and
 inspect preparation evidence but cannot execute workloads.
 
+Static admission blocks a non-loopback URL only when it is passed directly to a
+request or navigation API; fixture URLs (`new Request(...)`, records, parser
+input) and object-method handler calls such as `worker.fetch(request, env)`
+are disclosed by target line as limitations. Every blocker cites target lines.
+Runtime zero-egress enforcement still turns any actual remote attempt into a
+`policy_violation` receipt.
+
 For repository-specific Rust benchmarks:
 
 ```bash

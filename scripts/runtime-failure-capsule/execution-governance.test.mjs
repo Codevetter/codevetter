@@ -87,6 +87,128 @@ test('remote and production-like plans fail closed even with an approval identit
   assert.equal(receipt.observed.cost_microusd, null);
 });
 
+test('inert URL fixtures are admitted with source-linked disclosure; request destinations stay blocked', async (context) => {
+  const root = await fixture(context, {
+    'fixtures.test.mjs': [
+      "import test from 'node:test';",
+      "const request = new Request('https://app.example/markets', { method: 'HEAD' });",
+      "const record = { url: 'https://example.com/1', homepage: 'https://github.com/acme/app' };",
+      "test('parses', () => new URL(record.url) && request.method);",
+      '',
+    ].join('\n'),
+    'direct.test.mjs': [
+      "import test from 'node:test';",
+      "const fixture = 'https://example.com/fixture';",
+      "test('loads', async () => {",
+      '  await fetch(',
+      "    'https://api.example/v1/items'",
+      '  );',
+      "  await page.goto('https://app.example/');",
+      '});',
+      '',
+    ].join('\n'),
+  });
+  const plan = (target) =>
+    planPerformanceExecution({
+      repositoryRoot: root,
+      adapter: 'node-test',
+      target,
+      timeoutMs: 1_000,
+      processCount: 1,
+    });
+
+  const inert = await plan('fixtures.test.mjs');
+  assert.equal(inert.decision.status, 'admitted');
+  assert.deepEqual(inert.external_services, []);
+  assert.equal(inert.limits.max_cost_microusd, 0);
+  assert.ok(
+    inert.limitations.includes(
+      'Non-loopback URL literals that are not direct request destinations were treated as inert data (target lines 2, 3); runtime zero-egress enforcement still blocks any network attempt.'
+    ),
+    inert.limitations.join('\n')
+  );
+
+  const direct = await plan('direct.test.mjs');
+  assert.equal(direct.decision.status, 'blocked');
+  assert.deepEqual(direct.external_services, [
+    'api.example',
+    'app.example',
+    'unknown-dynamic-endpoint',
+  ]);
+  assert.equal(direct.limits.max_cost_microusd, null);
+  assert.deepEqual(direct.decision.blockers, [
+    'The workload contains a network call whose destination is not a literal loopback URL (target line 4).',
+    'The workload sends a request to a non-loopback endpoint (target lines 5, 7).',
+  ]);
+  assert.ok(direct.limitations.some((entry) => entry.includes('(target line 2)')));
+});
+
+test('in-process handler fetches are disclosed, while global and Playwright request fetches stay network calls', async (context) => {
+  const root = await fixture(context, {
+    'handler.test.mjs': [
+      "import test from 'node:test';",
+      'const worker = { fetch: async (request) => new Response(new URL(request.url).pathname) };',
+      "test('routes', async () => {",
+      "  await worker.fetch(new Request('https://app.example/api'), {});",
+      '});',
+      '',
+    ].join('\n'),
+    'global.test.mjs':
+      'const target = process.argv[2];\nawait globalThis.fetch(target);\nawait request.fetch(target);\n',
+  });
+  const plan = (target) =>
+    planPerformanceExecution({
+      repositoryRoot: root,
+      adapter: 'node-test',
+      target,
+      timeoutMs: 1_000,
+      processCount: 1,
+    });
+  const handler = await plan('handler.test.mjs');
+  assert.equal(handler.decision.status, 'admitted');
+  assert.ok(
+    handler.limitations.some((entry) =>
+      entry.startsWith(
+        'Object-method fetch calls were treated as in-process handler invocations, not network requests (target line 4)'
+      )
+    ),
+    handler.limitations.join('\n')
+  );
+  const global = await plan('global.test.mjs');
+  assert.equal(global.decision.status, 'blocked');
+  assert.deepEqual(global.decision.blockers, [
+    'The workload contains a network call whose destination is not a literal loopback URL (target lines 2, 3).',
+  ]);
+});
+
+test('an admitted inert-looking URL that reaches the network is still blocked at runtime', async (context) => {
+  const root = await fixture(context, {
+    'helper.mjs': "export const load = (url) => globalThis['fe' + 'tch'](url);\n",
+    'indirect.mjs': "import { load } from './helper.mjs';\nawait load('http://192.0.2.1/');\n",
+  });
+  const plan = await planPerformanceExecution({
+    repositoryRoot: root,
+    adapter: 'node-script',
+    target: 'indirect.mjs',
+    timeoutMs: 5_000,
+    processCount: 1,
+  });
+  assert.equal(plan.decision.status, 'admitted');
+  const execution = await runClosedAdapter({
+    repositoryRoot: root,
+    adapter: 'node-script',
+    target: 'indirect.mjs',
+    timeoutMs: 5_000,
+    executionPlan: plan,
+  });
+  const receipt = createPerformanceExecutionReceipt(plan, [
+    { phase: 'measurement', index: 0, execution },
+  ]);
+  assert.match(execution.stderr, /CODEVETTER_EGRESS_BLOCKED/);
+  assert.equal(receipt.status, 'policy_violation');
+  assert.equal(receipt.observed.successful_external_requests, 0);
+});
+
 test('runtime guard permits loopback and blocks imported remote access without internet', async (context) => {
   const server = http.createServer((_request, response) => response.end('ok'));
   await new Promise((resolvePromise) => server.listen(0, '127.0.0.1', resolvePromise));
