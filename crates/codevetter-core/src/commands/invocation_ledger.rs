@@ -1,8 +1,8 @@
 //! Explicit, bounded recorder ingestion. Never discovers a personal ledger or
 //! follows metadata receipt paths. Unix directory descriptors anchor all reads.
 use super::invocation_events::{
-    project_invocation_events, repository_identity, InvocationEventsReceipt, InvocationFilter,
-    InvocationSession,
+    project_invocation_events, repository_identity, valid_pointer, InvocationEventsReceipt,
+    InvocationFilter, InvocationSession, ReceiptIntegrity,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -39,6 +39,88 @@ pub struct InvocationLedgerReceipt {
 pub struct IngestionIssue {
     pub invocation_id: Option<String>,
     pub code: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InvocationReceiptView {
+    pub schema_version: String,
+    pub invocation_id: String,
+    pub repo_path: String,
+    pub receipt_sha256: String,
+    pub json_pointer: Option<String>,
+    pub value: Value,
+    pub evidence_origin: String,
+    pub limitations: Vec<String>,
+}
+
+/// Explicit single-session content access, separate from the content-free index.
+/// Reads only anchored fixed filenames, never the metadata's receipt path.
+pub fn read_invocation_receipt(
+    source: &InvocationLedgerSource,
+    repo_path: &str,
+    invocation_id: &str,
+    pointer: Option<&str>,
+) -> Result<InvocationReceiptView, String> {
+    let identity = canonical_id(invocation_id).ok_or("invalid_invocation_identity")?;
+    if pointer
+        .is_some_and(|text| !text.starts_with('/') || text.len() > 512 || !valid_pointer(text))
+    {
+        return Err("invalid_receipt_pointer".into());
+    }
+    let filter = InvocationFilter {
+        repo_path: Some(repo_path.into()),
+        ..Default::default()
+    };
+    project_invocation_events(&[], &filter, 0, 1)?;
+    let root = directory(&source.path)?;
+    let session = child(&root, &identity, true).map_err(|_| "unsafe_session_directory")?;
+    let mut budget = MAX_METADATA + MAX_RECEIPT + 1;
+    let metadata = json_file(&session, "invocation.json", &mut budget)?;
+    if metadata.get("invocation_id").and_then(Value::as_str) != Some(&identity)
+        || repository_identity(&metadata) != Some(repo_path)
+    {
+        return Err("invocation_scope_or_identity_mismatch".into());
+    }
+    let raw = bytes(&session, "receipt.json", MAX_RECEIPT, &mut budget)?;
+    let supplied = InvocationSession {
+        invocation: metadata,
+        assessments: vec![],
+        receipt_bytes: Some(raw.clone()),
+    };
+    let projection = project_invocation_events(&[supplied], &filter, 0, 1)?;
+    let event = projection
+        .invocations
+        .first()
+        .filter(|event| event.receipt_integrity == ReceiptIntegrity::HashMatched)
+        .ok_or("receipt_unavailable_changed_or_invalid")?;
+    let receipt: Value = serde_json::from_slice(&raw).map_err(|_| "invalid_receipt_json")?;
+    let value = match pointer {
+        Some(pointer) => receipt
+            .pointer(pointer)
+            .cloned()
+            .ok_or("receipt_pointer_not_found")?,
+        None => receipt,
+    };
+    Ok(InvocationReceiptView {
+        schema_version: "codevetter.invocation-receipt/v1".into(),
+        invocation_id: identity,
+        repo_path: repo_path.into(),
+        receipt_sha256: event
+            .receipt_sha256
+            .clone()
+            .ok_or("receipt_hash_not_recorded")?,
+        json_pointer: pointer.map(str::to_owned),
+        value,
+        evidence_origin: if source.synthetic_fixture {
+            "synthetic_fixture"
+        } else {
+            "unqualified_local_ledger"
+        }
+        .into(),
+        limitations: vec![
+            "Receipt integrity identifies captured bytes, not correctness or causal agent benefit. Only the selected session's fixed receipt.json was read; recorded paths were not followed.".into(),
+        ],
+    })
 }
 
 pub fn read_invocation_ledger(

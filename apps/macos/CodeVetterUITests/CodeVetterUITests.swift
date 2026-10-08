@@ -39,6 +39,11 @@ final class CodeVetterUITests: XCTestCase {
 
     app.buttons["Runs"].click()
     assertSelected(app.buttons["Runs"])
+    XCTAssertTrue(app.staticTexts["INVOCATION LEDGER"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["Choose ledger…"].exists)
+    let verificationResults = app.segmentedControls.buttons["Verification results"]
+    XCTAssertTrue(verificationResults.exists)
+    verificationResults.click()
     XCTAssertTrue(app.staticTexts["EVIDENCE LEDGER"].waitForExistence(timeout: 5))
   }
 

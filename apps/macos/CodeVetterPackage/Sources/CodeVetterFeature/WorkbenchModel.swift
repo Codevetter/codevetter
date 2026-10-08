@@ -283,12 +283,15 @@ public final class WorkbenchModel {
   private var memoryTask: Task<Void, Never>?
   private var runsTask: Task<Void, Never>?
   private var runsRequestID = UUID()
+  public let invocationRuns: InvocationRunsModel
+  public var runsShowsInvocations = true
 
   public init(
     runner: CodeVetterProcessRunner = CodeVetterProcessRunner(),
     repositoryAccessStore: RepositoryAccessStore? = nil
   ) {
     self.runner = runner
+    self.invocationRuns = InvocationRunsModel(runner: runner)
     self.repositoryAccessStore = repositoryAccessStore
     do {
       registry = try CapabilityRegistry.bundled()
@@ -2780,6 +2783,7 @@ public final class WorkbenchModel {
   }
 
   public func openRun(_ id: String) {
+    runsShowsInvocations = false
     section = .runs
     runLedgerScope = .all
     selectedRunID = id

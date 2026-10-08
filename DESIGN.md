@@ -284,3 +284,14 @@ current task surface.
 - **Don't** communicate pass, warning, or failure through color alone.
 - **Don't** add floating glass cards, hero typography, or agent theater to
   operating surfaces.
+
+## Native evidence profile
+
+Platform: native-macos
+Supported minimum width: 980
+
+The CodeVetter SwiftUI/AppKit Runs window supports 980 x 640 points. Background
+offscreen hosted-view captures use logical window points; actual application
+interaction and window captures require the repository's fresh idle-screen gate.
+Record display scale with each runtime capture; never relabel a fixture render
+as an installed application capture.

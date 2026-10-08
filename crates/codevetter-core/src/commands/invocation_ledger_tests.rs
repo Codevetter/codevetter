@@ -345,3 +345,115 @@ fn intermediate_symlink_root_components_are_rejected_without_canonicalizing_inpu
     }
     assert_eq!(read(&ledger).projection.total, 1);
 }
+
+fn captured(root: &Path, n: usize) -> PathBuf {
+    use sha2::{Digest, Sha256};
+    let raw = br#"{"schema_version":1,"outcome":{"passed":false,"cost":null},"a/b":{"~key":42}}"#;
+    let mut metadata = record(n, "completed");
+    metadata["receipt_path"] = json!("/never/follow/this/path");
+    metadata["receipt_schema_version"] = json!(1);
+    metadata["receipt_sha256"] = json!(format!("{:x}", Sha256::digest(raw)));
+    let session = write(root, n, &metadata);
+    std::fs::write(session.join("receipt.json"), raw).unwrap();
+    session
+}
+
+#[test]
+fn single_receipt_and_pointer_are_hash_bound_and_keep_null_or_false_values() {
+    let root = fixture_directory();
+    captured(root.path(), 1);
+    let view = read_invocation_receipt(&source(root.path()), "/synthetic/repository", &id(1), None)
+        .unwrap();
+    assert_eq!(view.schema_version, "codevetter.invocation-receipt/v1");
+    assert_eq!(view.value["outcome"]["passed"], false);
+    assert_eq!(view.evidence_origin, "synthetic_fixture");
+    for (pointer, value) in [
+        ("/outcome/passed", json!(false)),
+        ("/outcome/cost", Value::Null),
+        ("/a~1b/~0key", json!(42)),
+    ] {
+        let field = read_invocation_receipt(
+            &source(root.path()),
+            "/synthetic/repository",
+            &id(1),
+            Some(pointer),
+        )
+        .unwrap();
+        assert_eq!(field.value, value);
+        assert_eq!(field.json_pointer.as_deref(), Some(pointer));
+    }
+    assert!(read(root.path()).projection.invocations[0]
+        .independently_verified_benefit
+        .is_none());
+}
+
+#[test]
+fn receipt_inspection_rejects_wrong_scope_identity_changed_bytes_and_bad_pointers() {
+    let root = fixture_directory();
+    let session = captured(root.path(), 1);
+    for (repo, identity, pointer) in [
+        ("/different/repository", id(1), None),
+        ("/synthetic/repository", "../escape".into(), None),
+        ("/synthetic/repository", id(1), Some("/bad~2key")),
+        ("/synthetic/repository", id(1), Some("/missing")),
+    ] {
+        assert!(read_invocation_receipt(&source(root.path()), repo, &identity, pointer).is_err());
+    }
+    std::fs::write(
+        session.join("receipt.json"),
+        br#"{"schema_version":1,"outcome":{"passed":true}}"#,
+    )
+    .unwrap();
+    assert!(
+        read_invocation_receipt(&source(root.path()), "/synthetic/repository", &id(1), None)
+            .is_err()
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn receipt_inspection_rejects_symlink_and_hard_link_content() {
+    let root = fixture_directory();
+    let session = captured(root.path(), 1);
+    let original = session.join("receipt-original.json");
+    std::fs::rename(session.join("receipt.json"), &original).unwrap();
+    std::os::unix::fs::symlink(&original, session.join("receipt.json")).unwrap();
+    assert!(
+        read_invocation_receipt(&source(root.path()), "/synthetic/repository", &id(1), None)
+            .is_err()
+    );
+    std::fs::remove_file(session.join("receipt.json")).unwrap();
+    std::fs::hard_link(&original, session.join("receipt.json")).unwrap();
+    assert!(
+        read_invocation_receipt(&source(root.path()), "/synthetic/repository", &id(1), None)
+            .is_err()
+    );
+}
+
+#[test]
+fn receipt_inspection_rejects_unbound_or_schema_mismatched_captures() {
+    let root = fixture_directory();
+    let session = captured(root.path(), 1);
+    let original: Value =
+        serde_json::from_slice(&std::fs::read(session.join("invocation.json")).unwrap()).unwrap();
+    for key in ["receipt_sha256", "receipt_schema_version", "invocation_id"] {
+        let mut metadata = original.clone();
+        metadata[key] = if key == "invocation_id" {
+            json!(id(2))
+        } else {
+            Value::Null
+        };
+        std::fs::write(
+            session.join("invocation.json"),
+            serde_json::to_vec(&metadata).unwrap(),
+        )
+        .unwrap();
+        assert!(read_invocation_receipt(
+            &source(root.path()),
+            "/synthetic/repository",
+            &id(1),
+            None
+        )
+        .is_err());
+    }
+}

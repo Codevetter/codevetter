@@ -3362,6 +3362,22 @@ public final class CodeVetterProcessRunner: @unchecked Sendable {
     }
   }
 
+  public func inspectInvocation(
+    query: InvocationLedgerQuery, event: InvocationEvent, pointer: String?
+  ) async throws -> Data {
+    var arguments = [
+      "runs", "--ledger", query.ledgerPath, "--repo", event.repoPath,
+      "--invocation-id", event.id, "--json",
+    ]
+    if let pointer { arguments += ["--pointer", pointer] }
+    return try await runReadOnly(executable: resolveExecutable(), arguments: arguments)
+  }
+
+  public func listInvocations(query: InvocationLedgerQuery) async throws -> Data {
+    let arguments = try query.arguments()
+    return try await runReadOnly(executable: resolveExecutable(), arguments: arguments)
+  }
+
   public func listRuns(repositoryPath: String? = nil, limit: Int = 50) async throws
     -> [StoredVerificationRun]
   {

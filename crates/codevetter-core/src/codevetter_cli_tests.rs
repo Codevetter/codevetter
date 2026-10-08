@@ -1954,3 +1954,61 @@ fn invocation_runs_parser_requires_explicit_ledger() {
     assert_eq!(args.filter.state.as_deref(), Some("failed"));
     assert_eq!(args.ledger, Some(PathBuf::from("/synthetic/ledger")));
 }
+
+#[test]
+fn invocation_receipt_parser_requires_exact_scope_and_no_projection_options() {
+    let parsed = parse_arguments(
+        [
+            "runs",
+            "--ledger",
+            "/explicit/ledger",
+            "--repo",
+            "/synthetic/repository",
+            "--invocation-id",
+            "00000000-0000-4000-8000-000000000001",
+            "--pointer",
+            "/outcome/passed",
+            "--json",
+        ]
+        .into_iter()
+        .map(str::to_owned),
+        Path::new("/synthetic"),
+    )
+    .unwrap();
+    let CliCommand::Runs(arguments) = parsed else {
+        panic!("expected Runs")
+    };
+    assert_eq!(arguments.pointer.as_deref(), Some("/outcome/passed"));
+    assert!(arguments.invocation_id.is_some());
+    for args in [
+        vec![
+            "runs",
+            "--ledger",
+            "/explicit/ledger",
+            "--invocation-id",
+            "00000000-0000-4000-8000-000000000001",
+        ],
+        vec![
+            "runs",
+            "--ledger",
+            "/explicit/ledger",
+            "--pointer",
+            "/value",
+        ],
+        vec![
+            "runs",
+            "--ledger",
+            "/explicit/ledger",
+            "--repo",
+            "/synthetic/repository",
+            "--invocation-id",
+            "00000000-0000-4000-8000-000000000001",
+            "--state",
+            "failed",
+        ],
+    ] {
+        assert!(
+            parse_arguments(args.into_iter().map(str::to_owned), Path::new("/synthetic")).is_err()
+        );
+    }
+}

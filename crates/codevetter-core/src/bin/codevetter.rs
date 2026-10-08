@@ -125,6 +125,7 @@ Usage:
   codevetter collect --range <base..head> --collector <name> [--collector <name> ...] [--rust-manifest <path>] [--rust-test <name>] [--advisory-db <path>] [--repo <path>] [--json]
   codevetter capabilities [--json | --schema]
   codevetter runs [--repo <path>] [--limit <n>] [--json]
+  codevetter runs --ledger <path> --repo <recorded-path> --invocation-id <uuid> [--pointer <json-pointer>] [--json]
   codevetter runs --ledger <path> [--fixture] [--repo <recorded-path>] [--task-id <uuid>] [--skill <skill>] [--state <state>] [--assessment <outcome>] [--offset <n>] [--limit <n>] [--json]
   codevetter fix-packet --run-id <id> [--finding <id> ...] [--json]
   codevetter fix --operation execute --run-id <id> --finding <id> [--finding <id> ...] --agent <name> --confirm-run [--timeout-ms <n>] [--json]
@@ -273,6 +274,8 @@ struct RunsArguments {
     limit: usize,
     output: OutputMode,
     ledger: Option<PathBuf>,
+    invocation_id: Option<String>,
+    pointer: Option<String>,
     offset: usize,
     filter: codevetter_core::commands::invocation_events::InvocationFilter,
     fixture: bool,
@@ -1897,12 +1900,32 @@ fn run_capabilities(output: OutputMode) -> Result<i32, String> {
 fn run_runs(arguments: RunsArguments) -> Result<i32, String> {
     if let Some(path) = arguments.ledger {
         use codevetter_core::commands::invocation_ledger::{
-            read_invocation_ledger, InvocationLedgerSource,
+            read_invocation_ledger, read_invocation_receipt, InvocationLedgerSource,
         };
         let mut filter = arguments.filter;
         filter.repo_path = arguments
             .repo_path
             .map(|path| path.to_string_lossy().into_owned());
+        if let Some(id) = arguments.invocation_id {
+            let repo = filter
+                .repo_path
+                .as_deref()
+                .ok_or("receipt inspection requires --repo")?;
+            let receipt = read_invocation_receipt(
+                &InvocationLedgerSource {
+                    path,
+                    synthetic_fixture: arguments.fixture,
+                },
+                repo,
+                &id,
+                arguments.pointer.as_deref(),
+            )?;
+            println!(
+                "{}",
+                serde_json::to_string(&receipt).map_err(|_| "serialize invocation receipt")?
+            );
+            return Ok(0);
+        }
         let receipt = read_invocation_ledger(
             &InvocationLedgerSource {
                 path,
@@ -3771,6 +3794,8 @@ fn parse_runs(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand,
     let mut limit = 20usize;
     let mut output = OutputMode::Human;
     let mut ledger = None;
+    let mut invocation_id = None;
+    let mut pointer = None;
     let mut offset = 0usize;
     let mut filter = codevetter_core::commands::invocation_events::InvocationFilter::default();
     let mut fixture = false;
@@ -3780,6 +3805,14 @@ fn parse_runs(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand,
             "--repo" => repo_path = Some(PathBuf::from(required_value(&mut arguments, "--repo")?)),
             "--limit" => limit = parse_number(&mut arguments, "--limit")?,
             "--ledger" => ledger = Some(PathBuf::from(required_value(&mut arguments, "--ledger")?)),
+            "--invocation-id" => {
+                invocation_id = Some(required_value(&mut arguments, "--invocation-id")?);
+                ledger_options = true;
+            }
+            "--pointer" => {
+                pointer = Some(required_value(&mut arguments, "--pointer")?);
+                ledger_options = true;
+            }
             "--offset" => {
                 offset = parse_number(&mut arguments, "--offset")?;
                 ledger_options = true;
@@ -3809,6 +3842,16 @@ fn parse_runs(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand,
             _ => return Err(format!("unknown runs argument `{argument}`")),
         }
     }
+    if pointer.is_some() && invocation_id.is_none() {
+        return Err("--pointer requires --invocation-id".into());
+    }
+    if invocation_id.is_some()
+        && (repo_path.is_none() || offset != 0 || filter != Default::default())
+    {
+        return Err(
+            "receipt inspection requires --repo and excludes projection filters/offset".into(),
+        );
+    }
     if !(1..=100).contains(&limit) {
         return Err("--limit must be between 1 and 100".into());
     }
@@ -3820,6 +3863,8 @@ fn parse_runs(mut arguments: impl Iterator<Item = String>) -> Result<CliCommand,
         limit,
         output,
         ledger,
+        invocation_id,
+        pointer,
         offset,
         filter,
         fixture,

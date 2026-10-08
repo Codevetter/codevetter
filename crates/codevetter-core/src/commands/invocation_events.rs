@@ -489,7 +489,7 @@ fn has_bound_evidence(value: &Value, record: &Metadata, bytes: Option<&[u8]>) ->
     })
 }
 
-fn valid_pointer(pointer: &str) -> bool {
+pub(super) fn valid_pointer(pointer: &str) -> bool {
     // Match the recorder's escape rules rather than accepting malformed ~ keys.
     pointer.split('/').skip(1).all(|part| {
         let mut chars = part.chars();
