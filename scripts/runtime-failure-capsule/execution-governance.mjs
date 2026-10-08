@@ -14,12 +14,25 @@ const NODE_ADAPTERS = new Set(['node-test', 'node-script', 'vitest']);
 const LOOPBACK_URL =
   /^(?:https?|wss?):\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::(?:\d+|\$\{[^}]+\}))?(?:[/?#]|$)/i;
 const URL_LITERAL = /(?:https?|wss?):\/\/[^\s'"`<>)]+/gi;
-const DYNAMIC_NETWORK_CALL =
-  /\b(?:fetch|axios(?:\.[A-Za-z]+)?|got|ky|https?\.request|new\s+WebSocket)\s*\(\s*(?!['"`]https?:\/\/(?:localhost|127\.|\[::1\]))/i;
+// `worker.fetch(request, env)` invokes an in-process handler; only global or Playwright request
+// fetches are network APIs. Runtime zero-egress enforcement still covers every other path.
+const GLOBAL_FETCH = String.raw`(?:(?<!\.)|(?<=\b(?:globalThis|window|self|request)\.))fetch`;
+const IN_PROCESS_FETCH = /(?<!\b(?:globalThis|window|self|request))\.fetch\s*\(/;
+const DYNAMIC_NETWORK_CALL = new RegExp(
+  String.raw`\b(?:${GLOBAL_FETCH}|axios(?:\.[A-Za-z]+)?|got|ky|https?\.request|new\s+WebSocket)\s*\(\s*(?!['"\x60]https?:\/\/(?:localhost|127\.|\[::1\]))`,
+  'i'
+);
 const REMOTE_SERVICE =
   /\b(?:postgres(?:ql)?|mysql|mongodb|redis|supabase|firebase|dynamodb|cloudflare|workers\s*ai|openai|anthropic|openrouter|stripe)\b/i;
 const CLOUDFLARE_SERVICE =
   /\b(?:DurableObject|browser\s+rendering|Workers\s+AI|env\.(?:D1|R2|KV)|(?:D1|R2|KV)Database)\b/i;
+// A URL literal passed directly to a request/navigation API is a destination. Other literals
+// (Request fixtures, parser inputs, records) stay inert; runtime zero-egress enforcement still applies.
+const NETWORK_DESTINATION = new RegExp(
+  String.raw`(?:\b(?:${GLOBAL_FETCH}|axios(?:\.[A-Za-z]+)?|got(?:\.[A-Za-z]+)?|ky(?:\.[A-Za-z]+)?|https?\.(?:request|get)|goto|sendBeacon|request\.(?:get|post|put|patch|delete|head)|new\s+(?:WebSocket|EventSource))\s*\(|\bbaseURL\s*:)\s*$`,
+  'i'
+);
+const MAX_REPORTED_LINES = 8;
 const SUBPROCESS_NETWORK_ESCAPE =
   /(?:from\s+['"]node:child_process['"]|require\s*\(\s*['"](?:node:)?child_process['"]\s*\)|\b(?:spawn|exec|execFile)\s*\()/;
 const FORBIDDEN_WORKLOAD =
@@ -364,53 +377,118 @@ export function blockedEgressMarkers(stderr) {
 
 function inspectSafetySignals(source, { adapter, target, name }) {
   const blockers = [];
+  const limitations = [];
   const externalServices = new Set();
-  const urls = [...source.matchAll(URL_LITERAL)].map((match) => match[0]);
-  const remoteUrls = urls.filter((url) => !LOOPBACK_URL.test(url));
-  const loopbackUrls = urls.filter((url) => LOOPBACK_URL.test(url));
-  for (const url of remoteUrls) {
+  const lineAt = lineLocator(source);
+  const urls = [...source.matchAll(URL_LITERAL)].map((match) => ({
+    url: match[0],
+    line: lineAt(match.index),
+    destination: NETWORK_DESTINATION.test(
+      source.slice(Math.max(0, match.index - 80), match.index - 1)
+    ),
+  }));
+  const remoteUrls = urls.filter((entry) => !LOOPBACK_URL.test(entry.url));
+  const remoteDestinations = remoteUrls.filter((entry) => entry.destination);
+  const inertUrls = remoteUrls.filter((entry) => !entry.destination);
+  const loopbackUrls = urls
+    .filter((entry) => LOOPBACK_URL.test(entry.url))
+    .map((entry) => entry.url);
+  for (const { url } of remoteDestinations) {
     try {
       externalServices.add(new URL(url).hostname.toLowerCase());
     } catch {
       externalServices.add('unknown-remote-endpoint');
     }
   }
-  if (remoteUrls.length > 0) blockers.push('The workload contains a non-loopback endpoint.');
-  if (DYNAMIC_NETWORK_CALL.test(source)) {
+  if (remoteDestinations.length > 0) {
     blockers.push(
-      'The workload contains a network call whose destination is not a literal loopback URL.'
+      `The workload sends a request to a non-loopback endpoint (${lineList(remoteDestinations.map((entry) => entry.line))}).`
+    );
+  }
+  if (inertUrls.length > 0) {
+    limitations.push(
+      `Non-loopback URL literals that are not direct request destinations were treated as inert data (${lineList(inertUrls.map((entry) => entry.line))}); runtime zero-egress enforcement still blocks any network attempt.`
+    );
+  }
+  const dynamicLines = matchingLines(source, DYNAMIC_NETWORK_CALL, lineAt);
+  const handlerLines = matchingLines(source, IN_PROCESS_FETCH, lineAt);
+  if (handlerLines.length > 0) {
+    limitations.push(
+      `Object-method fetch calls were treated as in-process handler invocations, not network requests (${lineList(handlerLines)}); runtime zero-egress enforcement still applies.`
+    );
+  }
+  if (dynamicLines.length > 0) {
+    blockers.push(
+      `The workload contains a network call whose destination is not a literal loopback URL (${lineList(dynamicLines)}).`
     );
     externalServices.add('unknown-dynamic-endpoint');
   }
-  if (REMOTE_SERVICE.test(source) || CLOUDFLARE_SERVICE.test(source)) {
+  const serviceLines = [
+    ...matchingLines(source, REMOTE_SERVICE, lineAt),
+    ...matchingLines(source, CLOUDFLARE_SERVICE, lineAt),
+  ];
+  if (serviceLines.length > 0) {
     blockers.push(
-      'The workload contains a hosted or paid service signal with unknown execution cost.'
+      `The workload contains a hosted or paid service signal with unknown execution cost (${lineList(serviceLines)}).`
     );
     externalServices.add('unknown-hosted-service');
   }
-  if (SUBPROCESS_NETWORK_ESCAPE.test(source)) {
+  const subprocessLines = matchingLines(source, SUBPROCESS_NETWORK_ESCAPE, lineAt);
+  if (subprocessLines.length > 0) {
     blockers.push(
-      'The workload can launch a subprocess outside the portable Node zero-egress guard.'
+      `The workload can launch a subprocess outside the portable Node zero-egress guard (${lineList(subprocessLines)}).`
     );
   }
   if (FORBIDDEN_WORKLOAD.test(`${target} ${name ?? ''} ${source}`)) {
     blockers.push('Autonomous load, soak, stress, and production profiling is unsupported.');
   }
+  limitations.unshift(
+    adapter === 'playwright'
+      ? 'Browser execution is admitted only for explicit loopback targets.'
+      : 'Admission applies only to the exact repository-owned workload identity.'
+  );
   return {
     blockers,
     external_services: [...externalServices].sort(),
     loopback_urls: loopbackUrls,
     unknown_cost:
-      remoteUrls.length > 0 ||
-      DYNAMIC_NETWORK_CALL.test(source) ||
-      REMOTE_SERVICE.test(source) ||
-      CLOUDFLARE_SERVICE.test(source),
-    limitations: [
-      adapter === 'playwright'
-        ? 'Browser execution is admitted only for explicit loopback targets.'
-        : 'Admission applies only to the exact repository-owned workload identity.',
-    ],
+      remoteDestinations.length > 0 || dynamicLines.length > 0 || serviceLines.length > 0,
+    limitations,
   };
+}
+
+function lineLocator(source) {
+  const starts = [0];
+  for (let index = source.indexOf('\n'); index !== -1; index = source.indexOf('\n', index + 1)) {
+    starts.push(index + 1);
+  }
+  return (offset) => {
+    let low = 0;
+    let high = starts.length - 1;
+    while (low < high) {
+      const middle = Math.ceil((low + high) / 2);
+      if (starts[middle] <= offset) low = middle;
+      else high = middle - 1;
+    }
+    return low + 1;
+  };
+}
+
+// Global whole-source matching keeps each signal's presence identical to `pattern.test(source)`.
+function matchingLines(source, pattern, lineAt) {
+  const global = new RegExp(
+    pattern.source,
+    pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`
+  );
+  return [...source.matchAll(global)].map((match) => lineAt(match.index));
+}
+
+function lineList(lines) {
+  const unique = [...new Set(lines)].sort((left, right) => left - right);
+  const shown = unique.slice(0, MAX_REPORTED_LINES).join(', ');
+  const more =
+    unique.length > MAX_REPORTED_LINES ? ` and ${unique.length - MAX_REPORTED_LINES} more` : '';
+  return `target line${unique.length === 1 ? '' : 's'} ${shown}${more}`;
 }
 
 function enforcementFor(adapter) {
