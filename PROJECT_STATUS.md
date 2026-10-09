@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-09-25
+Last updated: 2026-10-09
 
 ## Why / What
 
@@ -45,6 +45,12 @@ separately approved safety design justify renewed investment.
   Review/Explore (#285), and unavailable-performance classification (#276) are
   closed. See
   [surface behavior](docs/product/surfaces.md).
+- The v1.16.0 release candidate (owner-authorized 2026-10-09) adds bounded
+  repository-scoped invocation receipts in CLI/MCP and the native Runs
+  inspector, the packaged performance-runtime lookup fix for symlinked CLI
+  launchers (#355), explicit Playwright/Vitest runner selection, inert URL
+  fixture admission, and the recorder failure taxonomy. It is not published
+  until the protected release workflow verifies its assets.
 - Review/Explore supports GitHub URL import, pinned Git source and diffs,
   in-process Rust navigation, virtual source windows, indexed search,
   TypeScript semantic definitions/references, and source-linked Unpack and
