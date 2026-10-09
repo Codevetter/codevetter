@@ -14,7 +14,14 @@ const NON_CODE = ['package.json', 'go.sum', 'CHANGES.rst', 'docs/guide.md', 'ass
 
 function fixtureRepo() {
   const dir = mkdtempSync(join(tmpdir(), 'cr-controls-'));
-  const git = (...args) => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8' });
+  // Pinned dates make the fixture revision, and so every seeded draw, identical on
+  // every run. Without them the SHA follows the wall clock and the draws vary.
+  const env = {
+    ...process.env,
+    GIT_AUTHOR_DATE: '2026-01-01T00:00:00Z',
+    GIT_COMMITTER_DATE: '2026-01-01T00:00:00Z',
+  };
+  const git = (...args) => execFileSync('git', ['-C', dir, ...args], { encoding: 'utf8', env });
   git('init', '-q');
   git('config', 'user.email', 'test@example.com');
   git('config', 'user.name', 'test');
@@ -70,9 +77,15 @@ test('both draws are reproducible from case identity alone', () => {
     assert.deepEqual(a.files, b.files);
   }
   // A different query must reshuffle, or the "random" draw is a fixed answer key.
-  const first = retrieveRandomFiles({ repo: dir, revision, query: 'one', limit: 3 });
-  const second = retrieveRandomFiles({ repo: dir, revision, query: 'two', limit: 3 });
-  assert.notDeepEqual(first.files, second.files);
+  // Any single pair of queries can legitimately draw the same 3 of 8 files (1 in 336),
+  // so require the draws across several queries not to collapse to one answer.
+  const queries = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+  const draws = new Set(
+    queries.map((query) =>
+      retrieveRandomFiles({ repo: dir, revision, query, limit: 3 }).files.join('\n')
+    )
+  );
+  assert.ok(draws.size > 1, `all ${queries.length} queries drew the same files`);
 });
 
 test('the ranking a control reports matches the files it returned', () => {
