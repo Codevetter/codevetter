@@ -30,23 +30,23 @@ final class CodeVetterUITests: XCTestCase {
     app.launch()
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
-    XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.textFields.ci("navigator-github-url").waitForExistence(timeout: 5))
     for destination in [
       "Explore", "Review", "Testing", "Performance", "Runs", "Settings",
     ] {
-      XCTAssertTrue(app.buttons[destination].exists, "Missing retained surface: \(destination)")
+      XCTAssertTrue(app.buttons.ci(destination).exists, "Missing retained surface: \(destination)")
     }
 
-    XCTAssertFalse(app.buttons["Usage"].exists)
+    XCTAssertFalse(app.buttons.ci("Usage").exists)
 
-    app.buttons["Runs"].click()
-    assertSelected(app.buttons["Runs"])
-    XCTAssertTrue(app.staticTexts["INVOCATION LEDGER"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.buttons["Choose ledger…"].exists)
-    let verificationResults = app.radioButtons["Verification results"]
+    app.buttons.ci("Runs").click()
+    assertSelected(app.buttons.ci("Runs"))
+    XCTAssertTrue(app.staticTexts.ci("INVOCATION LEDGER").waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons.ci("Choose ledger…").exists)
+    let verificationResults = app.radioButtons.ci("Verification results")
     XCTAssertTrue(verificationResults.exists)
     verificationResults.click()
-    XCTAssertTrue(app.staticTexts["EVIDENCE LEDGER"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts.ci("EVIDENCE LEDGER").waitForExistence(timeout: 5))
   }
 
   @MainActor
@@ -55,32 +55,32 @@ final class CodeVetterUITests: XCTestCase {
     app.launch()
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
-    XCTAssertTrue(app.textFields["navigator-github-url"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.textFields.ci("navigator-github-url").waitForExistence(timeout: 5))
 
     let palette = app.descendants(matching: .any)["command-palette"]
     openCommandPaletteWithKeyboard(app, palette: palette)
-    let search = app.textFields["command-palette-search"]
+    let search = app.textFields.ci("command-palette-search")
     XCTAssertTrue(search.waitForExistence(timeout: 2))
     search.typeText("Performance")
     search.typeKey(.return, modifierFlags: [])
 
     XCTAssertTrue(palette.waitForNonExistence(timeout: 3))
-    assertSelected(app.buttons["workbench-section-performance"])
+    assertSelected(app.buttons.ci("workbench-section-performance"))
     XCTAssertTrue(
       app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
 
     openCommandPaletteWithKeyboard(app, palette: palette)
-    let reopenedSearch = app.textFields["command-palette-search"]
+    let reopenedSearch = app.textFields.ci("command-palette-search")
     XCTAssertTrue(reopenedSearch.waitForExistence(timeout: 2))
     reopenedSearch.typeKey(.downArrow, modifierFlags: [])
     reopenedSearch.typeKey(.return, modifierFlags: [])
     XCTAssertTrue(palette.waitForNonExistence(timeout: 3))
-    assertSelected(app.buttons["workbench-section-review"])
+    assertSelected(app.buttons.ci("workbench-section-review"))
 
     openCommandPaletteWithKeyboard(app, palette: palette)
     app.typeKey(.escape, modifierFlags: [])
     XCTAssertTrue(palette.waitForNonExistence(timeout: 3))
-    assertSelected(app.buttons["workbench-section-review"])
+    assertSelected(app.buttons.ci("workbench-section-review"))
   }
 
   @MainActor
@@ -90,23 +90,23 @@ final class CodeVetterUITests: XCTestCase {
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
-    app.buttons["Testing"].click()
+    app.buttons.ci("Testing").click()
 
-    assertSelected(app.buttons["Testing"])
+    assertSelected(app.buttons.ci("Testing"))
     XCTAssertTrue(
       app.descendants(matching: .any)["testing-workspace"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["Choose testing repository"].exists)
-    XCTAssertTrue(app.radioButtons["Git range"].exists)
-    XCTAssertTrue(app.radioButtons["GitHub pull request"].exists)
+    XCTAssertTrue(app.buttons.ci("Choose testing repository").exists)
+    XCTAssertTrue(app.radioButtons.ci("Git range").exists)
+    XCTAssertTrue(app.radioButtons.ci("GitHub pull request").exists)
     let advancedSetup = app.descendants(matching: .any)["advanced-testing-setup"]
     XCTAssertTrue(advancedSetup.exists)
     advancedSetup.click()
     XCTAssertTrue(app.checkBoxes["Allow this bounded preview verification"].exists)
-    XCTAssertTrue(app.buttons["Run preview proof"].exists)
-    XCTAssertFalse(app.buttons["Run preview proof"].isEnabled)
-    XCTAssertTrue(app.staticTexts["WHAT HAPPENS NEXT"].exists)
-    XCTAssertTrue(app.buttons["Use Review comparison"].exists)
-    XCTAssertFalse(app.buttons["Use Review comparison"].isEnabled)
+    XCTAssertTrue(app.buttons.ci("Run preview proof").exists)
+    XCTAssertFalse(app.buttons.ci("Run preview proof").isEnabled)
+    XCTAssertTrue(app.staticTexts.ci("WHAT HAPPENS NEXT").exists)
+    XCTAssertTrue(app.buttons.ci("Use Review comparison").exists)
+    XCTAssertFalse(app.buttons.ci("Use Review comparison").isEnabled)
   }
 
   @MainActor
@@ -120,7 +120,7 @@ final class CodeVetterUITests: XCTestCase {
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
-    assertSelected(app.buttons["Testing"])
+    assertSelected(app.buttons.ci("Testing"))
     for workspace in [
       ("Warm changed proof", "warm-verification-workspace"),
       ("Differential", "differential-verification-workspace"),
@@ -135,8 +135,8 @@ final class CodeVetterUITests: XCTestCase {
       trigger.click()
       let surface = app.descendants(matching: .any)[workspace.1]
       XCTAssertTrue(surface.waitForExistence(timeout: 5), "Missing \(workspace.1)")
-      XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 2))
-      app.buttons["Done"].click()
+      XCTAssertTrue(app.buttons.ci("Done").waitForExistence(timeout: 2))
+      app.buttons.ci("Done").click()
       XCTAssertTrue(surface.waitForNonExistence(timeout: 3), "\(workspace.0) did not dismiss")
     }
   }
@@ -148,8 +148,8 @@ final class CodeVetterUITests: XCTestCase {
     app.launch()
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
-    assertSelected(app.buttons["Explore"])
-    XCTAssertFalse(app.buttons["Usage"].exists)
+    assertSelected(app.buttons.ci("Explore"))
+    XCTAssertFalse(app.buttons.ci("Usage").exists)
   }
 
   @MainActor
@@ -159,14 +159,14 @@ final class CodeVetterUITests: XCTestCase {
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
-    app.buttons["Explore"].click()
-    assertSelected(app.buttons["Explore"])
+    app.buttons.ci("Explore").click()
+    assertSelected(app.buttons.ci("Explore"))
     XCTAssertTrue(
-      app.textFields["navigator-github-url"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["Open local repository…"].exists)
-    XCTAssertTrue(app.buttons["Verify a local change"].isHittable)
+      app.textFields.ci("navigator-github-url").waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons.ci("Open local repository…").exists)
+    XCTAssertTrue(app.buttons.ci("Verify a local change").isHittable)
     XCTAssertTrue(
-      app.staticTexts["Read-only by design. Repository code does not run when you open it."].exists)
+      app.staticTexts.ci("Read-only by design. Repository code does not run when you open it.").exists)
     app.menuBars.menuBarItems["File"].click()
     app.menuItems["Open Repository…"].click()
     XCTAssertTrue(app.sheets.firstMatch.waitForExistence(timeout: 3))
@@ -184,14 +184,14 @@ final class CodeVetterUITests: XCTestCase {
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
-    assertSelected(app.buttons["Review"])
-    app.buttons["Verify a local change"].click()
+    assertSelected(app.buttons.ci("Review"))
+    app.buttons.ci("Verify a local change").click()
     retainNativeRuntimeEvidence(testCase: self, app: app, name: "review-strategy-after-click")
     let strategy = app.descendants(matching: .any)["review-strategy"]
     XCTAssertTrue(strategy.waitForExistence(timeout: 3))
-    XCTAssertTrue(app.radioButtons["Claude"].exists)
-    XCTAssertTrue(app.radioButtons["Codex"].exists)
-    let cross = app.radioButtons["Claude + Codex"]
+    XCTAssertTrue(app.radioButtons.ci("Claude").exists)
+    XCTAssertTrue(app.radioButtons.ci("Codex").exists)
+    let cross = app.radioButtons.ci("Claude + Codex")
     XCTAssertTrue(cross.exists)
     cross.click()
     XCTAssertTrue(
@@ -209,25 +209,25 @@ final class CodeVetterUITests: XCTestCase {
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
-    app.buttons["Settings"].click()
+    app.buttons.ci("Settings").click()
 
-    assertSelected(app.buttons["Settings"])
-    XCTAssertTrue(app.staticTexts["PREFERENCES AND CONNECTIONS"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["SETTINGS SECTIONS"].exists)
-    XCTAssertTrue(app.buttons["Refresh general settings"].exists)
-    XCTAssertTrue(app.staticTexts["Saved on this Mac"].exists)
+    assertSelected(app.buttons.ci("Settings"))
+    XCTAssertTrue(app.staticTexts.ci("PREFERENCES AND CONNECTIONS").waitForExistence(timeout: 2))
+    XCTAssertTrue(app.staticTexts.ci("SETTINGS SECTIONS").exists)
+    XCTAssertTrue(app.buttons.ci("Refresh general settings").exists)
+    XCTAssertTrue(app.staticTexts.ci("Saved on this Mac").exists)
     for section in [
       "General", "Appearance", "Integrations", "Agents", "Agent MCP", "Notifications", "History",
       "Rubrics", "Ops", "Memories", "About",
     ] {
-      XCTAssertTrue(app.buttons[section].exists, "Missing settings section: \(section)")
+      XCTAssertTrue(app.buttons.ci(section).exists, "Missing settings section: \(section)")
     }
 
     selectSettingsSection("mcp", in: app)
-    XCTAssertTrue(app.buttons["Refresh mcp settings"].exists)
+    XCTAssertTrue(app.buttons.ci("Refresh mcp settings").exists)
 
     selectSettingsSection("usage", in: app)
-    XCTAssertTrue(app.buttons["Refresh usage settings"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons.ci("Refresh usage settings").waitForExistence(timeout: 5))
 
     selectSettingsSection("rubrics", in: app)
     XCTAssertTrue(
@@ -238,9 +238,9 @@ final class CodeVetterUITests: XCTestCase {
     // Exercise both ends of the rail after content changes, not just rows that
     // happen to be visible at launch. Selection must follow one real click.
     selectSettingsSection("about", in: app)
-    XCTAssertTrue(app.buttons["Refresh about settings"].exists)
+    XCTAssertTrue(app.buttons.ci("Refresh about settings").exists)
     selectSettingsSection("general", in: app)
-    XCTAssertTrue(app.buttons["Refresh general settings"].exists)
+    XCTAssertTrue(app.buttons.ci("Refresh general settings").exists)
   }
 
   @MainActor
@@ -250,23 +250,23 @@ final class CodeVetterUITests: XCTestCase {
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
 
-    app.buttons["Performance"].click()
+    app.buttons.ci("Performance").click()
 
-    assertSelected(app.buttons["Performance"])
+    assertSelected(app.buttons.ci("Performance"))
     XCTAssertTrue(
       app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["Choose performance repository"].exists)
+    XCTAssertTrue(app.buttons.ci("Choose performance repository").exists)
     XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
-    XCTAssertTrue(app.buttons["performance-scope-planner-resolve"].exists)
+    XCTAssertTrue(app.buttons.ci("performance-scope-planner-resolve").exists)
     let advancedSource = app.descendants(matching: .any)["advanced-performance-source-options"]
     XCTAssertTrue(advancedSource.exists)
     advancedSource.click()
-    XCTAssertTrue(app.buttons["Plan"].exists)
-    XCTAssertFalse(app.buttons["Plan"].isEnabled)
-    XCTAssertTrue(app.buttons["Capture evidence"].exists)
-    XCTAssertFalse(app.buttons["Capture evidence"].isEnabled)
-    XCTAssertTrue(app.staticTexts["Choose a workload, then plan the measurement."].exists)
-    XCTAssertTrue(app.staticTexts["Planning does not execute project code"].exists)
+    XCTAssertTrue(app.buttons.ci("Plan").exists)
+    XCTAssertFalse(app.buttons.ci("Plan").isEnabled)
+    XCTAssertTrue(app.buttons.ci("Capture evidence").exists)
+    XCTAssertFalse(app.buttons.ci("Capture evidence").isEnabled)
+    XCTAssertTrue(app.staticTexts.ci("Choose a workload, then plan the measurement.").exists)
+    XCTAssertTrue(app.staticTexts.ci("Planning does not execute project code").exists)
   }
 
   @MainActor
@@ -284,7 +284,7 @@ final class CodeVetterUITests: XCTestCase {
     line: UInt = #line
   ) {
     let rail = app.scrollViews["settings-section-rail"]
-    let button = app.buttons["settings-section-\(section)"]
+    let button = app.buttons.ci("settings-section-\(section)")
     guard rail.waitForExistence(timeout: 2), button.waitForExistence(timeout: 2) else {
       XCTFail("Missing settings rail or section: \(section)", file: file, line: line)
       return

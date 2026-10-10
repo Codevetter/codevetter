@@ -44,16 +44,16 @@ final class InvocationLedgerUITests: XCTestCase {
   @MainActor
   func testExplicitLedgerPaginationReceiptFieldAndExactExport() throws {
     let app = try launchLedger()
-    XCTAssertTrue(app.staticTexts["1–100 of 130 invocations"].waitForExistence(timeout: 10))
-    XCTAssertTrue(app.staticTexts["Unknown"].firstMatch.exists)
-    app.buttons["Next"].click()
-    XCTAssertTrue(app.staticTexts["101–130 of 130 invocations"].waitForExistence(timeout: 10))
-    XCTAssertFalse(app.buttons["Next"].isEnabled)
-    app.buttons["Previous"].click()
-    XCTAssertTrue(app.staticTexts["1–100 of 130 invocations"].waitForExistence(timeout: 10))
+    XCTAssertTrue(app.staticTexts.ci("1–100 of 130 invocations").waitForExistence(timeout: 10))
+    XCTAssertTrue(app.staticTexts.ci("Unknown").firstMatch.exists)
+    app.buttons.ci("Next").click()
+    XCTAssertTrue(app.staticTexts.ci("101–130 of 130 invocations").waitForExistence(timeout: 10))
+    XCTAssertFalse(app.buttons.ci("Next").isEnabled)
+    app.buttons.ci("Previous").click()
+    XCTAssertTrue(app.staticTexts.ci("1–100 of 130 invocations").waitForExistence(timeout: 10))
 
     let export = ledgerDirectory.appendingPathComponent("page-export.json")
-    app.buttons["Export page…"].click()
+    app.buttons.ci("Export page…").click()
     try finishSavePanel(app, destination: export)
     let page = try XCTUnwrap(
       JSONSerialization.jsonObject(with: Data(contentsOf: export)) as? [String: Any])
@@ -62,16 +62,16 @@ final class InvocationLedgerUITests: XCTestCase {
     XCTAssertEqual((page["invocations"] as? [[String: Any]])?.count, 100)
 
     let inspector = app.scrollViews["invocation-receipt-inspector"]
-    let pointer = app.textFields["Captured receipt JSON pointer"]
+    let pointer = app.textFields.ci("Captured receipt JSON pointer")
     for _ in 0..<10 where !pointer.isHittable { inspector.swipeUp() }
     XCTAssertTrue(pointer.isHittable)
     pointer.click()
     pointer.typeText("/allowed")
-    app.buttons["Read captured receipt"].click()
-    XCTAssertTrue(app.staticTexts["false"].waitForExistence(timeout: 10))
-    XCTAssertTrue(app.staticTexts["/allowed"].exists)
+    app.buttons.ci("Read captured receipt").click()
+    XCTAssertTrue(app.staticTexts.ci("false").waitForExistence(timeout: 10))
+    XCTAssertTrue(app.staticTexts.ci("/allowed").exists)
     let fieldExport = ledgerDirectory.appendingPathComponent("field-export.json")
-    app.buttons["Export receipt view…"].click()
+    app.buttons.ci("Export receipt view…").click()
     try finishSavePanel(app, destination: fieldExport)
     let field = try XCTUnwrap(
       JSONSerialization.jsonObject(with: Data(contentsOf: fieldExport)) as? [String: Any])
@@ -84,7 +84,7 @@ final class InvocationLedgerUITests: XCTestCase {
   func testRuntimeLedgerWindowsAtThreeLogicalWidths() throws {
     for appearance in ["dark", "light"] {
       let app = try launchLedger(appearance: appearance)
-      XCTAssertTrue(app.staticTexts["1–100 of 130 invocations"].waitForExistence(timeout: 10))
+      XCTAssertTrue(app.staticTexts.ci("1–100 of 130 invocations").waitForExistence(timeout: 10))
       let window = app.windows.firstMatch
       for width in [980.0, 1180.0, 1380.0] {
         let before = window.frame
@@ -132,16 +132,16 @@ final class InvocationLedgerUITests: XCTestCase {
     app.launch()
     app.activate()
     dismissNativeFirstRunIfPresented(testCase: self, app: app)
-    XCTAssertTrue(app.buttons["Choose ledger…"].waitForExistence(timeout: 10))
+    XCTAssertTrue(app.buttons.ci("Choose ledger…").waitForExistence(timeout: 10))
     capture(app, name: "before-chooser-\(appearance)")
-    app.buttons["Choose ledger…"].click()
+    app.buttons.ci("Choose ledger…").click()
     app.typeKey("g", modifierFlags: [.command, .shift])
     capture(app, name: "go-to-ledger-\(appearance)")
-    let pathField = app.sheets["GoToWindow"].textFields["PathTextField"]
+    let pathField = app.sheets["GoToWindow"].textFields.ci("PathTextField")
     XCTAssertTrue(pathField.waitForExistence(timeout: 5))
     pathField.typeText(ledgerDirectory.path)
     app.typeKey(.return, modifierFlags: [])
-    let open = app.dialogs["open-panel"].buttons["OKButton"]
+    let open = app.dialogs["open-panel"].buttons.ci("OKButton")
     XCTAssertTrue(open.waitForExistence(timeout: 5))
     open.click()
     return app
@@ -151,7 +151,7 @@ final class InvocationLedgerUITests: XCTestCase {
   private func finishSavePanel(_ app: XCUIApplication, destination: URL) throws {
     capture(app, name: "before-save-\(destination.lastPathComponent)")
     app.typeKey("g", modifierFlags: [.command, .shift])
-    let pathField = app.sheets["GoToWindow"].textFields["PathTextField"]
+    let pathField = app.sheets["GoToWindow"].textFields.ci("PathTextField")
     XCTAssertTrue(pathField.waitForExistence(timeout: 5))
     pathField.typeText(destination.deletingLastPathComponent().path)
     app.typeKey(.return, modifierFlags: [])
@@ -163,7 +163,7 @@ final class InvocationLedgerUITests: XCTestCase {
     filename.typeKey("a", modifierFlags: .command)
     filename.typeText(destination.lastPathComponent)
     capture(app, name: "ready-save-\(destination.lastPathComponent)")
-    let save = app.dialogs.buttons["Save"]
+    let save = app.dialogs.buttons.ci("Save")
     XCTAssertTrue(save.waitForExistence(timeout: 5))
     save.click()
     let written = NSPredicate { _, _ in FileManager.default.fileExists(atPath: destination.path) }
@@ -186,7 +186,7 @@ func dismissNativeFirstRunIfPresented(testCase: XCTestCase, app: XCUIApplication
   let onboarding = app.descendants(matching: .any)["native-onboarding"]
   guard onboarding.waitForExistence(timeout: 5) else { return }
   retainNativeRuntimeEvidence(testCase: testCase, app: app, name: "first-run-onboarding")
-  let notNow = app.buttons["Not now"]
+  let notNow = app.buttons.ci("Not now")
   XCTAssertTrue(notNow.isHittable, "First-run dismissal must be reachable")
   notNow.click()
   XCTAssertTrue(onboarding.waitForNonExistence(timeout: 5), "First-run sheet did not dismiss")
