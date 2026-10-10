@@ -76,7 +76,7 @@
     "note": "Apple silicon · open source (ISC) · no CodeVetter account",
     "window": {
       "title": "CodeVetter — review",
-      "src": "images/workbench.png",
+      "src": "images/workbench.webp",
       "alt": "CodeVetter desktop review workbench showing a local review result, finding list, evidence status, and code inspection panel",
       "width": 1440,
       "height": 900
@@ -120,7 +120,7 @@
               "title": "Point at the line *the verdict is about.*",
               "body": "A failing check is linked back to the exact change that caused it, with the command, the bounded output and the limitation, so a reviewer can confirm it in seconds instead of re-running everything.",
               "detail": {
-                "src": "images/workbench.png",
+                "src": "images/workbench.webp",
                 "alt": "CodeVetter review workbench: line 12 of portfolio.tsx, if (total >= 0), is flagged as the line the unverified finding is about",
                 "width": 1440,
                 "height": 900,
