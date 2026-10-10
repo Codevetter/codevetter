@@ -82,17 +82,7 @@ for (const [assetPath, provenancePath] of [
   }
 }
 const builtLandingHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-for (const required of [
-  'data-fleet-footer-project="codevetter"',
-  'font-base="/fonts/fleet-footer-precise-v1/"',
-  'art-src="/footer-art/codevetter-evidence-workbench-v1.webp"',
-  'project-strip.js?v=precise-b0adaa67',
-  'ai-chat-footer.js?v=precise-b0adaa67',
-  'data-project="codevetter"',
-  'data-theme="dark"',
-  'data-host-only="true"',
-  'data-surface="web"',
-]) {
+for (const required of ['data-fleet-footer="studio"', 'data-catalog-id="codevetter"']) {
   if (!builtLandingHtml.includes(required))
     failures.push(`Built landing page is missing ${required}`);
 }
@@ -103,8 +93,8 @@ for (const name of ['project-strip', 'ai-chat-footer']) {
   const count = builtScriptTags.filter((tag) =>
     new RegExp(`src="[^"]*${name}\\.js(?:\\?[^"]*)?"`).test(tag)
   ).length;
-  if (count !== 1)
-    failures.push(`Built landing page contains ${count} ${name} loaders; expected one`);
+  if (count !== 0)
+    failures.push(`Built landing page contains ${count} ${name} loaders; expected none`);
 }
 
 const aiCatalog = JSON.parse(

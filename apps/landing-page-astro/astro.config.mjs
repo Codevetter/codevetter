@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import react from '@astrojs/react';
 import tailwind from '@tailwindcss/vite';
 
 // CodeVetter landing — pure static Astro.
@@ -25,6 +26,7 @@ export default defineConfig({
     inlineStylesheets: 'always',
   },
   integrations: [
+    react(),
     sitemap({
       customPages: ['https://codevetter.com/docs/'],
       serialize(item) {

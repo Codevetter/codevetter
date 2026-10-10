@@ -1,37 +1,48 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import Nav from '@/components/Nav.astro';
-import Hero from '@/components/Hero.astro';
-import CatchStrip from '@/components/CatchStrip.astro';
-import Stats from '@/components/Stats.astro';
-import Bento from '@/components/Bento.astro';
-import HowItWorks from '@/components/HowItWorks.astro';
-import Providers from '@/components/Providers.astro';
-import Availability from '@/components/Availability.astro';
-import CTA from '@/components/CTA.astro';
-import FAQ from '@/components/FAQ.astro';
-import Footer from '@/components/Footer.astro';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import Base from '@saas-maker/templates/Base.astro';
+import { WorkbenchPage } from '@saas-maker/templates/workbench-page';
+import { baseProps } from '@saas-maker/templates/page';
+import { workbenchContent } from '@saas-maker/templates/schema';
+import json from '../content/codevetter.json';
 
-// CodeVetter landing — execution-backed verification positioning.
+const content = workbenchContent.parse(json);
+// Astro bundles this module into dist for static rendering; resolve the source
+// from the app build directory when the source-relative URL is no longer valid.
+const layoutUrl = new URL('../layouts/Layout.astro', import.meta.url);
+const layout = readFileSync(
+  existsSync(layoutUrl) ? layoutUrl : resolve('src/layouts/Layout.astro'),
+  'utf8'
+);
+function between(start: string, end: string): string {
+  const from = layout.indexOf(start);
+  const to = layout.indexOf(end, from + start.length);
+  if (from < 0 || to < 0) throw new Error(`Layout.astro is missing head markers: ${start} / ${end}`);
+  return layout.slice(from, to + end.length).replaceAll('is:inline', '');
+}
+const jsonLd = between('<!-- fleet-jsonld:start', '<!-- fleet-jsonld:end -->');
+const analytics = between(
+  '<script is:inline>\n      !function',
+  '<script is:inline src="/app-health-log.js" defer></script>'
+);
 ---
 
-<Layout
-  title="CodeVetter — Execution-backed agent verification"
-  description="Verify whether a coding agent completed its task. CodeVetter binds the exact change to executable checks, inspectable evidence, limitations, and a measurable verdict."
-  path="/"
->
-  <main>
-    <Nav />
-    <Hero />
-    {/* Section wrappers preserve document order and anchor behavior. */}
-    <div class="cv-below-fold"><CatchStrip /></div>
-    <div class="cv-below-fold"><Stats /></div>
-    <div class="cv-below-fold"><Bento /></div>
-    <div class="cv-below-fold"><HowItWorks /></div>
-    <div class="cv-below-fold"><Providers /></div>
-    <div class="cv-below-fold"><Availability /></div>
-    <div class="cv-below-fold"><CTA /></div>
-    <div class="cv-below-fold"><FAQ /></div>
-    <div class="cv-below-fold"><Footer /></div>
-  </main>
-</Layout>
+<Base {...baseProps(content)}>
+  <Fragment slot="head">
+    <meta name="application-name" content="CodeVetter" />
+    <meta name="keywords" content="coding agent verification, AI code verification, executable evidence, agent evaluation, software verification, local developer tool, verification receipt" />
+    <meta name="author" content="CodeVetter" />
+    <link rel="alternate" type="text/markdown" href="https://codevetter.com/index.md" />
+    <meta name="twitter:creator" content="@sarthakcodes" />
+    <Fragment set:html={jsonLd + analytics} />
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', () => {
+        for (const link of document.querySelectorAll('a[href="/benchmark"]')) {
+          link.setAttribute('data-log', 'benchmark_opened');
+        }
+      });
+    </script>
+  </Fragment>
+  <WorkbenchPage content={content} />
+</Base>
