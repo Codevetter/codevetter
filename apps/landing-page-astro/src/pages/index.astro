@@ -1,6 +1,8 @@
 ---
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import Base from '@saas-maker/templates/Base.astro';
 import { WorkbenchPage } from '@saas-maker/templates/workbench-page';
 import { baseProps } from '@saas-maker/templates/page';
@@ -8,6 +10,22 @@ import { workbenchContent } from '@saas-maker/templates/schema';
 import json from '../content/codevetter.json';
 
 const content = workbenchContent.parse(json);
+// v0.1.18 supplies intrinsic dimensions and priority, but its strict window
+// schema cannot accept srcset/sizes yet. Enrich only this image at build time,
+// keeping the shared template's chrome, layout and copy intact.
+const heroSrc = `/${content.hero.window!.src}`;
+const heroSrcset = [720, 1080, 1440].map((width) =>
+  `${heroSrc.replace('.webp', width === 1440 ? '.webp' : `-${width}.webp`)} ${width}w`
+).join(', ');
+const heroSizes = '(min-width: 1024px) calc(min(100vw - clamp(2rem, 1rem + 5vw, 5rem), 72rem) - 114px), (min-width: 640px) calc(100vw - clamp(2rem, 1rem + 5vw, 5rem) - 82px), calc(100vw - clamp(2rem, 1rem + 5vw, 5rem) - 34px)';
+const pageHtml = renderToStaticMarkup(createElement(WorkbenchPage, { content }))
+  // Match Astro's renderer: let the img's responsive source drive its request,
+  // rather than React's automatic preload downloading the full-size fallback.
+  .replace(/<link rel="preload" as="image"[^>]*\/>/g, '')
+  .replace(
+    `<img src="${heroSrc}"`,
+    `<img src="${heroSrc}" srcset="${heroSrcset}" sizes="${heroSizes}"`
+  );
 // Astro bundles this module into dist for static rendering; resolve the source
 // from the app build directory when the source-relative URL is no longer valid.
 const layoutUrl = new URL('../layouts/Layout.astro', import.meta.url);
@@ -44,5 +62,5 @@ const analytics = between(
       });
     </script>
   </Fragment>
-  <WorkbenchPage content={content} />
+  <Fragment set:html={pageHtml} />
 </Base>
