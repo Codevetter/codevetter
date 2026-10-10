@@ -127,9 +127,9 @@ final class CodeVetterUITests: XCTestCase {
       ("Scenarios", "scenario-compiler-workspace"),
       ("PR watcher", "trex-watcher-workspace"),
     ] {
-      app.menuButtons["Testing tools"].click()
+      app.menuButtons.ci("Testing tools").click()
       retainNativeRuntimeEvidence(testCase: self, app: app, name: "testing-tools-\(workspace.0)")
-      let trigger = app.menuItems[workspace.0]
+      let trigger = app.menuItems.ci(workspace.0)
       XCTAssertTrue(trigger.waitForExistence(timeout: 3), "Missing \(workspace.0) trigger")
       XCTAssertTrue(trigger.isEnabled, "\(workspace.0) should be reachable with a repository")
       trigger.click()
@@ -167,8 +167,8 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(app.buttons.ci("Verify a local change").isHittable)
     XCTAssertTrue(
       app.staticTexts.ci("Read-only by design. Repository code does not run when you open it.").exists)
-    app.menuBars.menuBarItems["File"].click()
-    app.menuItems["Open Repository…"].click()
+    app.menuBars.menuBarItems.ci("File").click()
+    app.menuItems.ci("Open Repository…").click()
     XCTAssertTrue(app.sheets.firstMatch.waitForExistence(timeout: 3))
     app.typeKey(.escape, modifierFlags: [])
   }
@@ -256,7 +256,7 @@ final class CodeVetterUITests: XCTestCase {
     XCTAssertTrue(
       app.descendants(matching: .any)["performance-workspace"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.buttons.ci("Choose performance repository").exists)
-    XCTAssertTrue(app.popUpButtons["Performance adapter"].exists)
+    XCTAssertTrue(app.popUpButtons.ci("Performance adapter").exists)
     XCTAssertTrue(app.buttons.ci("performance-scope-planner-resolve").exists)
     let advancedSource = app.descendants(matching: .any)["advanced-performance-source-options"]
     XCTAssertTrue(advancedSource.exists)
@@ -357,8 +357,8 @@ final class CodeVetterUITests: XCTestCase {
 
   @MainActor
   private func openCommandPaletteWithKeyboard(_ app: XCUIApplication, palette: XCUIElement) {
-    app.menuBars.menuBarItems["View"].click()
-    XCTAssertTrue(app.menuItems["Command Palette…"].waitForExistence(timeout: 2))
+    app.menuBars.menuBarItems.ci("View").click()
+    XCTAssertTrue(app.menuItems.ci("Command Palette…").waitForExistence(timeout: 2))
     app.typeKey("k", modifierFlags: .command)
     XCTAssertTrue(palette.waitForExistence(timeout: 3))
   }
