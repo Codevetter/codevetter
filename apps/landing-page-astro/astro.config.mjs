@@ -11,8 +11,8 @@ import tailwind from '@tailwindcss/vite';
 //   - output: 'static' (no SSR adapter; this is a marketing page)
 //   - build.format: 'file' so slashless canonical URLs map directly to
 //     `/faq.html` instead of redirecting to `/faq/` on Cloudflare Pages.
-//   - build.inlineStylesheets: 'always' — flat-inline per-page CSS so
-//     the first paint never blocks on an external request.
+//   - build.inlineStylesheets: 'never' — content-hashed CSS shared across
+//     pages and cached immutably under /_astro/.
 //   - Lightning CSS as both transformer and minifier.
 //
 // Tailwind v4 via the official `@tailwindcss/vite` plugin. The single
@@ -23,7 +23,7 @@ export default defineConfig({
   trailingSlash: 'never',
   build: {
     format: 'file',
-    inlineStylesheets: 'always',
+    inlineStylesheets: 'never',
   },
   integrations: [
     react(),
