@@ -99,8 +99,8 @@ struct PremiumUnpackView: View {
             .lineLimit(1)
             .truncationMode(.middle)
           Spacer(minLength: 8)
-          Text("Choose…")
-            .font(.system(size: 10, weight: .semibold))
+          Text("choose…")
+            .font(EvidenceStyle.labelFont(10))
             .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 12)
@@ -120,7 +120,7 @@ struct PremiumUnpackView: View {
       Spacer(minLength: 12)
 
       if model.unpackLoading || model.repositoryQueryLoading {
-        Button("Cancel", role: .cancel) { model.cancelUnpackOperation() }
+        Button("cancel", role: .cancel) { model.cancelUnpackOperation() }
           .buttonStyle(.bordered)
           .accessibilityIdentifier("repo-unpack-cancel")
       } else {
@@ -129,7 +129,7 @@ struct PremiumUnpackView: View {
         } label: {
           Label("Unpack repository", systemImage: "shippingbox.and.arrow.backward.fill")
         }
-        .buttonStyle(PremiumPrimaryButtonStyle())
+        .premiumPrimaryButton()
         .disabled(!model.canScanUnpackRepository)
         .accessibilityIdentifier("repo-unpack-scan")
       }
@@ -242,7 +242,7 @@ struct PremiumUnpackView: View {
     } else if model.unpackLoading {
       VStack(spacing: 12) {
         ProgressView().controlSize(.small)
-        Text("Opening the bounded Rust snapshot…").font(.system(size: 12, weight: .medium))
+        Text("opening the bounded rust snapshot…").font(EvidenceStyle.labelFont(12))
         Text("The native client never opens or reinterprets SQLite directly.")
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -354,7 +354,7 @@ struct PremiumUnpackView: View {
         )
         .font(.system(size: 10))
         .foregroundStyle(.secondary)
-        Button("Open inventory") { section = .inventory }
+        Button("open inventory") { section = .inventory }
           .buttonStyle(.bordered)
           .controlSize(.small)
       }
@@ -372,7 +372,7 @@ struct PremiumUnpackView: View {
         )
         .font(.system(size: 10))
         .foregroundStyle(.secondary)
-        Button("Open analysis") { section = .analysis }
+        Button("open analysis") { section = .analysis }
           .buttonStyle(.bordered)
           .controlSize(.small)
       }
@@ -434,7 +434,7 @@ struct PremiumUnpackView: View {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
           PremiumFieldLabel("SYSTEM MAP")
-          Text("Technology and workspace boundaries").font(.system(size: 15, weight: .semibold))
+          Text("technology and workspace boundaries").font(EvidenceStyle.labelFont(15))
         }
         Spacer()
         Text("\(inventory.workspaceUnits.count) units")
@@ -496,7 +496,7 @@ struct PremiumUnpackView: View {
     VStack(alignment: .leading, spacing: 0) {
       VStack(alignment: .leading, spacing: 3) {
         PremiumFieldLabel("SOURCE OUTLINE")
-        Text("Entrypoints and bounded tree").font(.system(size: 15, weight: .semibold))
+        Text("entrypoints and bounded tree").font(EvidenceStyle.labelFont(15))
       }
       .padding(16)
       Divider()
@@ -554,7 +554,7 @@ struct PremiumUnpackView: View {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
           PremiumFieldLabel("HISTORY LEADS")
-          Text("Recent decisions and commits").font(.system(size: 14, weight: .semibold))
+          Text("recent decisions and commits").font(EvidenceStyle.labelFont(14))
         }
         Spacer()
         Text(inventory.history.truncated ? "BOUNDED" : "COMPLETE")
@@ -586,7 +586,7 @@ struct PremiumUnpackView: View {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
           PremiumFieldLabel("DETERMINISTIC HEALTH")
-          Text("Review leads, not runtime proof").font(.system(size: 14, weight: .semibold))
+          Text("review leads, not runtime proof").font(EvidenceStyle.labelFont(14))
         }
         Spacer()
         Text("\(inventory.health.hotspotCount) hotspots")
@@ -805,7 +805,7 @@ struct PremiumUnpackView: View {
         } label: {
           HStack {
             VStack(alignment: .leading, spacing: 3) {
-              Text("Recorded topology").font(.system(size: 11, weight: .semibold))
+              Text("recorded topology").font(EvidenceStyle.labelFont(11))
               Text(
                 "\(inventory.graph.nodes.count) nodes · \(inventory.graph.edges.count) relationships · \(inventory.graph.truncated ? "bounded" : "complete")"
               )
@@ -893,7 +893,7 @@ struct PremiumUnpackView: View {
             Label("Query", systemImage: "arrow.right")
           }
         }
-        .buttonStyle(PremiumPrimaryButtonStyle())
+        .premiumPrimaryButton()
         .frame(minWidth: 86)
         .disabled(!model.canQueryRepositoryEvidence)
         .accessibilityIdentifier("repo-query-submit")
@@ -926,8 +926,8 @@ struct PremiumUnpackView: View {
     if model.repositoryQueryLoading {
       HStack(spacing: 10) {
         ProgressView().controlSize(.small)
-        Text("Rust is applying canonical ranking and freshness checks…")
-          .font(.system(size: 10, weight: .medium))
+        Text("rust is applying canonical ranking and freshness checks…")
+          .font(EvidenceStyle.labelFont(10))
       }
       .padding(16)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -973,8 +973,8 @@ struct PremiumUnpackView: View {
           .font(.system(size: 18, weight: .medium))
           .foregroundStyle(EvidenceStyle.amberForeground)
         VStack(alignment: .leading, spacing: 4) {
-          Text("A query returns evidence, not a generated answer.")
-            .font(.system(size: 11, weight: .semibold))
+          Text("a query returns evidence, not a generated answer.")
+            .font(EvidenceStyle.labelFont(11))
           Text(
             "Structure ranks indexed symbols and paths. History searches Git revisions plus persisted entities and events, with any coverage gap shown beside the result."
           )
@@ -1066,8 +1066,8 @@ struct PremiumUnpackView: View {
     if model.repositoryQueryDetailLoading {
       HStack(spacing: 10) {
         ProgressView().controlSize(.small)
-        Text("Rust is resolving the bounded evidence detail…")
-          .font(.system(size: 10, weight: .medium))
+        Text("rust is resolving the bounded evidence detail…")
+          .font(EvidenceStyle.labelFont(10))
       }
       .padding(16)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -1102,7 +1102,7 @@ struct PremiumUnpackView: View {
             .font(.system(size: 10)).foregroundStyle(.secondary)
         }
         Spacer()
-        Button("Clear") { model.repositoryGraphPathOrigin = nil }
+        Button("clear") { model.repositoryGraphPathOrigin = nil }
           .buttonStyle(.plain)
           .font(.system(size: 10, weight: .semibold))
       }
@@ -1162,7 +1162,7 @@ struct PremiumUnpackView: View {
         } label: {
           Label("Trace impact", systemImage: "scope")
         }
-        .buttonStyle(PremiumPrimaryButtonStyle())
+        .premiumPrimaryButton()
         .controlSize(.small)
       }
       if let source = explanation.node.sources.first {
@@ -1496,8 +1496,8 @@ struct PremiumUnpackView: View {
             : "Build a bounded Git range from the selected snapshot and its previous retained commit."
         )
       } actions: {
-        Button("Compare with previous snapshot") { model.compareUnpackWithPrevious() }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+        Button("compare with previous snapshot") { model.compareUnpackWithPrevious() }
+          .premiumPrimaryButton()
           .disabled(!model.canCompareUnpackSnapshot)
           .accessibilityIdentifier("repo-unpack-compare")
       }

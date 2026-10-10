@@ -42,7 +42,7 @@ struct PremiumInvocationRunsView: View {
           chooseLedger()
         }
         .buttonStyle(.bordered)
-        Button("Refresh", systemImage: "arrow.clockwise") { ledger.load() }
+        Button("refresh", systemImage: "arrow.clockwise") { ledger.load() }
           .disabled(ledger.loading || ledger.query.ledgerPath.isEmpty)
       }
       if !ledger.query.ledgerPath.isEmpty {
@@ -138,7 +138,7 @@ struct PremiumInvocationRunsView: View {
           .textFieldStyle(.roundedBorder).font(.system(size: 11, design: .monospaced))
           .onSubmit { ledger.load() }
           .accessibilityLabel("Filter by task UUID")
-        Button("Apply task") { ledger.load() }.disabled(ledger.loading)
+        Button("apply task") { ledger.load() }.disabled(ledger.loading)
       }
     }
     .font(.system(size: 11))
@@ -222,13 +222,13 @@ struct PremiumInvocationRunsView: View {
             : "\(receipt.offset + 1)–\(receipt.offset + receipt.invocations.count) of \(receipt.total) invocations"
         )
         Spacer()
-        Button("Previous") { ledger.page(by: -1) }.disabled(
+        Button("previous") { ledger.page(by: -1) }.disabled(
           receipt.offset == 0 || ledger.loading || ledger.hasUnappliedTask)
-        Button("Next") { ledger.page(by: 1) }
+        Button("next") { ledger.page(by: 1) }
           .disabled(
             receipt.offset + receipt.invocations.count >= receipt.total || ledger.loading
               || ledger.hasUnappliedTask)
-        Button("Export page…") { exportPage() }.disabled(ledger.receiptData == nil)
+        Button("export page…") { exportPage() }.disabled(ledger.receiptData == nil)
       }
       Text(
         "\(receipt.unreadableRecords) unreadable records · \(receipt.unattributedRecords) unattributed · \(receipt.unreadableAssessments) unreadable observations"
@@ -330,7 +330,7 @@ private struct InvocationReceiptInspector: View {
               ledger.inspectReceipt(pointer: pointer.isEmpty ? nil : pointer)
             }
             .disabled(ledger.inspecting || event.receiptIntegrity != "hash_matched")
-            Button("Export receipt view…") { exportInspection() }
+            Button("export receipt view…") { exportInspection() }
               .disabled(ledger.inspectionData == nil)
           }
           if event.receiptIntegrity != "hash_matched" {
@@ -381,7 +381,7 @@ private struct InvocationReceiptInspector: View {
     -> some View
   {
     VStack(alignment: .leading, spacing: 10) {
-      Text(title.uppercased()).font(.system(size: 10, weight: .semibold)).foregroundStyle(
+      Text(title.lowercased()).font(.system(size: 10, weight: .semibold)).foregroundStyle(
         .secondary)
       content()
     }

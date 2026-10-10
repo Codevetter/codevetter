@@ -69,10 +69,10 @@ struct PremiumSettingsView: View {
       isPresented: $confirmingAuditClear,
       titleVisibility: .visible
     ) {
-      Button("Clear access audit", role: .destructive) {
+      Button("clear access audit", role: .destructive) {
         model.runMcpSettings(operation: .clearAudit)
       }
-      Button("Cancel", role: .cancel) {}
+      Button("cancel", role: .cancel) {}
     } message: {
       Text(
         "This removes operational access rows only. It does not change repository evidence or MCP enablement."
@@ -83,10 +83,10 @@ struct PremiumSettingsView: View {
       isPresented: $confirmingRetentionApply,
       titleVisibility: .visible
     ) {
-      Button("Apply reviewed plan", role: .destructive) {
+      Button("apply reviewed plan", role: .destructive) {
         model.applyReviewedRetentionPlan()
       }
-      Button("Cancel", role: .cancel) {}
+      Button("cancel", role: .cancel) {}
     } message: {
       Text(retentionApplyConfirmation)
     }
@@ -95,10 +95,10 @@ struct PremiumSettingsView: View {
       isPresented: $confirmingRetentionVacuum,
       titleVisibility: .visible
     ) {
-      Button("Checkpoint + VACUUM", role: .destructive) {
+      Button("checkpoint + vacuum", role: .destructive) {
         model.checkpointSessionArchive(vacuum: true)
       }
-      Button("Cancel", role: .cancel) {}
+      Button("cancel", role: .cancel) {}
     } message: {
       Text(
         "VACUUM rewrites the local SQLite archive after checkpointing. It does not remove provider transcripts or apply a retention plan."
@@ -125,7 +125,7 @@ struct PremiumSettingsView: View {
         } label: {
           Label("Refresh", systemImage: "arrow.clockwise")
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(model.selectedSettingsLoading)
         .accessibilityLabel("Refresh \(model.settingsSection.rawValue) settings")
       }
@@ -141,7 +141,7 @@ struct PremiumSettingsView: View {
         LazyVStack(alignment: .leading, spacing: 14) {
           ForEach(Array(settingsGroups.enumerated()), id: \.offset) { _, group in
             VStack(alignment: .leading, spacing: 4) {
-              Text(group.0.uppercased())
+              Text(group.0.lowercased())
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .tracking(0.8)
                 .foregroundStyle(.tertiary)
@@ -156,7 +156,7 @@ struct PremiumSettingsView: View {
                       .foregroundStyle(
                         model.settingsSection == section
                           ? EvidenceStyle.amberForeground : Color.secondary)
-                    Text(section.label).font(.system(size: 10, weight: .semibold))
+                    Text(section.label.lowercased()).font(EvidenceStyle.labelFont(10))
                     Spacer()
                     if !settings(in: section).isEmpty {
                       Text("\(settings(in: section).count)")
@@ -224,7 +224,7 @@ struct PremiumSettingsView: View {
     {
       VStack(spacing: 12) {
         ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
-        Text("Loading settings…").font(.system(size: 12, weight: .medium))
+        Text("loading settings…").font(EvidenceStyle.labelFont(12))
         Text("Secret values are not displayed here.")
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -290,7 +290,7 @@ struct PremiumSettingsView: View {
     HStack(alignment: .top) {
       VStack(alignment: .leading, spacing: 5) {
         PremiumFieldLabel(model.settingsSection.rawValue.uppercased())
-        Text(model.settingsSection.label).font(.system(size: 22, weight: .semibold))
+        Text(model.settingsSection.label.lowercased()).font(EvidenceStyle.headingFont(22))
         Text(sectionDescription)
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -396,8 +396,8 @@ struct PremiumSettingsView: View {
       HStack(alignment: .center, spacing: 18) {
         VStack(alignment: .leading, spacing: 7) {
           PremiumFieldLabel("PRESENTATION CONTRACT")
-          Text("A calm status surface, not another agent runtime")
-            .font(.system(size: 15, weight: .semibold))
+          Text("a calm status surface, not another agent runtime")
+            .font(EvidenceStyle.labelFont(15))
           Text(
             "These preferences are shared with the retained supervised helper. The new Evidence Workbench does not yet launch it, read transcripts, or action provider requests."
           )
@@ -476,8 +476,8 @@ struct PremiumSettingsView: View {
       HStack(alignment: .top, spacing: 18) {
         VStack(alignment: .leading, spacing: 7) {
           PremiumFieldLabel("READ-ONLY OPERATIONS RECEIPT")
-          Text("Operational evidence without credential exposure")
-            .font(.system(size: 15, weight: .semibold))
+          Text("operational evidence without credential exposure")
+            .font(EvidenceStyle.labelFont(15))
           Text(
             "Rust reads aggregate local evidence and configuration presence. This path never fetches a provider invoice, returns a key or endpoint, or sends a webhook."
           )
@@ -529,8 +529,8 @@ struct PremiumSettingsView: View {
       if model.opsLoading, model.opsReceipt == nil {
         HStack(spacing: 10) {
           ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
-          Text("Reading bounded local aggregates…")
-            .font(.system(size: 10, weight: .medium))
+          Text("reading bounded local aggregates…")
+            .font(EvidenceStyle.labelFont(10))
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -642,7 +642,7 @@ struct PremiumSettingsView: View {
         } label: {
           Label("Refresh", systemImage: "arrow.clockwise")
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(model.memoryLoading)
       }
 
@@ -757,11 +757,11 @@ struct PremiumSettingsView: View {
         }
         Spacer()
         if model.memoryDiff != nil {
-          Button("Document") { model.showSelectedMemoryDocument() }
-            .buttonStyle(.bordered)
+          Button("document") { model.showSelectedMemoryDocument() }
+            .premiumSecondaryButton()
         } else {
-          Button("Git diff") { model.loadSelectedMemoryDiff() }
-            .buttonStyle(.bordered)
+          Button("git diff") { model.loadSelectedMemoryDiff() }
+            .premiumSecondaryButton()
             .disabled(model.selectedMemorySourceID == nil || model.memoryLoading)
         }
         Button(copiedMemory ? "Copied" : "Copy") {
@@ -772,7 +772,7 @@ struct PremiumSettingsView: View {
             copiedMemory = false
           }
         }
-        .buttonStyle(PremiumPrimaryButtonStyle())
+        .premiumPrimaryButton()
         .disabled(memoryVisibleText.isEmpty)
       }
 
@@ -792,7 +792,7 @@ struct PremiumSettingsView: View {
           Image(systemName: "doc.text.magnifyingglass")
             .font(.system(size: 24))
             .foregroundStyle(EvidenceStyle.amberForeground)
-          Text("No readable document selected").font(.system(size: 11, weight: .semibold))
+          Text("no readable document selected").font(EvidenceStyle.labelFont(11))
           Text("Unavailable sources remain visible without expanding file authority.")
             .font(.system(size: 10))
             .foregroundStyle(.secondary)
@@ -882,7 +882,7 @@ struct PremiumSettingsView: View {
       HStack(alignment: .top, spacing: 16) {
         VStack(alignment: .leading, spacing: 5) {
           PremiumFieldLabel("CODEX HISTORY RECOVERY")
-          Text("Additional Codex homes").font(.system(size: 15, weight: .semibold))
+          Text("additional codex homes").font(EvidenceStyle.labelFont(15))
           Text(
             "Restore sessions outside the active CODEX_HOME. Rust normalizes, bounds, and deduplicates roots for local evidence recovery."
           )
@@ -896,7 +896,7 @@ struct PremiumSettingsView: View {
         } label: {
           Label("Add history root", systemImage: "folder.badge.plus")
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(model.historyRootsLoading)
         .accessibilityIdentifier("add-history-root")
       }
@@ -941,8 +941,8 @@ struct PremiumSettingsView: View {
                 label: root.exists ? "Available" : "Missing",
                 color: root.exists ? EvidenceStyle.success : EvidenceStyle.warning
               )
-              Button("Remove") { model.removeHistoryRoot(path: root.path) }
-                .buttonStyle(.bordered)
+              Button("remove") { model.removeHistoryRoot(path: root.path) }
+                .premiumSecondaryButton()
                 .controlSize(.small)
                 .disabled(model.historyRootsLoading)
                 .accessibilityLabel("Remove Codex history root \(root.displayPath)")
@@ -960,8 +960,8 @@ struct PremiumSettingsView: View {
         HStack(alignment: .top, spacing: 11) {
           Image(systemName: "checkmark.shield.fill").foregroundStyle(EvidenceStyle.success)
           VStack(alignment: .leading, spacing: 4) {
-            Text("The active Codex home is already automatic")
-              .font(.system(size: 10, weight: .semibold))
+            Text("the active codex home is already automatic")
+              .font(EvidenceStyle.labelFont(10))
             Text("Add a root only when older sessions live elsewhere.")
               .font(.system(size: 10))
               .foregroundStyle(.secondary)
@@ -999,7 +999,7 @@ struct PremiumSettingsView: View {
         HStack(alignment: .top) {
           VStack(alignment: .leading, spacing: 4) {
             PremiumFieldLabel("INDEXED SESSION ARCHIVE")
-            Text("Dry run before cleanup").font(.system(size: 15, weight: .semibold))
+            Text("dry run before cleanup").font(EvidenceStyle.labelFont(15))
             Text(
               "Only CodeVetter archive and FTS rows are candidates. Provider transcripts and source sessions stay untouched."
             )
@@ -1023,24 +1023,24 @@ struct PremiumSettingsView: View {
             Text("Preview cleanup")
               .fixedSize(horizontal: true, vertical: false)
           }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+          .premiumPrimaryButton()
           .disabled(model.retentionLoading || retentionInputsInvalid)
           .accessibilityLabel("Preview session retention")
           .accessibilityIdentifier("preview-session-retention")
 
-          Button("Apply reviewed plan") { confirmingRetentionApply = true }
-            .buttonStyle(.bordered)
+          Button("apply reviewed plan") { confirmingRetentionApply = true }
+            .premiumSecondaryButton()
             .disabled(
               model.retentionLoading
                 || model.retentionReceipt?.plan?.candidates.isEmpty != false)
 
           Spacer()
-          Button("Checkpoint") { model.checkpointSessionArchive(vacuum: false) }
-            .buttonStyle(.bordered)
+          Button("checkpoint") { model.checkpointSessionArchive(vacuum: false) }
+            .premiumSecondaryButton()
             .disabled(model.retentionLoading)
             .accessibilityIdentifier("checkpoint-session-archive")
-          Button("Checkpoint + VACUUM") { confirmingRetentionVacuum = true }
-            .buttonStyle(.bordered)
+          Button("checkpoint + vacuum") { confirmingRetentionVacuum = true }
+            .premiumSecondaryButton()
             .disabled(model.retentionLoading)
             .accessibilityIdentifier("vacuum-session-archive")
         }
@@ -1073,7 +1073,7 @@ struct PremiumSettingsView: View {
         HStack(alignment: .top, spacing: 12) {
           Image(systemName: "shield.checkered").foregroundStyle(EvidenceStyle.amberForeground)
           VStack(alignment: .leading, spacing: 5) {
-            Text("No cleanup plan has been created").font(.system(size: 11, weight: .semibold))
+            Text("no cleanup plan has been created").font(EvidenceStyle.labelFont(11))
             Text(
               "Previewing persists a stable plan identity. Applying it later fails closed if the archive or protected-reference set changed."
             )
@@ -1233,7 +1233,7 @@ struct PremiumSettingsView: View {
                 .padding(.top, 12)
             } label: {
               VStack(alignment: .leading, spacing: 3) {
-                Text("Create a custom rubric").font(.system(size: 11, weight: .semibold))
+                Text("create a custom rubric").font(EvidenceStyle.labelFont(11))
                 Text("Add a focused review standard only when the built-in packs do not fit.")
                   .font(.system(size: 10)).foregroundStyle(.secondary)
               }
@@ -1256,7 +1256,7 @@ struct PremiumSettingsView: View {
               } label: {
                 Label("Refresh", systemImage: "arrow.clockwise")
               }
-              .buttonStyle(.bordered)
+              .premiumSecondaryButton()
               .disabled(model.rubricLoading)
               .accessibilityIdentifier("refresh-rubrics")
             }
@@ -1299,7 +1299,7 @@ struct PremiumSettingsView: View {
           } label: {
             Text("Use pack").fixedSize(horizontal: true, vertical: false)
           }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+          .premiumPrimaryButton()
           .disabled(model.rubricLoading)
           .accessibilityIdentifier("select-rubric-\(pack.id)")
         }
@@ -1314,14 +1314,14 @@ struct PremiumSettingsView: View {
         Button(expandedRubricID == pack.id ? "Hide details" : "View details") {
           expandedRubricID = expandedRubricID == pack.id ? nil : pack.id
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
       }
       if expandedRubricID == pack.id {
         VStack(alignment: .leading, spacing: 8) {
           HStack {
             PremiumFieldLabel("REVIEW CHECKS")
             Spacer()
-            Button("Duplicate") { duplicateRubric(pack) }.buttonStyle(.bordered)
+            Button("duplicate") { duplicateRubric(pack) }.premiumSecondaryButton()
           }
           ForEach(pack.checks, id: \.self) { check in
             HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -1361,7 +1361,7 @@ struct PremiumSettingsView: View {
   private func customRubricCard(existing: [RubricPackReceipt]) -> some View {
     VStack(alignment: .leading, spacing: 12) {
       PremiumFieldLabel("CUSTOM PACK")
-      Text("Create and use").font(.system(size: 14, weight: .semibold))
+      Text("create and use").font(EvidenceStyle.labelFont(14))
       Text("The Rust core validates ids, text bounds, and 1–32 checks before persistence.")
         .font(.system(size: 10))
         .foregroundStyle(.secondary)
@@ -1383,7 +1383,7 @@ struct PremiumSettingsView: View {
         Label("Save and use pack", systemImage: "square.and.arrow.down")
           .frame(maxWidth: .infinity)
       }
-      .buttonStyle(PremiumPrimaryButtonStyle())
+      .premiumPrimaryButton()
       .disabled(!customRubricIsValid || model.rubricLoading)
       .accessibilityIdentifier("save-custom-rubric")
     }
@@ -1459,14 +1459,14 @@ struct PremiumSettingsView: View {
       HStack(alignment: .center, spacing: 16) {
         CodeVetterBrandMark(size: 58)
         VStack(alignment: .leading, spacing: 4) {
-          Text("CodeVetter").font(.system(size: 20, weight: .semibold))
+          Text("codevetter").font(EvidenceStyle.headingFont(20))
           Text("Execution-backed verification for coding agents")
             .font(.system(size: 10))
             .foregroundStyle(.secondary)
         }
         Spacer()
-        Button("Welcome tour") { model.presentOnboarding() }
-          .buttonStyle(.bordered)
+        Button("welcome tour") { model.presentOnboarding() }
+          .premiumSecondaryButton()
           .accessibilityLabel("Open the CodeVetter welcome tour")
         StatusPill(label: "Native preview", color: EvidenceStyle.amber)
       }
@@ -1492,8 +1492,8 @@ struct PremiumSettingsView: View {
       HStack(alignment: .top, spacing: 12) {
         VStack(alignment: .leading, spacing: 8) {
           PremiumFieldLabel("UPDATES")
-          Text("Sparkle 2.9.6 selected · preview disabled")
-            .font(.system(size: 11, weight: .semibold))
+          Text("sparkle 2.9.6 selected · preview disabled")
+            .font(EvidenceStyle.labelFont(11))
           Text(
             "The updater stays off unless the production bundle has an HTTPS appcast and a real EdDSA public key. Preview builds fail closed."
           )
@@ -1555,7 +1555,7 @@ struct PremiumSettingsView: View {
           Label(
             model.repositoryPath.isEmpty ? "Choose repository" : "Change", systemImage: "folder")
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .accessibilityLabel("Choose MCP repository")
         .accessibilityIdentifier("choose-mcp-repository")
         Button {
@@ -1563,7 +1563,7 @@ struct PremiumSettingsView: View {
         } label: {
           Image(systemName: "arrow.clockwise")
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(model.repositoryPath.isEmpty || model.mcpLoading)
         .accessibilityLabel("Refresh MCP settings")
       }
@@ -1607,7 +1607,7 @@ struct PremiumSettingsView: View {
       HStack(alignment: .top, spacing: 16) {
         VStack(alignment: .leading, spacing: 5) {
           HStack(spacing: 8) {
-            Text("Repository history over MCP").font(.system(size: 15, weight: .semibold))
+            Text("repository history over mcp").font(EvidenceStyle.labelFont(15))
             StatusPill(
               label: settings.enabled ? "Enabled" : "Disabled",
               color: settings.enabled ? EvidenceStyle.success : Color.secondary)
@@ -1622,7 +1622,7 @@ struct PremiumSettingsView: View {
         Button(settings.enabled ? "Disable" : "Enable") {
           model.runMcpSettings(operation: settings.enabled ? .disable : .enable)
         }
-        .buttonStyle(PremiumPrimaryButtonStyle())
+        .premiumPrimaryButton()
         .disabled(model.mcpLoading || (!settings.enabled && !settings.indexed))
         .accessibilityLabel(settings.enabled ? "Disable repository MCP" : "Enable repository MCP")
       }
@@ -1665,14 +1665,14 @@ struct PremiumSettingsView: View {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
           PremiumFieldLabel("CLIENT CONFIGURATION")
-          Text("Exact local stdio connection").font(.system(size: 14, weight: .semibold))
+          Text("exact local stdio connection").font(EvidenceStyle.labelFont(14))
         }
         Spacer()
         Button(copiedMcpValue == "config" ? "Copied" : "Copy config") {
           copyToPasteboard(settings.clientConfigJSON ?? "")
           copiedMcpValue = "config"
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(settings.clientConfigJSON == nil)
       }
       Text(settings.serverPath)
@@ -1690,7 +1690,7 @@ struct PremiumSettingsView: View {
       .overlay { RoundedRectangle(cornerRadius: 9).stroke(EvidenceStyle.separator) }
       HStack {
         VStack(alignment: .leading, spacing: 3) {
-          Text("Prepare one review").font(.system(size: 10, weight: .semibold))
+          Text("prepare one review").font(EvidenceStyle.labelFont(10))
           Text("Context and suggested checks—not a verdict.")
             .font(.system(size: 10))
             .foregroundStyle(.secondary)
@@ -1700,7 +1700,7 @@ struct PremiumSettingsView: View {
           copyToPasteboard(mcpReviewInvocation)
           copiedMcpValue = "invocation"
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(!settings.toolNames.contains("prepare_review"))
       }
     }
@@ -1714,11 +1714,11 @@ struct PremiumSettingsView: View {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
           PremiumFieldLabel("LOCAL ACCESS AUDIT")
-          Text("Operational metadata only").font(.system(size: 14, weight: .semibold))
+          Text("operational metadata only").font(EvidenceStyle.labelFont(14))
         }
         Spacer()
-        Button("Clear access audit") { confirmingAuditClear = true }
-          .buttonStyle(.bordered)
+        Button("clear access audit") { confirmingAuditClear = true }
+          .premiumSecondaryButton()
           .disabled(model.mcpLoading || settings.recentAudit.isEmpty)
       }
       Text("Arguments, prompts, query text, credentials, and evidence are never recorded here.")
@@ -2028,10 +2028,10 @@ private struct NativeSettingRow: View {
           .font(.system(size: 10, design: .monospaced))
           .onSubmit { if draft != setting.value { save(draft) } }
           .accessibilityLabel(setting.label)
-        Button("Save") {
+        Button("save") {
           save(draft)
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(saving || draft == setting.value)
       }
     }

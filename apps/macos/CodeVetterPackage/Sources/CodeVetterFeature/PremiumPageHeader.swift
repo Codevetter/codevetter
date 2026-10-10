@@ -1,4 +1,5 @@
 import SwiftUI
+import SaaSMakerUI
 
 enum PremiumPageLayout {
   static let horizontalInset: CGFloat = 22
@@ -28,30 +29,37 @@ struct PremiumPageHeader<Trailing: View>: View {
   }
 
   var body: some View {
-    HStack(alignment: .top, spacing: 18) {
-      VStack(alignment: .leading, spacing: 5) {
-        Text(eyebrow.uppercased())
-          .font(.system(size: 10, weight: .bold, design: .monospaced))
-          .tracking(1.1)
-          .foregroundStyle(EvidenceStyle.amberForeground)
-        Text(title)
-          .font(.system(size: 22, weight: .semibold))
-          .tracking(-0.3)
-        Text(subtitle)
-          .font(.system(size: 11))
-          .foregroundStyle(.secondary)
+    ViewThatFits(in: .horizontal) {
+      HStack(alignment: .top, spacing: 18) {
+        identity
+        HStack(spacing: 10) { trailing }
+          .fixedSize(horizontal: true, vertical: false)
       }
-      Spacer(minLength: 18)
-      HStack(spacing: 10) {
-        trailing
+      VStack(alignment: .leading, spacing: 12) {
+        identity
+        HStack(spacing: 10) { trailing }
       }
-      .controlSize(.large)
     }
+    .controlSize(.large)
     .padding(.horizontal, PremiumPageLayout.horizontalInset)
     .padding(.vertical, PremiumPageLayout.verticalInset)
     .frame(minHeight: 68)
     .background(EvidenceStyle.chrome)
   }
+
+  private var identity: some View {
+    VStack(alignment: .leading, spacing: 5) {
+      Text(eyebrow.lowercased())
+        .font(EvidenceStyle.labelFont(10))
+        .foregroundStyle(EvidenceStyle.amberForeground)
+      SMSectionHeader(title.lowercased(), size: 22)
+      Text(subtitle)
+        .font(EvidenceStyle.labelFont(11))
+        .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+  }
+
 }
 
 extension PremiumPageHeader where Trailing == EmptyView {

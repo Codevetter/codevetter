@@ -33,7 +33,7 @@ struct PremiumTrexWatcherView: View {
       }
     }
     .alert("Allow incoming PR verification?", isPresented: $showingEnableConsent) {
-      Button("Not now", role: .cancel) {}
+      Button("not now", role: .cancel) {}
         .accessibilityIdentifier("cancel-watcher-consent")
       Button(model.currentTrexWatcher?.enabled == true ? "Allow this session" : "Enable watcher") {
         if model.currentTrexWatcher?.enabled == true {
@@ -58,7 +58,7 @@ struct PremiumTrexWatcherView: View {
           .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.15)
           .foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Incoming PR Watcher").font(.system(size: 25, weight: .semibold))
+        Text("incoming pr watcher").font(EvidenceStyle.headingFont(25))
         Text("Watch new and updated pull requests while CodeVetter is open")
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -79,7 +79,7 @@ struct PremiumTrexWatcherView: View {
         .menuStyle(.borderlessButton)
         .fixedSize()
       }
-      Button("Done") { dismiss() }
+      Button("done") { dismiss() }
         .buttonStyle(.bordered)
     }
     .padding(.horizontal, 22)
@@ -186,7 +186,7 @@ struct PremiumTrexWatcherView: View {
       HStack {
         VStack(alignment: .leading, spacing: 3) {
           PremiumFieldLabel("RECENT RUNS")
-          Text("New & updated PR receipts").font(.system(size: 15, weight: .semibold))
+          Text("new & updated pr receipts").font(EvidenceStyle.labelFont(15))
         }
         Spacer()
         Text("\(model.trexWatcherRuns.count) retained")
@@ -285,15 +285,15 @@ struct PremiumTrexWatcherView: View {
         }
       }
       Spacer()
-      Button("Refresh") { model.loadTrexWatcher() }
+      Button("refresh") { model.loadTrexWatcher() }
         .buttonStyle(.bordered)
         .disabled(model.isBusy)
       if model.trexWatcherState == .running {
-        Button("Cancel", role: .destructive) { model.cancelTrexWatcherAction() }
+        Button("cancel", role: .destructive) { model.cancelTrexWatcherAction() }
           .buttonStyle(.bordered)
       } else {
         if let watcher = model.currentTrexWatcher, watcher.enabled {
-          Button("Disable", role: .destructive) { model.disableTrexWatcher() }
+          Button("disable", role: .destructive) { model.disableTrexWatcher() }
             .buttonStyle(.bordered)
             .disabled(model.isBusy)
           Button(model.trexWatcherSessionConfirmed ? "Poll now" : "Allow session") {
@@ -303,11 +303,11 @@ struct PremiumTrexWatcherView: View {
               showingEnableConsent = true
             }
           }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+          .premiumPrimaryButton()
           .disabled(model.isBusy)
         } else {
-          Button("Enable watcher") { showingEnableConsent = true }
-            .buttonStyle(PremiumPrimaryButtonStyle())
+          Button("enable watcher") { showingEnableConsent = true }
+            .premiumPrimaryButton()
             .disabled(!model.canConfigureTrexWatcher)
         }
       }
@@ -346,7 +346,7 @@ struct PremiumTrexWatcherView: View {
           Spacer()
           Text(run.ranAt)
           if retryRecommended(run) {
-            Button("Retry") { model.retryTrexWatcherRun(run) }
+            Button("retry") { model.retryTrexWatcherRun(run) }
               .buttonStyle(.borderless)
               .foregroundStyle(EvidenceStyle.amberForeground)
               .disabled(model.isBusy || !model.trexWatcherSessionConfirmed)

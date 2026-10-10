@@ -49,20 +49,20 @@ struct NavigatorWorkspaceView: View {
       nav.open(url.path, review: mode == .review)
     }
     .background {
-      Button("Find file") {
+      Button("find file") {
         nav.quickOpenPresented = true
         nav.quickFind()
       }.keyboardShortcut("p", modifiers: .command).hidden()
-      Button("Search repository") { nav.searchPresented.toggle() }.keyboardShortcut(
+      Button("search repository") { nav.searchPresented.toggle() }.keyboardShortcut(
         "f", modifiers: [.command, .shift]
       ).hidden()
-      Button("File symbols") {
+      Button("file symbols") {
         nav.inspector = .symbols
         nav.search(operation: "symbols", query: "")
       }.keyboardShortcut("o", modifiers: [.command, .shift]).hidden()
-      Button("Go back") { nav.navigate(back: true) }.keyboardShortcut("[", modifiers: .command)
+      Button("go back") { nav.navigate(back: true) }.keyboardShortcut("[", modifiers: .command)
         .hidden()
-      Button("Go forward") { nav.navigate(back: false) }.keyboardShortcut("]", modifiers: .command)
+      Button("go forward") { nav.navigate(back: false) }.keyboardShortcut("]", modifiers: .command)
         .hidden()
     }
     .task(id: "\(nav.snapshot?.id ?? 0):\(nav.status?.done ?? false):\(model.isBusy)") {
@@ -99,7 +99,7 @@ struct NavigatorWorkspaceView: View {
         .font(.system(size: 11, weight: .semibold, design: .monospaced))
         .foregroundStyle(EvidenceStyle.amberForeground)
       VStack(alignment: .leading, spacing: 10) {
-        Text("Get close to the code.").font(.system(size: 32, weight: .semibold))
+        Text("get close to the code.").font(EvidenceStyle.headingFont(32))
           .accessibilityIdentifier("navigator-workspace")
         Text(
           "Open a repository or a change. Follow the source, understand the system, inspect the evidence."
@@ -108,7 +108,7 @@ struct NavigatorWorkspaceView: View {
           horizontal: false, vertical: true)
       }
       VStack(alignment: .leading, spacing: 10) {
-        Text("Paste GitHub URL").font(.system(size: 13, weight: .semibold))
+        Text("paste github url").font(EvidenceStyle.labelFont(13))
         HStack(spacing: 10) {
           Image(systemName: "link").foregroundStyle(.secondary)
           TextField("https://github.com/owner/repo", text: $nav.input)
@@ -119,7 +119,7 @@ struct NavigatorWorkspaceView: View {
             nav.open(review: mode == .review)
           } label: {
             Label(nav.opening ? "Opening…" : "Open", systemImage: "arrow.right")
-          }.buttonStyle(PremiumPrimaryButtonStyle()).disabled(
+          }.premiumPrimaryButton().disabled(
             nav.opening || nav.input.trimmingCharacters(in: .whitespaces).isEmpty)
         }
         .padding(12).background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 6))
@@ -134,7 +134,7 @@ struct NavigatorWorkspaceView: View {
           ProgressView().controlSize(.small)
           Text("Resolving the revision and fetching source…")
           Spacer()
-          Button("Cancel") { nav.cancelImport() }
+          Button("cancel") { nav.cancelImport() }
         }
         .font(.system(size: 12))
       }
@@ -143,8 +143,8 @@ struct NavigatorWorkspaceView: View {
           .foregroundStyle(EvidenceStyle.warning).textSelection(.enabled)
       }
       HStack(spacing: 20) {
-        Button("Open local repository…", systemImage: "folder") { model.choosingRepository = true }
-        Button("Verify a local change", systemImage: "checkmark.shield") {
+        Button("open local repository…", systemImage: "folder") { model.choosingRepository = true }
+        Button("verify a local change", systemImage: "checkmark.shield") {
           nav.showVerification = true
           model.section = .review
         }
@@ -175,9 +175,9 @@ struct NavigatorWorkspaceView: View {
     @Bindable var nav = navigator
     return HStack(spacing: 12) {
       Menu {
-        Button("Open GitHub URL…") { nav.showImport() }
-        Button("Open local repository…") { model.choosingRepository = true }
-        Button("Refresh source snapshot") { nav.refreshSource(review: mode == .review) }
+        Button("open github url…") { nav.showImport() }
+        Button("open local repository…") { model.choosingRepository = true }
+        Button("refresh source snapshot") { nav.refreshSource(review: mode == .review) }
       } label: {
         Label(nav.snapshot?.label ?? "Repository", systemImage: "folder")
       }
@@ -251,7 +251,7 @@ struct NavigatorWorkspaceView: View {
         if nav.changedFiles.isEmpty {
           Text("No changes in this snapshot").font(.caption).foregroundStyle(.secondary).padding(14)
         }
-        Button("Explore all files", systemImage: "folder") {
+        Button("explore all files", systemImage: "folder") {
           model.section = .repository
           nav.setPresentation("Source")
         }.buttonStyle(.borderless).padding(14)
@@ -360,7 +360,7 @@ struct NavigatorWorkspaceView: View {
       HStack(spacing: 12) {
         if nav.presentation == "Diff" {
           Toggle("Split", isOn: $nav.split).toggleStyle(.checkbox)
-          Button("Expand context") { nav.expandContext() }.disabled(nav.context >= 10000)
+          Button("expand context") { nav.expandContext() }.disabled(nav.context >= 10000)
           Text(
             "\(String(nav.snapshot?.base?.prefix(8) ?? nav.snapshot?.head.prefix(8) ?? "")) → \(String(nav.snapshot?.head.prefix(8) ?? ""))"
           ).foregroundStyle(.secondary)
@@ -452,7 +452,7 @@ struct NavigatorWorkspaceView: View {
       case .unpack:
         ScrollView {
           VStack(alignment: .leading, spacing: 18) {
-            Text("Understand this repository").font(.system(size: 14, weight: .semibold))
+            Text("understand this repository").font(EvidenceStyle.labelFont(14))
             Text(
               "Follow the repository’s own architecture, instructions, and entry points straight into source."
             )
@@ -498,7 +498,7 @@ struct NavigatorWorkspaceView: View {
               .font(.system(size: 10)).foregroundStyle(.secondary)
             }
             if model.hasMatchingUnpack {
-              Button("Full Unpack details") { nav.showFullUnpack = true }.buttonStyle(.borderless)
+              Button("full unpack details") { nav.showFullUnpack = true }.buttonStyle(.borderless)
                 .font(.system(size: 11))
             }
           }.padding(14)
@@ -516,7 +516,7 @@ struct NavigatorWorkspaceView: View {
       case .evidence:
         ScrollView {
           VStack(alignment: .leading, spacing: 12) {
-            Text("CodeVetter evidence").font(.system(size: 13, weight: .semibold))
+            Text("codevetter evidence").font(EvidenceStyle.labelFont(13))
             if let receipt = model.receipt {
               Text("Recorded revision \(receipt.source.headSha.prefix(12))").font(
                 .system(size: 10, design: .monospaced)
@@ -550,7 +550,7 @@ struct NavigatorWorkspaceView: View {
                 "No verification receipt is attached. Browsing and source structure do not establish a pass."
               ).font(.system(size: 11)).foregroundStyle(.secondary)
             }
-            Button("Open verification", systemImage: "checkmark.shield") {
+            Button("open verification", systemImage: "checkmark.shield") {
               nav.showVerification = true
               model.section = .review
             }.buttonStyle(.borderless)
@@ -558,8 +558,8 @@ struct NavigatorWorkspaceView: View {
         }
       case .history:
         HStack {
-          Button("Commits") { nav.inspectHistory() }
-          Button("Blame here") { nav.inspectHistory(blame: true) }
+          Button("commits") { nav.inspectHistory() }
+          Button("blame here") { nav.inspectHistory(blame: true) }
         }.buttonStyle(.borderless).padding(12)
         ScrollView {
           if let history = nav.history {
@@ -684,7 +684,7 @@ struct NavigatorWorkspaceView: View {
           quickIndex = max(0, quickIndex - 1)
           return .handled
         }
-        Button("Done") { nav.quickOpenPresented = false }.keyboardShortcut(.cancelAction)
+        Button("done") { nav.quickOpenPresented = false }.keyboardShortcut(.cancelAction)
       }.padding(8)
       ScrollViewReader { proxy in
         ScrollView {
