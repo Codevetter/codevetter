@@ -13,9 +13,9 @@ public struct EvidenceSidebarView: View {
       HStack(spacing: 10) {
         CodeVetterBrandMark(size: 30)
         VStack(alignment: .leading, spacing: 1) {
-          Text("CodeVetter").font(.system(size: 14, weight: .semibold))
-          Text("Evidence Workbench")
-            .font(.system(size: 10, weight: .medium))
+          Text("codevetter").font(EvidenceStyle.labelFont(14))
+          Text("evidence workbench")
+            .font(EvidenceStyle.labelFont(10))
             .foregroundStyle(.secondary)
         }
       }
@@ -59,7 +59,7 @@ public struct EvidenceSidebarView: View {
 
   private func navigationGroup(_ title: String, sections: [WorkbenchSection]) -> some View {
     VStack(alignment: .leading, spacing: 3) {
-      Text(title.uppercased())
+      Text(title.lowercased())
         .font(.system(size: 10, weight: .bold))
         .foregroundStyle(.tertiary)
         .padding(.horizontal, 11)
@@ -185,12 +185,12 @@ private struct VerifyView: View {
       VStack(alignment: .leading, spacing: 18) {
         HStack(alignment: .top) {
           VStack(alignment: .leading, spacing: 5) {
-            Text("REVIEW")
-              .font(.system(size: 10, weight: .bold))
+            Text("review")
+              .font(EvidenceStyle.labelFont(10))
               .tracking(0.8)
               .foregroundStyle(EvidenceStyle.amberForeground)
-            Text("Verify a change")
-              .font(.system(size: 24, weight: .semibold))
+            Text("verify a change")
+              .font(EvidenceStyle.headingFont(24))
             Text(
               "Resolve the exact source, run executable checks, and keep the limitations attached."
             )
@@ -216,7 +216,7 @@ private struct VerifyView: View {
                   .lineLimit(1)
                   .truncationMode(.middle)
                   .frame(maxWidth: .infinity, alignment: .leading)
-                  Button("Choose…") { model.choosingRepository = true }
+                  Button("choose…") { model.choosingRepository = true }
                     .controlSize(.small)
                 }
               }
@@ -246,7 +246,7 @@ private struct VerifyView: View {
               } label: {
                 Label("Plan verification", systemImage: "list.bullet.clipboard")
               }
-              .buttonStyle(PremiumPrimaryButtonStyle())
+              .premiumPrimaryButton()
               .disabled(!model.canStart)
               .keyboardShortcut(.return, modifiers: [.command])
 
@@ -259,11 +259,11 @@ private struct VerifyView: View {
               .disabled(!model.canStart)
 
               if model.isBusy {
-                Button("Cancel", role: .destructive) { model.cancel() }
+                Button("cancel", role: .destructive) { model.cancel() }
               }
               Spacer()
-              Text("Rust-owned receipt")
-                .font(.system(size: 10, weight: .medium))
+              Text("rust-owned receipt")
+                .font(EvidenceStyle.labelFont(10))
                 .foregroundStyle(.tertiary)
             }
           }
@@ -372,8 +372,8 @@ private struct VerificationRail: View {
             Image(systemName: "checkmark.circle.fill")
               .foregroundStyle(EvidenceStyle.success)
           } else if index == activeIndex {
-            Text("CURRENT")
-              .font(.system(size: 10, weight: .bold))
+            Text("current")
+              .font(EvidenceStyle.labelFont(10))
               .foregroundStyle(EvidenceStyle.amberForeground)
           }
         }
@@ -449,8 +449,8 @@ struct CapabilityCatalogView: View {
       if showsHeader {
         HStack(alignment: .top) {
           VStack(alignment: .leading, spacing: 5) {
-            Text("Capabilities")
-              .font(.system(size: 24, weight: .semibold))
+            Text("capabilities")
+              .font(EvidenceStyle.headingFont(24))
             Text("One Rust-owned glossary for the UI, CLI, and AI agent surfaces.")
               .font(.system(size: 13))
               .foregroundStyle(.secondary)
@@ -584,8 +584,8 @@ private struct VerificationInspector: View {
   let model: WorkbenchModel
 
   var body: some View {
-    Text("EVIDENCE")
-      .font(.system(size: 10, weight: .bold))
+    Text("evidence")
+      .font(EvidenceStyle.labelFont(10))
       .foregroundStyle(.tertiary)
     if let receipt = model.receipt {
       inspectorPair("Schema", receipt.schemaVersion)
@@ -593,19 +593,19 @@ private struct VerificationInspector: View {
       inspectorPair("Base", String(receipt.source.baseSha.prefix(12)))
       inspectorPair("Head", String(receipt.source.headSha.prefix(12)))
       Divider()
-      Text("RAW RECEIPT")
-        .font(.system(size: 10, weight: .bold))
+      Text("raw receipt")
+        .font(EvidenceStyle.labelFont(10))
         .foregroundStyle(.tertiary)
       Text(model.receiptJSON)
         .textSelection(.enabled)
         .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
     } else {
-      Text("PROOF STANDARD")
-        .font(.system(size: 10, weight: .bold))
+      Text("proof standard")
+        .font(EvidenceStyle.labelFont(10))
         .foregroundStyle(.tertiary)
-      Text("A verdict earns its place here.")
-        .font(.system(size: 17, weight: .semibold))
+      Text("a verdict earns its place here.")
+        .font(EvidenceStyle.labelFont(17))
       Text("CodeVetter keeps the claim attached to what actually ran.")
         .font(.system(size: 12))
         .foregroundStyle(.secondary)
@@ -648,8 +648,8 @@ struct CapabilityInspector: View {
   let capability: Capability
 
   var body: some View {
-    Text("CAPABILITY")
-      .font(.system(size: 10, weight: .bold))
+    Text("capability")
+      .font(EvidenceStyle.labelFont(10))
       .foregroundStyle(.tertiary)
     Text(capability.name)
       .font(.system(size: 17, weight: .semibold))
@@ -659,8 +659,8 @@ struct CapabilityInspector: View {
     Divider()
     inspectorPair("Qualification", capability.qualification.rawValue)
     inspectorPair("Data boundary", capability.dataBoundary)
-    Text("UNDERLYING TOOLS")
-      .font(.system(size: 10, weight: .bold))
+    Text("underlying tools")
+      .font(EvidenceStyle.labelFont(10))
       .foregroundStyle(.tertiary)
     ForEach(capability.underlyingTools) { tool in
       VStack(alignment: .leading, spacing: 3) {
@@ -673,8 +673,8 @@ struct CapabilityInspector: View {
     }
     if !capability.limitations.isEmpty {
       Divider()
-      Text("LIMITATIONS")
-        .font(.system(size: 10, weight: .bold))
+      Text("limitations")
+        .font(EvidenceStyle.labelFont(10))
         .foregroundStyle(.tertiary)
       ForEach(capability.limitations, id: \.self) { limitation in
         Text("• \(limitation)")
@@ -683,8 +683,8 @@ struct CapabilityInspector: View {
       }
     }
     Divider()
-    Text("NEXT")
-      .font(.system(size: 10, weight: .bold))
+    Text("next")
+      .font(EvidenceStyle.labelFont(10))
       .foregroundStyle(.tertiary)
     Text(capability.nextStep)
       .font(.system(size: 11, weight: .medium))

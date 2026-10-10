@@ -20,7 +20,7 @@ struct PremiumScopePlanner: View {
     VStack(alignment: .leading, spacing: compact ? 11 : 14) {
       HStack(alignment: .top, spacing: 12) {
         VStack(alignment: .leading, spacing: 3) {
-          Text(title.uppercased())
+          Text(title.lowercased())
             .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(0.9)
             .foregroundStyle(EvidenceStyle.amberForeground)
@@ -86,8 +86,8 @@ struct PremiumScopePlanner: View {
 
       if let plan {
         if plan.candidates.isEmpty {
-          Text("No supported test or benchmark was found for this scope.")
-            .font(.system(size: 10, weight: .medium))
+          Text("no supported test or benchmark was found for this scope.")
+            .font(EvidenceStyle.labelFont(10))
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
         } else {

@@ -24,7 +24,7 @@ struct PremiumCommandPaletteView: View {
           .foregroundStyle(EvidenceStyle.amberForeground)
         TextField("Search workspaces", text: $query)
           .textFieldStyle(.plain)
-          .font(.system(size: 15, weight: .medium))
+          .font(EvidenceStyle.labelFont(15))
           .focused($searchFocused)
           .accessibilityLabel("Search CodeVetter workspaces")
           .accessibilityIdentifier("command-palette-search")
@@ -74,7 +74,7 @@ struct PremiumCommandPaletteView: View {
                     )
                     .frame(width: 20)
                   VStack(alignment: .leading, spacing: 3) {
-                    Text(section.rawValue).font(.system(size: 13, weight: .semibold))
+                    Text(section.rawValue.lowercased()).font(EvidenceStyle.headingFont(13))
                     Text(sectionPurpose(section))
                       .font(.system(size: 10))
                       .foregroundStyle(.secondary)
@@ -97,6 +97,7 @@ struct PremiumCommandPaletteView: View {
               }
               .buttonStyle(.plain)
               .accessibilityLabel("Open \(section.rawValue)")
+              .accessibilityIdentifier("command-palette-section-\(section.id)")
               .accessibilityValue(index == selectedIndex ? "Selected suggestion" : "")
               .onHover { hovering in
                 if hovering { selectedIndex = index }

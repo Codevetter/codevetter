@@ -28,8 +28,8 @@ struct QaJourneyWorkspaceView: View {
           .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.1)
           .foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Reuse the flow. Keep execution honest.")
-          .font(.system(size: 20, weight: .semibold))
+        Text("reuse the flow. keep execution honest.")
+          .font(EvidenceStyle.headingFont(20))
         Text("Rust owns saved targets, spec discovery, and post-fix comparison identity.")
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -38,10 +38,10 @@ struct QaJourneyWorkspaceView: View {
       if model.qaWorkspaceLoading {
         ProgressView().controlSize(.small).tint(EvidenceStyle.amber)
       }
-      Button("Refresh") { model.loadQaWorkspace() }
+      Button("refresh") { model.loadQaWorkspace() }
         .buttonStyle(.bordered)
         .disabled(model.qaWorkspaceLoading)
-      Button("Done") { model.showingQaWorkspace = false }
+      Button("done") { model.showingQaWorkspace = false }
         .buttonStyle(.bordered)
     }
     .padding(.horizontal, 22)
@@ -178,7 +178,7 @@ struct QaJourneyWorkspaceView: View {
             VStack(alignment: .leading, spacing: 7) {
               PremiumFieldLabel("REPOSITORY SPEC")
               Menu {
-                Button("No repository spec") { model.chooseQaSpec("") }
+                Button("no repository spec") { model.chooseQaSpec("") }
                 ForEach(model.qaWorkspaceReceipt?.specs ?? []) { spec in
                   Button(spec.path) { model.chooseQaSpec(spec.path) }
                 }
@@ -249,7 +249,7 @@ struct QaJourneyWorkspaceView: View {
         CompactQaField(placeholder: "Target name", text: $model.qaTargetName)
         CompactQaField(placeholder: "/route", text: $model.qaTargetRoute)
         CompactQaField(placeholder: "User goal", text: $model.qaTargetGoal)
-        Button("Save target") { model.saveQaTarget() }
+        Button("save target") { model.saveQaTarget() }
           .buttonStyle(.bordered)
           .disabled(
             model.qaSelectedWorkflowID == nil || model.qaWorkspaceLoading
@@ -291,7 +291,7 @@ struct QaJourneyWorkspaceView: View {
       }
       Spacer()
       if preparation.status == "needs_rerun" {
-        Button("Use prior flow") {
+        Button("use prior flow") {
           model.applyPostFixQaPreparation(preparation)
         }
         .buttonStyle(.bordered)
@@ -308,19 +308,19 @@ struct QaJourneyWorkspaceView: View {
         .font(.system(size: 10, design: .monospaced))
         .foregroundStyle(.secondary)
       Spacer()
-      Button("Delete workflow", role: .destructive) { model.deleteQaWorkflow() }
+      Button("delete workflow", role: .destructive) { model.deleteQaWorkflow() }
         .buttonStyle(.bordered)
         .disabled(
           model.qaSelectedWorkflowID == nil || model.qaWorkspaceLoading
             || model.selectedQaWorkflow?.editable == false)
-      Button("Save workflow") { model.saveQaWorkflow() }
+      Button("save workflow") { model.saveQaWorkflow() }
         .buttonStyle(.bordered)
         .disabled(model.qaWorkspaceLoading || model.selectedQaWorkflow?.editable == false)
-      Button("Apply to Testing") {
+      Button("apply to testing") {
         model.applyQaWorkflowToTesting()
         model.showingQaWorkspace = false
       }
-      .buttonStyle(PremiumPrimaryButtonStyle())
+      .premiumPrimaryButton()
       .disabled(model.selectedQaWorkflow == nil)
     }
     .padding(.horizontal, 20)

@@ -60,7 +60,7 @@ struct NavigatorReviewScopeBar: View {
           nav.opening || nav.branchesLoading
             || nav.reviewHead != "local" && nav.reviewBase.isEmpty)
     } else {
-      Text("Pinned GitHub comparison").font(.system(size: 11, weight: .medium))
+      Text("pinned github comparison").font(EvidenceStyle.labelFont(11))
     }
     Spacer(minLength: 0)
     Button("Review change…", systemImage: "checkmark.shield") {

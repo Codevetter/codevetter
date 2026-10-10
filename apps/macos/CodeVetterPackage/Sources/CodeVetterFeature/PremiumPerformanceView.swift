@@ -72,7 +72,7 @@ struct PremiumPerformanceView: View {
                   .lineLimit(1)
                   .truncationMode(.middle)
                 Spacer()
-                Text("Choose…").font(.system(size: 10, weight: .semibold)).foregroundStyle(
+                Text("choose…").font(EvidenceStyle.labelFont(10)).foregroundStyle(
                   .secondary)
               }
               .padding(.horizontal, 13)
@@ -114,7 +114,7 @@ struct PremiumPerformanceView: View {
                       .textFieldStyle(.plain)
                       .font(.system(size: 10, design: .monospaced))
                       .accessibilityLabel("Recorded performance run ID")
-                    Button("Inspect") { model.inspectPerformanceRun() }
+                    Button("inspect") { model.inspectPerformanceRun() }
                       .buttonStyle(.borderless)
                       .disabled(!model.canInspectPerformanceRun)
                   }
@@ -132,7 +132,7 @@ struct PremiumPerformanceView: View {
               .padding(.top, 12)
             } label: {
               VStack(alignment: .leading, spacing: 3) {
-                Text("Open a saved measurement").font(.system(size: 11, weight: .semibold))
+                Text("open a saved measurement").font(EvidenceStyle.labelFont(11))
                 Text("Inspect a previous run by its ID")
                   .font(.system(size: 10)).foregroundStyle(.secondary)
               }
@@ -232,14 +232,14 @@ struct PremiumPerformanceView: View {
       }
       HStack(spacing: 8) {
         if model.performanceState == .planning || model.performanceState == .running {
-          Button("Cancel", role: .destructive) { model.cancelPerformance() }
-            .buttonStyle(.bordered)
+          Button("cancel", role: .destructive) { model.cancelPerformance() }
+            .premiumSecondaryButton()
         } else {
-          Button("Plan") { model.planPerformance() }
-            .buttonStyle(.bordered)
+          Button("plan") { model.planPerformance() }
+            .premiumSecondaryButton()
             .disabled(!model.canPlanPerformance)
-          Button("Capture evidence") { model.diagnosePerformance() }
-            .buttonStyle(PremiumPrimaryButtonStyle())
+          Button("capture evidence") { model.diagnosePerformance() }
+            .premiumPrimaryButton()
             .disabled(!model.canDiagnosePerformance)
         }
         Spacer()
@@ -305,10 +305,10 @@ struct PremiumPerformanceView: View {
           Button(showsCompletedSetup ? "Hide setup" : "Edit setup") {
             showsCompletedSetup.toggle()
           }
-          .buttonStyle(.bordered)
+          .premiumSecondaryButton()
           .controlSize(.small)
         }
-        Button("Reset") { model.resetPerformance() }
+        Button("reset") { model.resetPerformance() }
           .buttonStyle(.borderless)
           .disabled(!hasPerformanceReceipt)
       }
@@ -343,8 +343,8 @@ struct PremiumPerformanceView: View {
         .font(.system(size: 30, weight: .light))
         .foregroundStyle(EvidenceStyle.amberForeground)
       VStack(spacing: 7) {
-        Text("Choose a workload, then plan the measurement.")
-          .font(.system(size: 18, weight: .semibold))
+        Text("choose a workload, then plan the measurement.")
+          .font(EvidenceStyle.headingFont(18))
         Text(
           "Discover a test or benchmark on the left, or enter its file. Plan checks whether it can be measured. Capture evidence runs it and saves the results."
         )
@@ -578,11 +578,11 @@ private struct PerformanceReceiptDesk: View {
         }
         Spacer()
         if model.performanceResultReceipt?.operation == .diagnose {
-          Button("Choose baseline…") { model.choosingPerformanceBaseline = true }
-            .buttonStyle(.bordered)
+          Button("choose baseline…") { model.choosingPerformanceBaseline = true }
+            .premiumSecondaryButton()
             .accessibilityLabel("Choose performance baseline repository")
-          Button("Verify paired") { model.verifyPairedPerformance() }
-            .buttonStyle(PremiumPrimaryButtonStyle())
+          Button("verify paired") { model.verifyPairedPerformance() }
+            .premiumPrimaryButton()
             .disabled(!model.canVerifyPairedPerformance)
         }
       }

@@ -40,8 +40,8 @@ struct PremiumScenarioCompilerView: View {
         Text("SCENARIO FOUNDRY")
           .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.15).foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Turn intent into executable journeys—safely.")
-          .font(.system(size: 20, weight: .semibold)).tracking(-0.3)
+        Text("turn intent into executable journeys—safely.")
+          .font(EvidenceStyle.headingFont(20)).tracking(-0.3)
         Text("Generate · inspect · validate · dry-run · explicitly accept")
           .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
       }
@@ -61,7 +61,7 @@ struct PremiumScenarioCompilerView: View {
         .menuStyle(.borderlessButton)
         .fixedSize()
       }
-      Button("Done") { dismiss() }.buttonStyle(.bordered)
+      Button("done") { dismiss() }.buttonStyle(.bordered)
     }
     .padding(.horizontal, 24).frame(height: 88).background(EvidenceStyle.chrome)
   }
@@ -95,8 +95,8 @@ struct PremiumScenarioCompilerView: View {
             .font(.system(size: 10)).foregroundStyle(EvidenceStyle.warning)
             .fixedSize(horizontal: false, vertical: true)
         }
-        Button("Generate candidate") { model.generateScenarioCandidate() }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+        Button("generate candidate") { model.generateScenarioCandidate() }
+          .premiumPrimaryButton()
           .disabled(!model.canGenerateScenario)
           .frame(maxWidth: .infinity, alignment: .trailing)
         Divider()
@@ -264,14 +264,14 @@ struct PremiumScenarioCompilerView: View {
       ).lineLimit(2)
       Spacer()
       if model.scenarioState == .running {
-        Button("Cancel", role: .destructive) { model.cancelScenarioAction() }.buttonStyle(.bordered)
+        Button("cancel", role: .destructive) { model.cancelScenarioAction() }.buttonStyle(.bordered)
       } else if model.selectedScenarioCandidate != nil {
-        Button("Reject", role: .destructive) { model.rejectScenarioCandidate() }.buttonStyle(
+        Button("reject", role: .destructive) { model.rejectScenarioCandidate() }.buttonStyle(
           .bordered)
-        Button("Validate") { model.validateScenarioCandidate() }.buttonStyle(.bordered)
-        Button("Dry-run") { model.dryRunScenarioCandidate() }.buttonStyle(.bordered)
-        Button("Accept selected") { model.acceptScenarioCandidate() }
-          .buttonStyle(PremiumPrimaryButtonStyle()).disabled(!model.canAcceptScenario)
+        Button("validate") { model.validateScenarioCandidate() }.buttonStyle(.bordered)
+        Button("dry-run") { model.dryRunScenarioCandidate() }.buttonStyle(.bordered)
+        Button("accept selected") { model.acceptScenarioCandidate() }
+          .premiumPrimaryButton().disabled(!model.canAcceptScenario)
       }
     }.padding(.horizontal, 20).frame(minHeight: 68).background(EvidenceStyle.chrome)
   }

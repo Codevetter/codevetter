@@ -70,8 +70,8 @@ struct PremiumTestingView: View {
       ScrollView {
         VStack(alignment: .leading, spacing: 18) {
           VStack(alignment: .leading, spacing: 5) {
-            Text("Test your deployed preview")
-              .font(.system(size: 18, weight: .semibold))
+            Text("test your deployed preview")
+              .font(EvidenceStyle.headingFont(18))
             Text("Choose a change and its preview URL. For repository checks without a deployed preview, use Review.")
               .font(.system(size: 11))
               .foregroundStyle(.secondary)
@@ -89,8 +89,8 @@ struct PremiumTestingView: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
               Spacer()
-              Text("Choose…")
-                .font(.system(size: 11, weight: .semibold))
+              Text("choose…")
+                .font(EvidenceStyle.labelFont(11))
                 .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 15)
@@ -101,15 +101,15 @@ struct PremiumTestingView: View {
           .accessibilityLabel("Choose testing repository")
 
           HStack(spacing: 12) {
-            Button("Use Review comparison") { model.useNavigatorComparisonForTesting() }
+            Button("use review comparison") { model.useNavigatorComparisonForTesting() }
               .disabled(!model.canUseNavigatorComparisonForTesting)
-            Button("Choose branches in Review…") {
+            Button("choose branches in review…") {
               model.navigator.showVerification = false
               model.section = .review
             }
             .disabled(model.repositoryPath.isEmpty || model.isBusy)
           }
-          .buttonStyle(.bordered)
+          .premiumSecondaryButton()
           Text("Reuse the applied Review comparison, or enter a Git range or pull request below.")
             .font(.system(size: 11)).foregroundStyle(.secondary)
 
@@ -144,8 +144,8 @@ struct PremiumTestingView: View {
 
           Toggle(isOn: $model.testingConfirmed) {
             VStack(alignment: .leading, spacing: 4) {
-              Text("Allow this bounded preview verification")
-                .font(.system(size: 12, weight: .semibold))
+              Text("allow this bounded preview verification")
+                .font(EvidenceStyle.labelFont(12))
               Text(
                 "CodeVetter will contact the selected HTTP(S) preview and may run read-only browser journeys against derived routes."
               )
@@ -207,7 +207,7 @@ struct PremiumTestingView: View {
                     .foregroundStyle(.secondary)
                   }
                   Spacer()
-                  Text("Configure").font(.system(size: 10, weight: .semibold))
+                  Text("configure").font(EvidenceStyle.labelFont(10))
                   Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold))
                 }
                 .padding(13)
@@ -223,7 +223,7 @@ struct PremiumTestingView: View {
             .padding(.top, 14)
           } label: {
             VStack(alignment: .leading, spacing: 3) {
-              Text("Advanced testing setup").font(.system(size: 12, weight: .semibold))
+              Text("advanced testing setup").font(EvidenceStyle.labelFont(12))
               Text("Scope planning, saved journeys, and capability inventory")
                 .font(.system(size: 10)).foregroundStyle(.secondary)
             }
@@ -266,8 +266,8 @@ struct PremiumTestingView: View {
     HStack(spacing: 16) {
       VStack(alignment: .leading, spacing: 4) {
         PremiumFieldLabel("WHAT HAPPENS NEXT")
-        Text("Check preview identity → run journeys → save evidence")
-          .font(.system(size: 12, weight: .semibold))
+        Text("check preview identity → run journeys → save evidence")
+          .font(EvidenceStyle.labelFont(12))
       }
       Spacer()
       Label("Read-only browser testing", systemImage: "safari")
@@ -315,11 +315,11 @@ struct PremiumTestingView: View {
       }
       Spacer()
       Menu {
-        Button("Warm changed proof") { model.showingWarmVerifier = true }
-        Button("Differential") { model.showingDifferentialVerifier = true }
-        Button("Scenarios") { model.showingScenarioCompiler = true }
+        Button("warm changed proof") { model.showingWarmVerifier = true }
+        Button("differential") { model.showingDifferentialVerifier = true }
+        Button("scenarios") { model.showingScenarioCompiler = true }
         Divider()
-        Button("PR watcher") { model.showingTrexWatcher = true }
+        Button("pr watcher") { model.showingTrexWatcher = true }
       } label: {
         Label("Testing tools", systemImage: "ellipsis.circle")
       }
@@ -327,11 +327,11 @@ struct PremiumTestingView: View {
       .fixedSize()
       .disabled(model.repositoryPath.isEmpty || model.testingState == .running)
       if model.testingState == .running {
-        Button("Cancel", role: .destructive) { model.cancelTesting() }
-          .buttonStyle(.bordered)
+        Button("cancel", role: .destructive) { model.cancelTesting() }
+          .premiumSecondaryButton()
       } else {
-        Button("Run preview proof") { model.runTesting() }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+        Button("run preview proof") { model.runTesting() }
+          .premiumPrimaryButton()
           .disabled(!model.canStartTesting)
           .keyboardShortcut(.return, modifiers: [.command])
       }
@@ -345,8 +345,8 @@ struct PremiumTestingView: View {
     VStack(spacing: 0) {
       HStack(spacing: 16) {
         VStack(alignment: .leading, spacing: 4) {
-          Text("PREVIEW TEST RESULTS")
-            .font(.system(size: 10, weight: .bold, design: .monospaced))
+          Text("preview test results")
+            .font(EvidenceStyle.labelFont(10))
             .tracking(1.1)
             .foregroundStyle(EvidenceStyle.amberForeground)
           Text(receipt.summary)
@@ -366,13 +366,13 @@ struct PremiumTestingView: View {
         ) {
           showReceiptDetails.toggle()
         }
-        .buttonStyle(.bordered)
-        Button("Open in Runs") {
+        .premiumSecondaryButton()
+        Button("open in runs") {
           model.openRun(receipt.runID)
         }
-        .buttonStyle(.bordered)
-        Button("New test") { model.resetTesting() }
-          .buttonStyle(.bordered)
+        .premiumSecondaryButton()
+        Button("new test") { model.resetTesting() }
+          .premiumSecondaryButton()
       }
       .padding(.horizontal, 22)
       .frame(height: 82)
@@ -386,7 +386,7 @@ struct PremiumTestingView: View {
         }
         VStack(spacing: 0) {
           HStack {
-            Text("EXECUTABLE PROOF")
+            Text("executable proof")
               .font(.system(size: 10, weight: .bold, design: .monospaced))
               .tracking(0.9)
             Spacer()
@@ -467,8 +467,8 @@ private struct TestingCapabilityStrip: View {
       HStack {
         PremiumFieldLabel("TESTING COVERAGE")
         Spacer()
-        Text("No hidden parity claims")
-          .font(.system(size: 10, weight: .medium))
+        Text("no hidden parity claims")
+          .font(EvidenceStyle.labelFont(10))
           .foregroundStyle(.secondary)
       }
       LazyVGrid(columns: [GridItem(.adaptive(minimum: 130), spacing: 8)], spacing: 8) {
@@ -709,7 +709,7 @@ private struct TestingEvidenceView: View {
             ) {
               showsAllJourneys.toggle()
             }
-            .buttonStyle(.bordered)
+            .premiumSecondaryButton()
             .controlSize(.small)
           }
         }

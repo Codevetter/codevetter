@@ -18,6 +18,7 @@ let package = Package(
     ),
   ],
   dependencies: [
+    .package(url: "https://github.com/sass-maker/ui-library", from: "0.1.14"),
     .package(url: "https://github.com/sass-maker/app-health", exact: "0.1.0")
   ],
   targets: [
@@ -26,6 +27,7 @@ let package = Package(
     .target(
       name: "CodeVetterFeature",
       dependencies: [
+        .product(name: "SaaSMakerUI", package: "ui-library"),
         .product(name: "AppHealth", package: "app-health")
       ],
       resources: [.process("Resources")]

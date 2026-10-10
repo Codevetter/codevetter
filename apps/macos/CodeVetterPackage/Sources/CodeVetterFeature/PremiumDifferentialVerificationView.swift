@@ -11,14 +11,14 @@ struct PremiumDifferentialVerificationView: View {
           Text("DIFFERENTIAL / PAIRED EVIDENCE")
             .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1.1).foregroundStyle(EvidenceStyle.amberForeground)
-          Text("Compare behavior, not just code.")
-            .font(.system(size: 21, weight: .semibold)).tracking(-0.3)
+          Text("compare behavior, not just code.")
+            .font(EvidenceStyle.headingFont(21)).tracking(-0.3)
           Text("Exact reference · exact candidate · same scenarios · zero model calls")
             .font(.system(size: 10, design: .monospaced)).foregroundStyle(.secondary)
         }
         Spacer()
         StatusPill(label: model.differentialState.rawValue, color: stateColor)
-        Button("Done") { dismiss() }.buttonStyle(.bordered)
+        Button("done") { dismiss() }.buttonStyle(.bordered)
       }
       .padding(.horizontal, 24).frame(height: 88).background(EvidenceStyle.chrome)
       Rectangle().fill(EvidenceStyle.separator).frame(height: 1)
@@ -154,13 +154,13 @@ struct PremiumDifferentialVerificationView: View {
         .font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary).lineLimit(2)
       Spacer()
       if model.differentialState == .planning || model.differentialState == .running {
-        Button("Cancel", role: .destructive) { model.cancelDifferentialVerification() }
+        Button("cancel", role: .destructive) { model.cancelDifferentialVerification() }
           .buttonStyle(.bordered)
       } else {
-        Button("Prepare pair") { model.prepareDifferential() }
+        Button("prepare pair") { model.prepareDifferential() }
           .buttonStyle(.bordered).disabled(!model.canPrepareDifferential)
-        Button("Run comparison") { model.runDifferentialVerification() }
-          .buttonStyle(PremiumPrimaryButtonStyle()).disabled(!model.canRunDifferential)
+        Button("run comparison") { model.runDifferentialVerification() }
+          .premiumPrimaryButton().disabled(!model.canRunDifferential)
       }
     }
     .padding(.horizontal, 22).frame(minHeight: 68).background(EvidenceStyle.chrome)
@@ -183,11 +183,11 @@ struct PremiumDifferentialVerificationView: View {
         Spacer()
         StatusPill(
           label: summary.classification, color: classificationColor(summary.classification))
-        Button("Open in Runs") {
+        Button("open in runs") {
           model.showingDifferentialVerifier = false
           model.openRun(receipt.id)
         }.buttonStyle(.bordered)
-        Button("New pair") { model.resetDifferentialVerification() }.buttonStyle(.bordered)
+        Button("new pair") { model.resetDifferentialVerification() }.buttonStyle(.bordered)
       }
       .padding(.horizontal, 22).frame(height: 76).background(EvidenceStyle.chrome)
       .overlay(alignment: .bottom) { Rectangle().fill(EvidenceStyle.separator).frame(height: 1) }
@@ -202,8 +202,8 @@ struct PremiumDifferentialVerificationView: View {
           datum("CLEANUP", summary.cleanupComplete ? "complete" : "incomplete")
           datum("MODEL CALLS", "\(summary.modelCallCount)")
           Divider()
-          Text("Differential evidence never creates pass evidence.")
-            .font(.system(size: 10, weight: .semibold)).foregroundStyle(EvidenceStyle.warning)
+          Text("differential evidence never creates pass evidence.")
+            .font(EvidenceStyle.labelFont(10)).foregroundStyle(EvidenceStyle.warning)
             .fixedSize(horizontal: false, vertical: true)
           Spacer()
           Label("Rust validated + persisted", systemImage: "checkmark.seal.fill")

@@ -40,8 +40,8 @@ struct PremiumWarmVerificationView: View {
           .font(.system(size: 10, weight: .bold, design: .monospaced))
           .tracking(1.15)
           .foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Keep the browser hot. Re-prove only what changed.")
-          .font(.system(size: 20, weight: .semibold))
+        Text("keep the browser hot. re-prove only what changed.")
+          .font(EvidenceStyle.headingFont(20))
           .tracking(-0.3)
         Text("One repository-owned daemon · deterministic scenario selection · zero model calls")
           .font(.system(size: 10, design: .monospaced))
@@ -49,7 +49,7 @@ struct PremiumWarmVerificationView: View {
       }
       Spacer()
       StatusPill(label: model.warmState.rawValue, color: stateColor)
-      Button("Done") { dismiss() }.buttonStyle(.bordered)
+      Button("done") { dismiss() }.buttonStyle(.bordered)
     }
     .padding(.horizontal, 24)
     .frame(height: 88)
@@ -86,8 +86,8 @@ struct PremiumWarmVerificationView: View {
 
           Toggle(isOn: $model.warmDetailedCapture) {
             VStack(alignment: .leading, spacing: 4) {
-              Text("Retain bounded detailed artifacts")
-                .font(.system(size: 12, weight: .semibold))
+              Text("retain bounded detailed artifacts")
+                .font(EvidenceStyle.labelFont(12))
               Text(
                 "Keep redacted screenshots, traces, network, console, and report artifacts under the verifier retention policy."
               )
@@ -202,11 +202,11 @@ struct PremiumWarmVerificationView: View {
         .lineLimit(2)
       Spacer()
       if model.warmState == .running {
-        Button("Cancel", role: .destructive) { model.cancelWarmVerification() }
+        Button("cancel", role: .destructive) { model.cancelWarmVerification() }
           .buttonStyle(.bordered)
       } else {
-        Button("Run changed proof") { model.runWarmVerification() }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+        Button("run changed proof") { model.runWarmVerification() }
+          .premiumPrimaryButton()
           .disabled(!model.canRunWarmVerification)
           .keyboardShortcut(.return, modifiers: [.command])
       }
@@ -243,12 +243,12 @@ struct PremiumWarmVerificationView: View {
           Label(showsReceiptDetails ? "Hide details" : "Details", systemImage: "sidebar.leading")
         }
         .buttonStyle(.bordered)
-        Button("Open in Runs") {
+        Button("open in runs") {
           model.showingWarmVerifier = false
           model.openRun(receipt.id)
         }
         .buttonStyle(.bordered)
-        Button("New proof") { model.resetWarmVerification() }.buttonStyle(.bordered)
+        Button("new proof") { model.resetWarmVerification() }.buttonStyle(.bordered)
       }
       .padding(.horizontal, 22)
       .frame(height: 76)

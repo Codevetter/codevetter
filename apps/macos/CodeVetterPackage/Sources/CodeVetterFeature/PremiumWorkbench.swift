@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import SaaSMakerUI
 import UniformTypeIdentifiers
 
 @MainActor
@@ -16,6 +17,7 @@ public func makeWorkbenchHostingController(model: WorkbenchModel, contentSize: N
 
 public struct PremiumWorkbenchRootView: View {
   @Bindable private var model: WorkbenchModel
+  @Environment(\.colorScheme) private var colorScheme
 
   public init(model: WorkbenchModel) {
     self.model = model
@@ -37,7 +39,7 @@ public struct PremiumWorkbenchRootView: View {
         if model.navigator.showVerification {
           VStack(spacing: 0) {
             HStack {
-              Button("Back to source browser", systemImage: "chevron.left") { model.navigator.showVerification = false }
+              Button("back to source browser", systemImage: "chevron.left") { model.navigator.showVerification = false }
                 .buttonStyle(.borderless)
               Spacer()
             }.padding(.horizontal, 20).frame(height: 34)
@@ -56,7 +58,7 @@ public struct PremiumWorkbenchRootView: View {
         PremiumSettingsView(model: model)
       }
     }
-    .background(EvidenceStyle.canvas)
+    .smTheme(EvidenceStyle.palette(for: colorScheme))
     .sheet(isPresented: $model.commandPalettePresented) {
       PremiumCommandPaletteView(model: model)
     }
@@ -94,10 +96,10 @@ struct PremiumRunsView: View {
         subtitle: "Saved verification results, source identities, and limitations"
       ) {
         Menu {
-          Button("All repositories") {
+          Button("all repositories") {
             model.setRunLedgerScope(.all)
           }
-          Button("Current repository") {
+          Button("current repository") {
             model.setRunLedgerScope(.currentRepository)
           }
           .disabled(!model.canFilterRunsByRepository)
@@ -112,7 +114,7 @@ struct PremiumRunsView: View {
         } label: {
           Label("Refresh", systemImage: "arrow.clockwise")
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .disabled(model.runsLoading)
         .help("Refresh runs")
       }
@@ -128,7 +130,7 @@ struct PremiumRunsView: View {
           } else if model.runs.isEmpty, model.runsLoading {
             VStack(spacing: 10) {
               ProgressView().controlSize(.small)
-              Text("Loading saved results…").font(.system(size: 12, weight: .medium))
+              Text("loading saved results…").font(EvidenceStyle.labelFont(12))
               Text("Showing the latest 50 saved runs.")
                 .font(.system(size: 10))
                 .foregroundStyle(.secondary)
@@ -350,10 +352,10 @@ private struct StoredRunInspector: View {
         ) {
           showsProofIdentity.toggle()
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .controlSize(.small)
-        Button("Export JSON", systemImage: "square.and.arrow.up", action: export)
-          .buttonStyle(.bordered)
+        Button("export json", systemImage: "square.and.arrow.up", action: export)
+          .premiumSecondaryButton()
           .controlSize(.small)
           .keyboardShortcut("e", modifiers: [.command, .shift])
         StatusPill(
@@ -561,7 +563,7 @@ private struct RunEvidenceIndex: View {
             ) {
               showsAllEvidence.toggle()
             }
-            .buttonStyle(.bordered)
+            .premiumSecondaryButton()
             .controlSize(.small)
           }
         }
@@ -626,8 +628,8 @@ private struct PremiumTopBar: View {
     HStack(spacing: 16) {
       HStack(spacing: 10) {
         CodeVetterBrandMark(size: 34)
-        Text("CODEVETTER")
-          .font(.system(size: 11, weight: .bold))
+        Text("codevetter")
+          .font(EvidenceStyle.labelFont(11))
           .tracking(1.35)
       }
 
@@ -681,7 +683,7 @@ private struct PremiumTopBar: View {
             Image(systemName: section.systemImage)
               .font(.system(size: 11, weight: .semibold))
             if showsLabel {
-              Text(section.rawValue).font(.system(size: 11, weight: .semibold))
+              Text(section.rawValue.lowercased()).font(EvidenceStyle.labelFont(11))
             }
           }
           .foregroundStyle(
@@ -732,7 +734,9 @@ private struct PremiumReviewView: View {
           HStack(spacing: 0) {
             reviewSetup
             Rectangle().fill(EvidenceStyle.separator).frame(width: 1)
-            ProofSequenceView(model: model).frame(width: 330)
+            ScrollView { ProofSequenceView(model: model) }
+              .frame(width: 330)
+              .background(EvidenceStyle.inspector)
           }
         } else {
           ReceiptDeskView(model: model)
@@ -777,8 +781,8 @@ private struct PremiumReviewView: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
               Spacer()
-              Text("Choose…")
-                .font(.system(size: 10, weight: .semibold))
+              Text("choose…")
+                .font(EvidenceStyle.labelFont(10))
                 .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 15)
@@ -802,14 +806,14 @@ private struct PremiumReviewView: View {
               Text("Pinned to the diff you inspected. Plan does not run repository code.")
                 .font(.system(size: 10)).foregroundStyle(.secondary)
               Spacer()
-              Button("Change comparison") { model.navigator.showVerification = false }
+              Button("change comparison") { model.navigator.showVerification = false }
                 .buttonStyle(.borderless)
             }
           }
 
           VStack(alignment: .leading, spacing: 7) {
             PremiumFieldLabel("REVIEW STRATEGY")
-            Picker("Review strategy", selection: $model.reviewAgent) {
+            Picker("review strategy", selection: $model.reviewAgent) {
               Text("Claude").tag("claude")
               Text("Codex").tag("codex")
               Text("Claude + Codex").tag("cross")
@@ -855,18 +859,18 @@ private struct PremiumReviewView: View {
             .lineLimit(2)
           Spacer()
           if model.verificationState == .planning || model.verificationState == .running {
-            Button("Cancel", role: .destructive) { model.cancel() }
-              .buttonStyle(.bordered)
+            Button("cancel", role: .destructive) { model.cancel() }
+              .premiumSecondaryButton()
               .keyboardShortcut(.escape, modifiers: [])
               .accessibilityIdentifier("review-cancel")
           } else {
-            Button("Plan") { model.plan() }
-              .buttonStyle(.bordered)
+            Button("plan") { model.plan() }
+              .premiumSecondaryButton()
               .disabled(!model.canStart)
               .keyboardShortcut(.return, modifiers: [.command, .shift])
               .accessibilityIdentifier("review-plan")
-            Button("Run review & checks") { model.execute() }
-              .buttonStyle(PremiumPrimaryButtonStyle())
+            Button("run review & checks") { model.execute() }
+              .premiumPrimaryButton()
               .disabled(!model.canExecuteReview)
               .keyboardShortcut(.return, modifiers: [.command])
               .accessibilityIdentifier("review-execute")
@@ -895,8 +899,8 @@ private struct PremiumReviewView: View {
             .foregroundStyle(.secondary)
         }
         Spacer()
-        Button("Add specs…", systemImage: "doc.badge.plus") { model.choosingSpecs = true }
-          .buttonStyle(.bordered)
+        Button("add specs…", systemImage: "doc.badge.plus") { model.choosingSpecs = true }
+          .premiumSecondaryButton()
           .controlSize(.small)
           .disabled(model.repositoryPath.isEmpty || model.specPaths.count >= 8)
       }
@@ -913,7 +917,7 @@ private struct PremiumReviewView: View {
               .lineLimit(1)
               .truncationMode(.middle)
             Spacer()
-            Button("Remove", systemImage: "xmark") { model.removeSpec(path) }
+            Button("remove", systemImage: "xmark") { model.removeSpec(path) }
               .labelStyle(.iconOnly)
               .buttonStyle(.borderless)
               .help("Remove \(path)")
@@ -1070,9 +1074,9 @@ struct PremiumFieldLabel: View {
   }
 
   var body: some View {
-    Text(text)
-      .font(.system(.caption, design: .monospaced, weight: .bold))
-      .tracking(0.9)
+    Text(text.lowercased())
+      .font(EvidenceStyle.labelFont(11))
+      .tracking(0.2)
       .foregroundStyle(.secondary)
   }
 }
@@ -1129,8 +1133,8 @@ private struct ProofSequenceView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Text("PROOF SEQUENCE")
-        .font(.system(size: 10, weight: .bold, design: .monospaced))
+      Text("proof sequence")
+        .font(EvidenceStyle.labelFont(10))
         .tracking(1.1)
         .foregroundStyle(.secondary)
         .padding(.bottom, 26)
@@ -1156,7 +1160,7 @@ private struct ProofSequenceView: View {
             }
           }
           VStack(alignment: .leading, spacing: 4) {
-            Text(step.0).font(.system(size: 12, weight: .semibold))
+            Text(step.0.lowercased()).font(EvidenceStyle.headingFont(12))
             Text(step.1).font(.system(size: 10)).foregroundStyle(.secondary)
           }
           .padding(.top, 2)
@@ -1231,22 +1235,22 @@ private struct ReceiptDeskView: View {
           ) {
             showsProofSummary.toggle()
           }
-          .buttonStyle(.bordered)
+          .premiumSecondaryButton()
           .controlSize(.small)
           Menu {
             if receipt.reviewID != nil {
-              Button("Agent PR X-Ray", systemImage: "eye.trianglebadge.exclamationmark") {
+              Button("agent pr x-ray", systemImage: "eye.trianglebadge.exclamationmark") {
                 showingXray = true
               }
             }
             if receipt.runID != nil,
               receipt.reviewFindings.contains(where: { $0.persistedID != nil })
             {
-              Button("Fix handoff", systemImage: "wrench.and.screwdriver") {
+              Button("fix handoff", systemImage: "wrench.and.screwdriver") {
                 showingFixPacket = true
               }
             }
-            Button("Export JSON", systemImage: "square.and.arrow.up") {
+            Button("export json", systemImage: "square.and.arrow.up") {
               exportReceipt(receipt)
             }
           } label: {
@@ -1254,10 +1258,10 @@ private struct ReceiptDeskView: View {
           }
           .menuStyle(.borderlessButton)
           .fixedSize()
-          Button("New verification") {
+          Button("new verification") {
             model.resetVerification()
           }
-          .buttonStyle(.bordered)
+          .premiumSecondaryButton()
         }
         .padding(.horizontal, 22)
         .frame(height: 82)
@@ -1490,7 +1494,7 @@ private struct ReceiptDeskView: View {
                 }
                 Spacer()
                 if let path = finding.filePath {
-                  Button("Open source", systemImage: "arrow.up.forward.square") {
+                  Button("open source", systemImage: "arrow.up.forward.square") {
                     openSource(path: path, line: finding.line, receipt: receipt)
                   }
                   .buttonStyle(.borderless)
@@ -1759,8 +1763,8 @@ struct ReviewIntentDiagnosticView: View {
       .frame(width: 46, height: 46)
       VStack(alignment: .leading, spacing: 5) {
         PremiumFieldLabel("RUST-OWNED INTENT DIAGNOSTIC")
-        Text("Evidence around the goal—not an inferred success claim")
-          .font(.system(size: 14, weight: .semibold))
+        Text("evidence around the goal—not an inferred success claim")
+          .font(EvidenceStyle.labelFont(14))
         Text(text(closure, "reason") ?? "No closure rationale was recorded.")
           .font(.system(size: 10))
           .foregroundStyle(.secondary)
@@ -1770,10 +1774,10 @@ struct ReviewIntentDiagnosticView: View {
       VStack(alignment: .trailing, spacing: 8) {
         StatusPill(label: normalized(closureStatus), color: statusColor(closureStatus))
         if let onVerifyInTesting {
-          Button("Verify in Testing", systemImage: "play.rectangle.on.rectangle") {
+          Button("verify in testing", systemImage: "play.rectangle.on.rectangle") {
             onVerifyInTesting()
           }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+          .premiumPrimaryButton()
           .controlSize(.small)
           .accessibilityIdentifier("review.intent.open-testing")
         }
@@ -1833,7 +1837,7 @@ struct ReviewIntentDiagnosticView: View {
         }
         .padding(.top, 8)
       } label: {
-        Text("Additional signal counts").font(.system(size: 10, weight: .semibold))
+        Text("additional signal counts").font(EvidenceStyle.labelFont(10))
       }
       .tint(EvidenceStyle.amberForeground)
     }
@@ -1966,7 +1970,7 @@ struct AgentFixPacketView: View {
           .font(.system(size: 18, weight: .medium))
           .foregroundStyle(EvidenceStyle.amberForeground)
         VStack(alignment: .leading, spacing: 3) {
-          Text("Agent Fix Handoff").font(.system(size: 17, weight: .semibold))
+          Text("agent fix handoff").font(EvidenceStyle.labelFont(17))
           Text("Selected findings · exact task · evidence to preserve")
             .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
@@ -1975,7 +1979,7 @@ struct AgentFixPacketView: View {
         Text(receipt.runID ?? "unpersisted")
           .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
-        Button("Done") { dismiss() }.buttonStyle(.bordered)
+        Button("done") { dismiss() }.premiumSecondaryButton()
       }
       .padding(.horizontal, 20)
       .frame(height: 68)
@@ -2024,11 +2028,11 @@ struct AgentFixPacketView: View {
               }
             }
 
-            Button("Build handoff", systemImage: "arrow.right.circle.fill") {
+            Button("build handoff", systemImage: "arrow.right.circle.fill") {
               copied = false
               model.buildFixPacket()
             }
-            .buttonStyle(PremiumPrimaryButtonStyle())
+            .premiumPrimaryButton()
             .disabled(!model.canBuildFixPacket)
             .accessibilityIdentifier("build-fix-packet")
 
@@ -2067,7 +2071,7 @@ struct AgentFixPacketView: View {
               .font(.system(size: 23))
               .foregroundStyle(EvidenceStyle.amberForeground)
             VStack(alignment: .leading, spacing: 4) {
-              Text("Bounded patch handoff").font(.system(size: 16, weight: .semibold))
+              Text("bounded patch handoff").font(EvidenceStyle.labelFont(16))
               Text(packet.routeAdvice)
                 .font(.system(size: 10))
                 .foregroundStyle(.secondary)
@@ -2082,7 +2086,7 @@ struct AgentFixPacketView: View {
               NSPasteboard.general.setString(packet.markdown, forType: .string)
               copied = true
             }
-            .buttonStyle(.bordered)
+            .premiumSecondaryButton()
             .controlSize(.small)
             .accessibilityIdentifier("copy-fix-packet")
           }
@@ -2214,8 +2218,8 @@ struct AgentFixPacketView: View {
       .accessibilityIdentifier("fix-attempt-agent")
 
       Toggle(isOn: $model.fixAttemptConfirmed) {
-        Text("Allow one agent to edit the detached worktree and rerun recorded proof")
-          .font(.system(size: 10, weight: .medium))
+        Text("allow one agent to edit the detached worktree and rerun recorded proof")
+          .font(EvidenceStyle.labelFont(10))
       }
       .toggleStyle(.checkbox)
       .disabled(model.fixAttemptLoading || model.fixAttemptReceipt != nil)
@@ -2228,15 +2232,15 @@ struct AgentFixPacketView: View {
             .font(.system(size: 10))
             .foregroundStyle(.secondary)
           Spacer()
-          Button("Cancel", role: .cancel) { model.cancelFixAttempt() }
-            .buttonStyle(.bordered)
+          Button("cancel", role: .cancel) { model.cancelFixAttempt() }
+            .premiumSecondaryButton()
             .controlSize(.small)
             .accessibilityIdentifier("cancel-fix-attempt")
         } else if model.fixAttemptReceipt == nil {
-          Button("Execute isolated fix", systemImage: "play.fill") {
+          Button("execute isolated fix", systemImage: "play.fill") {
             model.executeFixAttempt()
           }
-          .buttonStyle(PremiumPrimaryButtonStyle())
+          .premiumPrimaryButton()
           .disabled(!model.canExecuteFixAttempt)
           .accessibilityIdentifier("execute-fix-attempt")
           Spacer()
@@ -2277,12 +2281,12 @@ struct AgentFixPacketView: View {
         }
         Spacer()
         if attempt.worktree.retained {
-          Button("Reveal worktree", systemImage: "folder") {
+          Button("reveal worktree", systemImage: "folder") {
             NSWorkspace.shared.activateFileViewerSelecting([
               URL(fileURLWithPath: attempt.worktree.path)
             ])
           }
-          .buttonStyle(.bordered)
+          .premiumSecondaryButton()
           .controlSize(.small)
           .accessibilityIdentifier("reveal-fix-worktree")
         }
@@ -2334,15 +2338,15 @@ struct AgentFixPacketView: View {
       if attempt.worktree.retained {
         Divider()
         Toggle(isOn: $model.fixAttemptDiscardConfirmed) {
-          Text("Discard this retained unmerged worktree")
-            .font(.system(size: 10, weight: .medium))
+          Text("discard this retained unmerged worktree")
+            .font(EvidenceStyle.labelFont(10))
         }
         .toggleStyle(.checkbox)
         .accessibilityIdentifier("confirm-discard-fix-attempt")
-        Button("Discard worktree", systemImage: "trash", role: .destructive) {
+        Button("discard worktree", systemImage: "trash", role: .destructive) {
           model.discardFixAttempt()
         }
-        .buttonStyle(.bordered)
+        .premiumSecondaryButton()
         .controlSize(.small)
         .disabled(!model.canDiscardFixAttempt)
         .accessibilityIdentifier("discard-fix-attempt")
@@ -2414,7 +2418,7 @@ struct XrayExportView: View {
           .font(.system(size: 19, weight: .medium))
           .foregroundStyle(EvidenceStyle.amberForeground)
         VStack(alignment: .leading, spacing: 3) {
-          Text("Agent PR X-Ray").font(.system(size: 17, weight: .semibold))
+          Text("agent pr x-ray").font(EvidenceStyle.labelFont(17))
           Text("Public-safe evidence export · no model rerun")
             .font(.system(size: 10, design: .monospaced))
             .foregroundStyle(.secondary)
@@ -2426,7 +2430,7 @@ struct XrayExportView: View {
             .foregroundStyle(.secondary)
             .lineLimit(1)
         }
-        Button("Done") { dismiss() }.buttonStyle(.bordered)
+        Button("done") { dismiss() }.premiumSecondaryButton()
       }
       .padding(.horizontal, 20)
       .frame(height: 68)
@@ -2500,12 +2504,12 @@ struct XrayExportView: View {
             }
 
             HStack(spacing: 8) {
-              Button("Build preview", systemImage: "eye") { model.previewXray() }
-                .buttonStyle(PremiumPrimaryButtonStyle())
+              Button("build preview", systemImage: "eye") { model.previewXray() }
+                .premiumPrimaryButton()
                 .disabled(!model.canPreviewXray)
                 .accessibilityIdentifier("build-xray-preview")
-              Button("Save…", systemImage: "square.and.arrow.down") { chooseDestination() }
-                .buttonStyle(.bordered)
+              Button("save…", systemImage: "square.and.arrow.down") { chooseDestination() }
+                .premiumSecondaryButton()
                 .disabled(!model.canSaveXray)
                 .accessibilityIdentifier("save-xray-export")
             }
@@ -2769,7 +2773,7 @@ struct ReviewProofMapView: View {
           .padding(.top, 12)
         } label: {
           VStack(alignment: .leading, spacing: 3) {
-            Text("Full proof map").font(.system(size: 11, weight: .semibold))
+            Text("full proof map").font(EvidenceStyle.labelFont(11))
             Text("Manifest, graph context, QA evidence, leads, and procedure")
               .font(.system(size: 10)).foregroundStyle(.secondary)
           }
@@ -2798,8 +2802,8 @@ struct ReviewProofMapView: View {
         .foregroundStyle(EvidenceStyle.amberForeground)
         .frame(width: 24)
       VStack(alignment: .leading, spacing: 4) {
-        Text("Evidence before interpretation")
-          .font(.system(size: 12, weight: .semibold))
+        Text("evidence before interpretation")
+          .font(EvidenceStyle.labelFont(12))
         Text(
           "Recorded execution is proof. Graph neighborhoods and candidate leads are bounded context, never ground truth."
         )
@@ -3001,7 +3005,7 @@ struct ReviewProofMapView: View {
             .font(.system(size: 10))
             .foregroundStyle(.secondary)
           Spacer()
-          Button("Open Testing", systemImage: "arrow.right") {
+          Button("open testing", systemImage: "arrow.right") {
             onOpenTesting()
           }
           .buttonStyle(.borderless)
@@ -3149,8 +3153,8 @@ struct ReviewProofMapView: View {
       Image(systemName: "questionmark.diamond")
         .font(.system(size: 20, weight: .light))
         .foregroundStyle(.secondary)
-      Text("No deterministic proof map was recorded")
-        .font(.system(size: 11, weight: .semibold))
+      Text("no deterministic proof map was recorded")
+        .font(EvidenceStyle.labelFont(11))
       Text("The canonical JSON remains available; this receipt predates proof-map evidence.")
         .font(.system(size: 10))
         .foregroundStyle(.secondary)
@@ -3345,8 +3349,8 @@ private struct SpecCoverageEvidenceCard: View {
       HStack {
         VStack(alignment: .leading, spacing: 4) {
           PremiumFieldLabel("ACCEPTANCE COVERAGE")
-          Text("Explicit requirements, never inferred")
-            .font(.system(size: 12, weight: .semibold))
+          Text("explicit requirements, never inferred")
+            .font(EvidenceStyle.labelFont(12))
         }
         Spacer()
         Text(String(coverage.headSHA.prefix(12)))
@@ -3442,30 +3446,6 @@ private struct SpecCoverageEvidenceCard: View {
   }
 }
 
-struct PremiumPrimaryButtonStyle: ButtonStyle {
-  @Environment(\.isEnabled) private var isEnabled
-
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .font(.system(size: 12, weight: .bold))
-      .foregroundStyle(isEnabled ? EvidenceStyle.amberForeground : Color.secondary)
-      .padding(.horizontal, 18)
-      .frame(minHeight: 40)
-      .contentShape(Rectangle())
-      .background(
-        isEnabled
-          ? EvidenceStyle.amber.opacity(configuration.isPressed ? 0.12 : 0.035)
-          : EvidenceStyle.surface,
-        in: RoundedRectangle(cornerRadius: 6)
-      )
-      .overlay {
-        RoundedRectangle(cornerRadius: 6)
-          .stroke(
-            isEnabled ? EvidenceStyle.amberForeground.opacity(0.65) : EvidenceStyle.separator)
-      }
-      .opacity(isEnabled ? 1 : 0.72)
-  }
-}
 
 extension View {
   func premiumField() -> some View {

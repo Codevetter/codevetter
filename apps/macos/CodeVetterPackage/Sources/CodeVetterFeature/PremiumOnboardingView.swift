@@ -29,15 +29,15 @@ struct PremiumOnboardingView: View {
             .font(.system(size: 10, weight: .bold, design: .monospaced))
             .tracking(1.1)
             .foregroundStyle(EvidenceStyle.amberForeground)
-          Text("Evidence Workbench").font(.system(size: 13, weight: .semibold))
+          Text("evidence workbench").font(EvidenceStyle.headingFont(13))
         }
       }
       Spacer()
       HStack(spacing: 5) {
         ForEach(Array(steps.enumerated()), id: \.offset) { index, label in
           VStack(alignment: .leading, spacing: 5) {
-            Text(label.uppercased())
-              .font(.system(size: 10, weight: .bold, design: .monospaced))
+            Text(label.lowercased())
+              .font(EvidenceStyle.labelFont(10))
               .foregroundStyle(index == model.onboardingStep ? Color.primary : Color.secondary)
             Capsule()
               .fill(index <= model.onboardingStep ? EvidenceStyle.amber : EvidenceStyle.separator)
@@ -68,8 +68,7 @@ struct PremiumOnboardingView: View {
     HStack(spacing: 38) {
       VStack(alignment: .leading, spacing: 18) {
         PremiumFieldLabel("THE STANDARD")
-        Text("Judge code by\nwhat it proves.")
-          .font(.system(size: 36, weight: .semibold))
+        Text("judge code by\nwhat it proves.").font(EvidenceStyle.headingFont(36))
           .tracking(-0.8)
         Text(
           "CodeVetter binds an exact change to executable checks, runtime evidence, and a measurable verdict. Model opinions remain leads—not proof."
@@ -104,8 +103,7 @@ struct PremiumOnboardingView: View {
   private var readinessStep: some View {
     VStack(alignment: .leading, spacing: 18) {
       PremiumFieldLabel("LOCAL TOOL READINESS")
-      Text("Know what is available. Assume nothing.")
-        .font(.system(size: 27, weight: .semibold))
+      Text("know what is available. assume nothing.").font(EvidenceStyle.headingFont(27))
       Text(
         "The Rust receipt checks executable presence only. Authentication and credential contents are deliberately not inspected."
       )
@@ -151,8 +149,7 @@ struct PremiumOnboardingView: View {
   private var agentStep: some View {
     VStack(alignment: .leading, spacing: 20) {
       PremiumFieldLabel("DEFAULT REVIEW AGENT")
-      Text("Choose the worker. Keep proof independent.")
-        .font(.system(size: 27, weight: .semibold))
+      Text("choose the worker. keep proof independent.").font(EvidenceStyle.headingFont(27))
       Text(
         "This selects the default local agent adapter. It does not grant repository, network, or credential authority."
       )
@@ -168,8 +165,8 @@ struct PremiumOnboardingView: View {
       }
       HStack(spacing: 10) {
         Image(systemName: "equal.circle.fill").foregroundStyle(EvidenceStyle.amberForeground)
-        Text("Both adapters produce leads. Rust-owned execution evidence determines confidence.")
-          .font(.system(size: 10, weight: .medium))
+        Text("both adapters produce leads. rust-owned execution evidence determines confidence.")
+          .font(EvidenceStyle.labelFont(10))
       }
       .padding(14)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -183,8 +180,7 @@ struct PremiumOnboardingView: View {
   private var workbenchStep: some View {
     VStack(alignment: .leading, spacing: 18) {
       PremiumFieldLabel("ONE PRODUCT · THREE INTERFACES")
-      Text("Start with the change. End with proof.")
-        .font(.system(size: 27, weight: .semibold))
+      Text("start with the change. end with proof.").font(EvidenceStyle.headingFont(27))
       HStack(spacing: 12) {
         tourCard(
           "APP", "Operate", "Review, Testing, Performance, and evidence inspection", "macwindow")
@@ -221,12 +217,12 @@ struct PremiumOnboardingView: View {
       }
       Spacer()
       if model.onboardingStep == 0 {
-        Button("Not now") { model.dismissOnboarding() }
-          .buttonStyle(.bordered)
+        Button("not now") { model.dismissOnboarding() }
+          .premiumSecondaryButton()
           .disabled(model.onboardingLoading)
       } else {
-        Button("Back") { model.onboardingStep -= 1 }
-          .buttonStyle(.bordered)
+        Button("back") { model.onboardingStep -= 1 }
+          .premiumSecondaryButton()
           .keyboardShortcut(.leftArrow, modifiers: [.command])
           .disabled(model.onboardingLoading)
       }
@@ -237,7 +233,7 @@ struct PremiumOnboardingView: View {
           model.onboardingStep += 1
         }
       }
-      .buttonStyle(PremiumPrimaryButtonStyle())
+      .premiumPrimaryButton()
       .keyboardShortcut(.return, modifiers: [])
       .disabled(model.onboardingLoading)
       .accessibilityIdentifier(
@@ -255,9 +251,9 @@ struct PremiumOnboardingView: View {
     HStack(spacing: 12) {
       Image(systemName: symbol).foregroundStyle(EvidenceStyle.amberForeground).frame(width: 24)
       VStack(alignment: .leading, spacing: 2) {
-        Text(eyebrow).font(.system(size: 10, weight: .bold, design: .monospaced)).foregroundStyle(
+        Text(eyebrow.lowercased()).font(EvidenceStyle.labelFont(10)).foregroundStyle(
           .secondary)
-        Text(title).font(.system(size: 11, weight: .semibold))
+        Text(title.lowercased()).font(EvidenceStyle.headingFont(11))
       }
       Spacer()
     }
