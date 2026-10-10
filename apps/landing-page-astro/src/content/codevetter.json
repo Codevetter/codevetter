@@ -1,0 +1,364 @@
+{
+  "template": "workbench",
+  "page": {
+    "title": "CodeVetter — Execution-backed agent verification",
+    "description": "Verify whether a coding agent completed its task. CodeVetter binds the exact change to executable checks, evidence, limitations, and a measurable verdict.",
+    "theme": "ink",
+    "icon": "/favicon.svg",
+    "tokens": {
+      "--brand": "oklch(0.8 0.14 72)",
+      "--brand-foreground": "oklch(0.16 0.02 70)",
+      "--brand-soft": "oklch(0.8 0.14 72 / 0.14)",
+      "--background": "oklch(0.115 0.004 70)",
+      "--surface": "oklch(0.145 0.005 70)",
+      "--card": "oklch(0.16 0.005 70)",
+      "--popover": "oklch(0.18 0.005 70)",
+      "--muted": "oklch(0.19 0.006 70)",
+      "--secondary": "oklch(0.21 0.006 70)",
+      "--accent": "oklch(0.22 0.006 70)",
+      "--muted-foreground": "oklch(0.7 0.012 75)",
+      "--chart-2": "oklch(0.72 0.12 40)"
+    },
+    "assetBase": "/",
+    "canonical": "https://codevetter.com",
+    "og": {
+      "image": "https://codevetter.com/og-image.png",
+      "siteName": "CodeVetter",
+      "twitterSite": "@sarthakcodes",
+      "type": "website"
+    },
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+  },
+  "product": "CodeVetter",
+  "url": "https://codevetter.com",
+  "mark": "icon.svg",
+  "nav": [
+    {
+      "label": "How it works",
+      "href": "#how"
+    },
+    {
+      "label": "Evidence",
+      "href": "#evidence"
+    },
+    {
+      "label": "Availability",
+      "href": "#availability"
+    },
+    {
+      "label": "FAQ",
+      "href": "#faq"
+    }
+  ],
+  "header": {
+    "secondary": {
+      "label": "GitHub",
+      "href": "https://github.com/Codevetter/codevetter"
+    },
+    "primary": {
+      "label": "Download",
+      "href": "/download",
+      "icon": "Download"
+    }
+  },
+  "hero": {
+    "eyebrow": "Execution-backed verification · local-first",
+    "title": "AI writes code fast. It leaves it *unverified.*",
+    "lede": "CodeVetter binds the requested task to the exact change, runs your repository's own checks, and keeps a pass, fail, or unverified verdict with the evidence and limits behind it.",
+    "primary": {
+      "label": "Run a verification",
+      "href": "#how"
+    },
+    "secondary": {
+      "label": "Get the macOS build",
+      "href": "/download"
+    },
+    "note": "Apple silicon · open source (ISC) · no CodeVetter account",
+    "window": {
+      "title": "CodeVetter — review",
+      "src": "images/workbench.png",
+      "alt": "CodeVetter desktop review workbench showing a local review result, finding list, evidence status, and code inspection panel",
+      "width": 1440,
+      "height": 900
+    },
+    "caption": "Repository-tracked capture of the desktop workbench",
+    "brackets": true
+  },
+  "sections": [
+    {
+      "id": "how",
+      "blocks": [
+        {
+          "type": "statement",
+          "eyebrow": "The contract",
+          "title": "The unit of trust is *the whole chain.*",
+          "lede": "A finding or a green command alone is not proof. CodeVetter keeps task identity, execution, evidence, and uncertainty connected, so another engineer, or another agent, can re-check the result.",
+          "points": [
+            {
+              "title": "Task and change, bound",
+              "body": "The requested outcome and the exact agent revision travel together, so the verifier cannot quietly grade an easier task."
+            },
+            {
+              "title": "Checks decide",
+              "body": "Repository-owned tests, builds, browser flows and API checks set the verdict boundary. A model can suggest what to test; execution decides."
+            },
+            {
+              "title": "Unknown stays unknown",
+              "body": "Missing or irrelevant evidence produces unverified, not a confidence score dressed up as success."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "blocks": [
+        {
+          "type": "spread",
+          "items": [
+            {
+              "kicker": "Failures stay attached",
+              "title": "Point at the line *the verdict is about.*",
+              "body": "A failing check is linked back to the exact change that caused it, with the command, the bounded output and the limitation, so a reviewer can confirm it in seconds instead of re-running everything.",
+              "detail": {
+                "src": "images/workbench.png",
+                "alt": "CodeVetter review workbench: line 12 of portfolio.tsx, if (total >= 0), is flagged as the line the unverified finding is about",
+                "width": 1440,
+                "height": 900,
+                "crop": {
+                  "x": 250,
+                  "y": 282,
+                  "w": 640,
+                  "h": 330
+                }
+              }
+            },
+            {
+              "kicker": "Bundled CLI",
+              "title": "Run the exact change from *your repository.*",
+              "body": "The Apple-silicon release bundles the codevetter CLI and a local MCP sidecar inside the app. Provider-backed review needs a supported local agent CLI; repository-owned checks remain the verdict boundary.",
+              "code": {
+                "label": "zsh — ~/work/auth-service",
+                "code": "# bundled at /Applications/CodeVetter.app/Contents/MacOS/codevetter\n$ codevetter check     --range main...HEAD     --task \"Reject expired sessions\"     --json\n\n✗ fail        pnpm test auth/session.test.ts\n✓ pass        pnpm typecheck\n? unverified  browser refresh journey"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evidence",
+      "surface": "muted",
+      "blocks": [
+        {
+          "type": "statement",
+          "eyebrow": "Published evidence",
+          "title": "Proof that survives *the next question.*",
+          "lede": "The public corpus measures a narrow recognition task. It is not evidence of production-wide accuracy or adoption, and the page says so.",
+          "points": [
+            {
+              "title": "27 synthetic cases",
+              "body": "Inputs and scorer are inspectable."
+            },
+            {
+              "title": "29 labelled findings",
+              "body": "Bounded recognition evidence."
+            },
+            {
+              "title": "No hosted verifier",
+              "body": "Execution and state stay local."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "availability",
+      "blocks": [
+        {
+          "type": "statement",
+          "eyebrow": "Available today",
+          "title": "Models can suggest. *Execution decides.*",
+          "lede": "No placeholder plans, unsupported installers, or hosted-service promises. Optional model review goes straight to the provider you configure.",
+          "points": [
+            {
+              "title": "macOS · Apple silicon",
+              "body": "The current GitHub release publishes an aarch64 DMG and updater archive. Other platforms are not published yet."
+            },
+            {
+              "title": "Local, no account",
+              "body": "Product state and verification evidence live on your machine. Model review uses the Anthropic, OpenAI or OpenRouter credentials you configure."
+            },
+            {
+              "title": "Open source · ISC",
+              "body": "The repository, benchmark cases, scorer, docs, and release workflows are public on GitHub."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "faq",
+      "surface": "muted",
+      "blocks": [
+        {
+          "type": "faq",
+          "title": "Understand *the boundary.*",
+          "lede": "Scope, evidence, and availability, answered plainly.",
+          "items": [
+            {
+              "q": "What is CodeVetter?",
+              "a": "An execution-backed verification and evaluation system for coding agents. It connects a requested task and exact agent change to executable checks, retained evidence, explicit limitations, and a pass, fail, or unverified verdict."
+            },
+            {
+              "q": "Is it another AI code reviewer?",
+              "a": "Review is one input, not the authority. A model can identify suspicious code and suggest what to test, but CodeVetter treats task-relevant execution evidence as the verdict boundary."
+            },
+            {
+              "q": "Does my repository go to a CodeVetter server?",
+              "a": "No hosted verification backend is required. Product state and execution evidence stay local. If you start an optional provider-backed review, selected prompt and code context go directly to the provider you configured."
+            },
+            {
+              "q": "Does it work offline?",
+              "a": "Local checks, stored evidence, and the desktop viewer work without a CodeVetter service. Reviews that call Anthropic, OpenAI, or OpenRouter still need network access to that provider."
+            },
+            {
+              "q": "What does a verdict prove?",
+              "a": "Only the declared task and evidence boundary. A pass does not prove behavior that was never checked, and missing or irrelevant evidence stays unverified instead of becoming confidence."
+            },
+            {
+              "q": "What can I download today?",
+              "a": "The current GitHub release has an Apple-silicon macOS DMG and updater archive. Source is ISC-licensed. Other platform installers and a Homebrew cask are not published yet."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "compact": true,
+      "blocks": [
+        {
+          "type": "cta",
+          "title": "“Looks good” is *not a verdict.*",
+          "lede": "Inspect the evidence contract first, then download the current local desktop build from the GitHub release.",
+          "primary": {
+            "label": "Open the latest release",
+            "href": "https://github.com/Codevetter/codevetter/releases/latest",
+            "icon": "Download"
+          },
+          "secondary": {
+            "label": "Inspect the public benchmark",
+            "href": "/benchmark"
+          },
+          "note": "No CodeVetter account · local SQLite state · ISC license"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "summary": "Execution-backed verification for coding-agent changes. Preserve the task, exact change, executable evidence, limitations, and a measurable verdict.",
+    "groups": [
+      {
+        "title": "Product",
+        "links": [
+          {
+            "label": "How it works",
+            "href": "/#how"
+          },
+          {
+            "label": "Availability",
+            "href": "/#availability"
+          },
+          {
+            "label": "Changelog",
+            "href": "/changelog"
+          },
+          {
+            "label": "Roadmap",
+            "href": "https://github.com/Codevetter/codevetter/issues"
+          },
+          {
+            "label": "Starboard — repo discovery",
+            "href": "https://starboard.codevetter.com"
+          }
+        ]
+      },
+      {
+        "title": "Resources",
+        "links": [
+          {
+            "label": "Evidence documentation",
+            "href": "/verification-evidence-bundle"
+          },
+          {
+            "label": "FAQ",
+            "href": "/faq"
+          },
+          {
+            "label": "Verification guide",
+            "href": "/coding-agent-verification"
+          },
+          {
+            "label": "Articles",
+            "href": "/articles"
+          },
+          {
+            "label": "Inspiration",
+            "href": "/inspiration"
+          },
+          {
+            "label": "Review vs verification",
+            "href": "/ai-code-review-vs-verification"
+          },
+          {
+            "label": "Compare CodeVetter",
+            "href": "/compare"
+          },
+          {
+            "label": "vs CodeRabbit",
+            "href": "/codevetter-vs-coderabbit"
+          },
+          {
+            "label": "vs Greptile",
+            "href": "/codevetter-vs-greptile"
+          },
+          {
+            "label": "Benchmark",
+            "href": "/benchmark"
+          }
+        ]
+      },
+      {
+        "title": "Connect",
+        "links": [
+          {
+            "label": "About",
+            "href": "/about"
+          },
+          {
+            "label": "Contact",
+            "href": "/contact"
+          },
+          {
+            "label": "Privacy",
+            "href": "/privacy"
+          },
+          {
+            "label": "Terms",
+            "href": "/terms"
+          },
+          {
+            "label": "GitHub",
+            "href": "https://github.com/Codevetter/codevetter"
+          },
+          {
+            "label": "Twitter",
+            "href": "https://x.com/sarthakcodes"
+          }
+        ]
+      }
+    ],
+    "legal": "© 2026 CodeVetter · ISC License",
+    "catalogId": "codevetter",
+    "privacyUrl": "https://codevetter.com/privacy"
+  }
+}

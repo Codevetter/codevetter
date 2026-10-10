@@ -7,7 +7,6 @@ const appRoot = new URL('../', import.meta.url);
 
 test('benchmark entry points declare the catalog CTA event', async () => {
   const files = [
-    'src/components/Hero.astro',
     'src/components/Footer.astro',
     'src/pages/xray/index.astro',
     'src/pages/about.astro',
