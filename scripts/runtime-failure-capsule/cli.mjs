@@ -49,7 +49,7 @@ const OPERATIONS = [
   'inspect-performance-run',
   'plan-flow-campaign',
 ];
-const PLANNING_OPERATIONS = new Set(['plan-performance', 'plan-flow-campaign']);
+const PLANNING_OPERATIONS = new Set(['preflight', 'plan-performance', 'plan-flow-campaign']);
 const PROFILE_OPTIONS = [
   'repo',
   'adapter',
@@ -128,16 +128,6 @@ export async function main(argv = process.argv.slice(2)) {
   try {
     const { operation, options } = parseArguments(argv);
     repositoryRoot = resolve(options.repo ?? process.cwd());
-    if (operation === 'preflight') {
-      const receipt = await preflightAdapter({
-        repositoryRoot,
-        adapter: required(options, 'adapter'),
-        target: required(options, 'target'),
-        name: options.name,
-      });
-      writeJson(receipt);
-      return receipt.status === 'ready' ? 0 : 2;
-    }
     if (operation === 'detect') {
       writeJson(await detectRuntimeLanes(repositoryRoot));
       return 0;
@@ -364,6 +354,16 @@ function parseArguments(argv) {
 }
 
 async function runPlanningOperation(operation, repositoryRoot, options) {
+  if (operation === 'preflight') {
+    const receipt = await preflightAdapter({
+      repositoryRoot,
+      adapter: required(options, 'adapter'),
+      target: required(options, 'target'),
+      name: options.name,
+    });
+    writeJson(receipt);
+    return receipt.status === 'ready' ? 0 : 2;
+  }
   if (operation === 'plan-performance') {
     const adapter = assertProfileAdapter(required(options, 'adapter'));
     const samples = profileSamples(options.samples);

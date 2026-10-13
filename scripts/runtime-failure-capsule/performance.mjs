@@ -1267,59 +1267,7 @@ export async function loadPerformanceCapsule(root, baselinePath) {
 export function selectedWorkloadExecuted(entry, adapter, name) {
   const output = `${entry.stdout}\n${entry.stderr}`;
   if (adapter === 'node-script') return true;
-  if (adapter === 'vitest') {
-    const selection = parseVitestSelection(entry.stdout);
-    if (selection) {
-      if (selection.failed_tests !== 0) return false;
-      const report = JSON.parse(entry.stdout);
-      const assertions = Array.isArray(report.testResults)
-        ? report.testResults.flatMap((file) =>
-            Array.isArray(file.assertionResults) ? file.assertionResults : []
-          )
-        : null;
-      if (name && assertions) {
-        const executed = assertions.filter(
-          (item) => item.status === 'passed' && Number.isFinite(item.duration) && item.duration >= 0
-        );
-        return executed.length === 1 && executed[0].title === name;
-      }
-      return name ? selection.executed_tests === 1 : selection.executed_tests > 0;
-    }
-    try {
-      const report = JSON.parse(entry.stdout);
-      if (
-        report &&
-        (Object.hasOwn(report, 'numTotalTests') || Object.hasOwn(report, 'testResults'))
-      ) {
-        return false;
-      }
-    } catch {
-      /* Recover bounded fragments below. */
-    }
-    // Recover only complete assertion objects from a bounded JSON fragment. A collected
-    // identity with no duration, or a substring inside console output, is not execution.
-    const assertions = [];
-    for (const fragment of output.match(/\{[^{}]*\}/g) ?? []) {
-      try {
-        const assertion = JSON.parse(fragment);
-        if (
-          assertion.status === 'passed' &&
-          Number.isFinite(assertion.duration) &&
-          assertion.duration > 0 &&
-          typeof assertion.title === 'string'
-        ) {
-          assertions.push(assertion);
-        }
-      } catch {
-        /* Incomplete objects cannot establish execution. */
-      }
-    }
-    if (assertions.length > 0) {
-      return name ? assertions.length === 1 && assertions[0].title === name : true;
-    }
-    const summary = output.match(/^\s*Tests\s+(\d+)\s+passed(?:\s|$)/m);
-    return summary ? (name ? Number(summary[1]) === 1 : Number(summary[1]) > 0) : false;
-  }
+  if (adapter === 'vitest') return selectedVitestWorkloadExecuted(entry, name);
   if (adapter === 'go-bench') return parseGoBenchmarks(output).length > 0;
   if (adapter === 'playwright') {
     return parsePlaywrightTimings(
@@ -1328,6 +1276,71 @@ export function selectedWorkloadExecuted(entry, adapter, name) {
     ).complete;
   }
   return !name || output.includes(name);
+}
+
+function matchesVitestCount(count, name) {
+  return name ? count === 1 : count > 0;
+}
+
+function selectedCompleteVitestReport(output, selection, name) {
+  if (selection.failed_tests !== 0) return false;
+  const report = JSON.parse(output);
+  if (!name || !Array.isArray(report.testResults)) {
+    return matchesVitestCount(selection.executed_tests, name);
+  }
+  const assertions = report.testResults.flatMap((file) =>
+    Array.isArray(file?.assertionResults) ? file.assertionResults : []
+  );
+  const executed = assertions.filter(
+    (item) => item?.status === 'passed' && Number.isFinite(item.duration) && item.duration >= 0
+  );
+  return executed.length === 1 && executed[0].title === name;
+}
+
+function incompleteVitestReport(output) {
+  try {
+    const report = JSON.parse(output);
+    return Boolean(
+      report && (Object.hasOwn(report, 'numTotalTests') || Object.hasOwn(report, 'testResults'))
+    );
+  } catch {
+    return false;
+  }
+}
+
+function recoverVitestAssertions(output) {
+  const assertions = [];
+  // Recover only complete assertion objects. Collection identities without a
+  // positive duration and incomplete objects cannot establish execution.
+  for (const fragment of output.match(/\{[^{}]*\}/g) ?? []) {
+    try {
+      const assertion = JSON.parse(fragment);
+      if (
+        assertion.status === 'passed' &&
+        Number.isFinite(assertion.duration) &&
+        assertion.duration > 0 &&
+        typeof assertion.title === 'string'
+      ) {
+        assertions.push(assertion);
+      }
+    } catch {
+      /* Incomplete objects cannot establish execution. */
+    }
+  }
+  return assertions;
+}
+
+function selectedVitestWorkloadExecuted(entry, name) {
+  const selection = parseVitestSelection(entry.stdout);
+  if (selection) return selectedCompleteVitestReport(entry.stdout, selection, name);
+  if (incompleteVitestReport(entry.stdout)) return false;
+  const output = `${entry.stdout}\n${entry.stderr}`;
+  const assertions = recoverVitestAssertions(output);
+  if (assertions.length > 0) {
+    return name ? assertions.length === 1 && assertions[0].title === name : true;
+  }
+  const summary = output.match(/^\s*Tests\s+(\d+)\s+passed(?:\s|$)/m);
+  return summary ? matchesVitestCount(Number(summary[1]), name) : false;
 }
 
 export function requiredExecutionsCompleted(entries, adapter, name) {
