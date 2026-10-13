@@ -2790,6 +2790,11 @@ public final class WorkbenchModel {
     loadRuns(selecting: id)
   }
 
+  public func loadVisibleRuns() {
+    guard section == .runs, !runsShowsInvocations else { return }
+    loadRuns()
+  }
+
   public func loadRuns(selecting requestedID: String? = nil) {
     guard !runsLoading || requestedID != nil else { return }
     runsTask?.cancel()

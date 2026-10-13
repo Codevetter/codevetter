@@ -101,7 +101,7 @@ test('promotes a repository-owned Go cumulative CPU path after allocation pressu
   assert.deepEqual(validatePerformanceDiagnosis(report), []);
 });
 
-test('diagnoses deterministic superlinear input scaling without claiming causation', () => {
+test('unqualified sort branch retains measured scaling without a top-k prescription', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
       consoleMetrics: scaleMetrics(),
@@ -127,7 +127,7 @@ test('diagnoses deterministic superlinear input scaling without claiming causati
             start_line: 30,
             end_line: 70,
           },
-          excerpt: '60: .sort(compare)\n61: .slice(0, limit)',
+          excerpt: '59: if (limit <= 0) {\n60: .sort(compare)\n61: .slice(0, limit)\n62: }',
           patterns: [
             {
               kind: 'full_sort_before_bounded_slice',
@@ -144,14 +144,14 @@ test('diagnoses deterministic superlinear input scaling without claiming causati
     }
   );
 
-  assert.equal(report.diagnosis.kind, 'bounded_result_overwork');
+  assert.equal(report.diagnosis.kind, 'superlinear_scaling');
   const curve = report.observed.find((entry) => entry.kind === 'input_scale_curve');
   assert.equal(curve.classification, 'superlinear');
   assert.equal(curve.input_ratio, 35);
   assert.equal(curve.value_ratio, 50.549);
   assert.equal(curve.exponent, 1.103);
-  assert.match(report.inferred[0].summary, /fully sorts candidates/);
-  assert.match(report.unverified[0].summary, /bounded top-k selection/);
+  assertStaticPatternIsNotPrescribed(report);
+  assert.doesNotMatch(JSON.stringify(report.inferred), /fully sorts candidates/);
   assert.match(report.unverified[0].falsification, /reject this hypothesis/);
 });
 
@@ -160,7 +160,7 @@ test('retains superlinear scaling diagnosis without a source-pattern intersectio
   assert.equal(report.diagnosis.kind, 'superlinear_scaling');
 });
 
-test('diagnoses repeated traversal on a measured growing CPU path', () => {
+test('a function-name anchor cannot rewrite sampled coordinates or prove traversal branches', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
       consoleMetrics: [metric('size1000', 0.5), metric('size10000', 3), metric('size35000', 9)],
@@ -204,21 +204,14 @@ test('diagnoses repeated traversal on a measured growing CPU path', () => {
     }
   );
 
-  assert.equal(report.diagnosis.kind, 'repeated_input_traversal');
-  assert.match(report.diagnosis.summary, /phases is traversed 2 times/);
-  assert.match(report.inferred[0].summary, /17 and 43/);
-  assert.match(report.unverified[0].summary, /Combining the passes over phases/);
-  assert.deepEqual(report.verification.success_criteria, [
-    'largest-input time decreases',
-    'scale exponent does not regress',
-    'workload passes',
-  ]);
+  assert.equal(report.diagnosis.kind, 'application_cpu_hotspot');
+  assertStaticPatternIsNotPrescribed(report);
   const hotspot = report.observed.find((entry) => entry.kind === 'repository_cpu_hotspot');
-  assert.equal(hotspot.source.line, 12);
-  assert.equal(hotspot.source.reported_line, 4);
+  assert.equal(hotspot.source.line, 4);
+  assert.equal(hotspot.source.reported_line, undefined);
 });
 
-test('diagnoses a nested catalog lookup on a measured growing CPU path', () => {
+test('static nested lookup in a different source is not a measured branch', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
       consoleMetrics: [metric('size1000', 0.5), metric('size35000', 10)],
@@ -261,12 +254,11 @@ test('diagnoses a nested catalog lookup on a measured growing CPU path', () => {
     }
   );
 
-  assert.equal(report.diagnosis.kind, 'nested_lookup_hotspot');
-  assert.match(report.inferred[0].summary, /find plus some/);
-  assert.match(report.unverified[0].summary, /Pre-indexing the catalog/);
+  assert.equal(report.diagnosis.kind, 'application_cpu_hotspot');
+  assertStaticPatternIsNotPrescribed(report);
 });
 
-test('diagnoses split-for-prefix work on a measured growing CPU path', () => {
+test('static prefix splitting is not promoted to an executed-path recommendation', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
       consoleMetrics: [metric('size100', 1), metric('size5000', 40)],
@@ -309,12 +301,11 @@ test('diagnoses split-for-prefix work on a measured growing CPU path', () => {
     }
   );
 
-  assert.equal(report.diagnosis.kind, 'prefix_split_hotspot');
-  assert.match(report.inferred[0].summary, /retains only element zero/);
-  assert.match(report.unverified[0].summary, /direct delimiter search and slicing/);
+  assert.equal(report.diagnosis.kind, 'application_cpu_hotspot');
+  assertStaticPatternIsNotPrescribed(report);
 });
 
-test('diagnoses repeated linear membership on a superlinear CPU path', () => {
+test('superlinear timings do not establish execution of static membership work', () => {
   const report = diagnosePerformanceCapsule(
     performanceCapsule({
       consoleMetrics: [metric('size100', 1), metric('size2000', 160)],
@@ -357,9 +348,8 @@ test('diagnoses repeated linear membership on a superlinear CPU path', () => {
     }
   );
 
-  assert.equal(report.diagnosis.kind, 'repeated_linear_membership');
-  assert.match(report.inferred[0].summary, /materializes links/);
-  assert.match(report.unverified[0].summary, /indexed membership/);
+  assert.equal(report.diagnosis.kind, 'superlinear_scaling');
+  assertStaticPatternIsNotPrescribed(report);
 });
 
 test('prioritizes startup-dominated evidence over sparse application samples', () => {
@@ -522,6 +512,23 @@ test('extracts only same-unit metrics with encoded input sizes', () => {
     [1_000, 10_000, 35_000]
   );
 });
+
+function assertStaticPatternIsNotPrescribed(report) {
+  assert.ok(
+    report.limitations.some((value) =>
+      value.includes('execution of their branches are not qualified')
+    )
+  );
+  assert.ok(
+    report.observed.some(
+      (value) => value.kind === 'runtime_source_context' && value.patterns.length > 0
+    )
+  );
+  assert.doesNotMatch(
+    JSON.stringify([report.diagnosis, report.inferred, report.unverified]),
+    /top-k|Pre-indexing|Combining the passes|indexed membership|direct delimiter search/
+  );
+}
 
 function performanceCapsule({
   adapter = 'vitest',

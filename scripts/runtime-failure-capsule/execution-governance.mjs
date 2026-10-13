@@ -410,7 +410,7 @@ function inspectSafetySignals(source, { adapter, target, name }) {
       `Non-loopback URL literals that are not direct request destinations were treated as inert data (${lineList(inertUrls.map((entry) => entry.line))}); runtime zero-egress enforcement still blocks any network attempt.`
     );
   }
-  const dynamicLines = matchingLines(source, DYNAMIC_NETWORK_CALL, lineAt);
+  const dynamicLines = matchingLines(maskFetchDeclarations(source), DYNAMIC_NETWORK_CALL, lineAt);
   const handlerLines = matchingLines(source, IN_PROCESS_FETCH, lineAt);
   if (handlerLines.length > 0) {
     limitations.push(
@@ -423,9 +423,10 @@ function inspectSafetySignals(source, { adapter, target, name }) {
     );
     externalServices.add('unknown-dynamic-endpoint');
   }
+  const serviceSource = NODE_ADAPTERS.has(adapter) ? maskFixtureLabels(source) : source;
   const serviceLines = [
-    ...matchingLines(source, REMOTE_SERVICE, lineAt),
-    ...matchingLines(source, CLOUDFLARE_SERVICE, lineAt),
+    ...matchingLines(serviceSource, REMOTE_SERVICE, lineAt),
+    ...matchingLines(serviceSource, CLOUDFLARE_SERVICE, lineAt),
   ];
   if (serviceLines.length > 0) {
     blockers.push(
@@ -472,6 +473,31 @@ function lineLocator(source) {
     }
     return low + 1;
   };
+}
+
+// Method declarations are not calls. Keep the body intact so an actual request inside a
+// mock remains visible. Complex/default parameters stay conservatively unclassified.
+function maskFetchDeclarations(source) {
+  return source.replace(/(?:^|[,{;])\s*(?:async\s+)?fetch\s*\([\w\s,]*\)\s*\{/gm, (declaration) =>
+    declaration.replace(/\bfetch\b/, '     ')
+  );
+}
+
+// Labels and comments do not identify a service dependency. Module specifiers and
+// interpolated templates remain signals; constructors/bindings in executable text do too.
+// This is conservative admission classification, never the runtime egress boundary.
+function maskFixtureLabels(source) {
+  return source.replace(
+    /\/\/[^\n]*|\/\*[\s\S]*?\*\/|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/g,
+    (literal, offset) => {
+      const prefix = source
+        .slice(Math.max(0, offset - 128), offset)
+        .replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, ' ');
+      if (/\b(?:from|import)\s*$|\b(?:import|require)\s*\(\s*$/.test(prefix)) return literal;
+      if (literal.startsWith('`') && literal.includes('${')) return literal;
+      return literal.replace(/[^\r\n]/g, ' ');
+    }
+  );
 }
 
 // Global whole-source matching keeps each signal's presence identical to `pattern.test(source)`.

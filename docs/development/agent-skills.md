@@ -246,11 +246,18 @@ pointer selects one field; the UI clips display at 16 KiB and can export the
 complete selected view. Page export preserves the exact projected bytes; neither
 export rewrites receipts or synthesizes benefits.
 Saved verification results remain accessible in a separate tab, including
-existing exact-run handoffs.
+existing exact-run handoffs. Skill invocations does not start that tab's legacy
+database query. Local preview launchers must still use `CODEVETTER_APP_DATA_DIR`
+for an isolated Rust database: a preview bundle identifier isolates native
+preferences, not the CLI's application-data directory.
 
 This source implementation has background fixture/contract checks. Actual
-native interaction qualification and controlled with/without agent trials are
-separate gates; an offscreen fixture render is not installed-app evidence.
+native interaction on the exact `810c5392` preview verified task/observation
+filters, receipt integrity, honest unknown independent benefit and scoped
+no-confidence performance evidence. This is preview evidence, not an installed
+upgrade. The owner dropped additional matched-agent trials on 9 October;
+independent productivity remains unknown. Offscreen renders are not native
+interaction evidence.
 Current value evidence and limits are recorded in the
 [value baseline](https://github.com/Codevetter/codevetter/blob/main/evidence/verification/codevetter-value-baseline-2026-10-02.md).
 The completed [Fleet performance trial](https://github.com/Codevetter/codevetter/blob/main/evidence/performance/fleet-performance-skill-trial-2026-10-02.md)

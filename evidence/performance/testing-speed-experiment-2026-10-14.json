@@ -1,0 +1,229 @@
+{
+  "schema_version": "codevetter.testing-speed-experiment/v1",
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "implementation_sha256": {
+    "runner.mjs": "c4c5a1acdc2bab8c71ed253c72b26dbfea7be7ba4a78ab3051390cb3c29b0e12",
+    "execution-governance.mjs": "b78782054cd579db49aa80173e1fb96f471c4195cd38428df8055cdec11e96e2",
+    "performance.mjs": "516055f32072814e075b0e8c2b8b76182b54e80a0f5686802c1568722e946a62",
+    "testing-speed-experiment.mjs": "f1dc0ec01c90c32717376e56a7bd7001d8ca89569d0916dac9035bd180ce34e8"
+  },
+  "fixture_sha256": {
+    "package.json": "d218e29ec01186542b0d85bdc6691d12514e4cdd0ba3b9cd81f253250c8d1e34",
+    "logic.mjs": "feca14c4ddb9a09cf7f6f3bd3cfa719e61e3d19a38694a4466588607f9949039",
+    "logic.test.mjs": "06fc5586cda219d33d2e8d9efb0ce7b63cd60e00128c6775e7caf646459860c3",
+    "missing.test.ts": "10f873ad0449499d5a7dec47a4b86a5103886646a12bb800f151b934938ac56b",
+    "wait.mjs": "05569e8f40e5826a75fe51465e74e66467190c237085177d34f593803278ff23",
+    "warm.mjs": "51ec6618091c466989718f8789c9aa0c2e16a02a3fbc46c2a20e92b5a4d2f37c",
+    "config.json": "d0f2ea0ee0ce4cab1722f92bbb43c562bc33a17e01f17627e1913f40900fc41d",
+    "fixture.lock": "0682c5f2076f099c34cfdd15a9e063849ed437a49677e6fcc5b4198c76575be5",
+    "timing.mjs": "3fc95ef375a34a6820fa1f9207cda8e7a625d5833d55f994441539766229c4d1",
+    "metrics.mjs": "10e0d15b8a15ffc96bb4e0a65fe319429007166cc9a13812742e4c99e97927ae"
+  },
+  "selection": [
+    {
+      "name": null,
+      "exit": 1,
+      "elapsed_ms": 85
+    },
+    {
+      "name": "acceptance",
+      "exit": 0,
+      "elapsed_ms": 78
+    },
+    {
+      "name": "failing acceptance oracle",
+      "exit": 1,
+      "elapsed_ms": 80
+    },
+    {
+      "name": "absent name",
+      "exit": 0,
+      "elapsed_ms": 80
+    }
+  ],
+  "timing_pairs": [
+    {
+      "pair": 0,
+      "target": "timing.mjs",
+      "elapsed_ms": 47,
+      "metrics": []
+    },
+    {
+      "pair": 0,
+      "target": "metrics.mjs",
+      "elapsed_ms": 46,
+      "metrics": [
+        {
+          "kind": "console_benchmark_metrics",
+          "metrics": [
+            {
+              "name": "checksum",
+              "value": 4999950000,
+              "unit": "items"
+            },
+            {
+              "name": "rss",
+              "value": 62291968,
+              "unit": "bytes"
+            }
+          ],
+          "iterations": null,
+          "provenance": "profile_execution_stdout"
+        }
+      ]
+    },
+    {
+      "pair": 1,
+      "target": "metrics.mjs",
+      "elapsed_ms": 46,
+      "metrics": [
+        {
+          "kind": "console_benchmark_metrics",
+          "metrics": [
+            {
+              "name": "checksum",
+              "value": 4999950000,
+              "unit": "items"
+            },
+            {
+              "name": "rss",
+              "value": 62177280,
+              "unit": "bytes"
+            }
+          ],
+          "iterations": null,
+          "provenance": "profile_execution_stdout"
+        }
+      ]
+    },
+    {
+      "pair": 1,
+      "target": "timing.mjs",
+      "elapsed_ms": 47,
+      "metrics": []
+    },
+    {
+      "pair": 2,
+      "target": "timing.mjs",
+      "elapsed_ms": 45,
+      "metrics": []
+    },
+    {
+      "pair": 2,
+      "target": "metrics.mjs",
+      "elapsed_ms": 47,
+      "metrics": [
+        {
+          "kind": "console_benchmark_metrics",
+          "metrics": [
+            {
+              "name": "checksum",
+              "value": 4999950000,
+              "unit": "items"
+            },
+            {
+              "name": "rss",
+              "value": 62357504,
+              "unit": "bytes"
+            }
+          ],
+          "iterations": null,
+          "provenance": "profile_execution_stdout"
+        }
+      ]
+    },
+    {
+      "pair": 3,
+      "target": "metrics.mjs",
+      "elapsed_ms": 46,
+      "metrics": [
+        {
+          "kind": "console_benchmark_metrics",
+          "metrics": [
+            {
+              "name": "checksum",
+              "value": 4999950000,
+              "unit": "items"
+            },
+            {
+              "name": "rss",
+              "value": 62570496,
+              "unit": "bytes"
+            }
+          ],
+          "iterations": null,
+          "provenance": "profile_execution_stdout"
+        }
+      ]
+    },
+    {
+      "pair": 3,
+      "target": "timing.mjs",
+      "elapsed_ms": 52,
+      "metrics": []
+    },
+    {
+      "pair": 4,
+      "target": "timing.mjs",
+      "elapsed_ms": 57,
+      "metrics": []
+    },
+    {
+      "pair": 4,
+      "target": "metrics.mjs",
+      "elapsed_ms": 61,
+      "metrics": [
+        {
+          "kind": "console_benchmark_metrics",
+          "metrics": [
+            {
+              "name": "checksum",
+              "value": 4999950000,
+              "unit": "items"
+            },
+            {
+              "name": "rss",
+              "value": 62488576,
+              "unit": "bytes"
+            }
+          ],
+          "iterations": null,
+          "provenance": "profile_execution_stdout"
+        }
+      ]
+    }
+  ],
+  "prerequisite": {
+    "status": "unavailable",
+    "elapsed_ms": 1.1038340000000062,
+    "workload_executions": 0
+  },
+  "cancellation": {
+    "status": "timeout",
+    "exit": null
+  },
+  "edited_execution_plan_rejected": true,
+  "unmatched_named_selection_rejected": true,
+  "module_reuse": {
+    "shared_state_counterexample": true,
+    "stale_source_counterexample": true,
+    "source_config_lock_runtime_identity_checked": true
+  },
+  "decisions": {
+    "exact_selection": "Keep explicit file/name selection only with acceptance coverage and nonzero execution proof; the selected pass omits a known failing oracle.",
+    "joint_timing_metrics": "Same-run timing and complete metrics are observable; this synthetic reporter calibration does not qualify removal of independent metric passes.",
+    "timing_only": "Retain as an experiment only. No CPU/allocation/profile verdict is available from exit status and wall time.",
+    "module_reuse": "Reject transparent shared-module reuse: repeated state and stale source change results. Versioned preparation and independent cold validation remain required."
+  },
+  "limitations": [
+    "Synthetic Node pure-logic workload, not a production task or a with/without-agent trial.",
+    "Each timed child is fresh; repeat pairs may benefit from host filesystem caches. No cache purge or machine isolation was performed.",
+    "Reported RSS is instrumented metrics-child RSS, not a matched memory reduction or peak allocation attribution.",
+    "Vitest/jsdom comparison and a compatible repository-owned warm daemon were not available in this fixture; no generic warm-verifier adoption is claimed.",
+    "Changing configuration and lock bytes invalidates the demonstrated preparation key; this experiment does not implement a production cache."
+  ]
+}

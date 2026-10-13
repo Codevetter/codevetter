@@ -181,6 +181,56 @@ test('in-process handler fetches are disclosed, while global and Playwright requ
   ]);
 });
 
+test('mock fetch declarations and service-label data do not grant network execution', async (context) => {
+  const root = await fixture(context, {
+    'mock.mjs': [
+      "const labels = ['openai', 'anthropic', 'cloudflare'];",
+      'const worker = { async fetch(request) { return new Response(labels[0]); } };',
+      "await worker.fetch(new Request('https://fixture.example/'));",
+    ].join('\n'),
+    'sdk.mjs': "import Client from 'openai';\nnew Client();\n",
+    'dynamic-sdk.mjs': "const client = await import('openai');\n",
+    'commented-sdk.mjs': "const client = await import(/* SDK */ 'openai');\n",
+    'remote.mjs': "const labels = ['openai'];\nawait fetch('https://example.com/');\n",
+    'mock-escape.mjs': [
+      "const label = 'openai';",
+      "const worker = { async fetch(request) { return globalThis['fe' + 'tch'](request); } };",
+      "await worker.fetch('http://192.0.2.1/');",
+    ].join('\n'),
+  });
+  const plan = (target) =>
+    planPerformanceExecution({
+      repositoryRoot: root,
+      adapter: 'node-script',
+      target,
+      timeoutMs: 5_000,
+      processCount: 1,
+    });
+  const mock = await plan('mock.mjs');
+  assert.equal(mock.decision.status, 'admitted');
+  assert.deepEqual(mock.external_services, []);
+  for (const target of ['sdk.mjs', 'dynamic-sdk.mjs', 'commented-sdk.mjs', 'remote.mjs']) {
+    const blocked = await plan(target);
+    assert.equal(blocked.decision.status, 'blocked', target);
+    assert.ok(blocked.decision.blockers.some((value) => /target line/.test(value)));
+  }
+  const escape = await plan('mock-escape.mjs');
+  assert.equal(escape.decision.status, 'admitted');
+  const execution = await runClosedAdapter({
+    repositoryRoot: root,
+    adapter: 'node-script',
+    target: 'mock-escape.mjs',
+    timeoutMs: 5_000,
+    executionPlan: escape,
+  });
+  const receipt = createPerformanceExecutionReceipt(escape, [
+    { phase: 'measurement', index: 0, execution },
+  ]);
+  assert.equal(receipt.status, 'policy_violation');
+  assert.equal(receipt.observed.successful_external_requests, 0);
+  assert.ok(receipt.observed.blocked_external_attempts > 0);
+});
+
 test('an admitted inert-looking URL that reaches the network is still blocked at runtime', async (context) => {
   const root = await fixture(context, {
     'helper.mjs': "export const load = (url) => globalThis['fe' + 'tch'](url);\n",
