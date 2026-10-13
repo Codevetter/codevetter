@@ -519,8 +519,7 @@ struct PreparedLocalCheck {
 
 fn runtime_prerequisites_ready(receipt: Option<&Value>) -> bool {
     receipt.is_some_and(|value| {
-        value["schema_version"] == "runtime-prerequisite-preflight/v1"
-            && value["status"] == "ready"
+        value["schema_version"] == "runtime-prerequisite-preflight/v1" && value["status"] == "ready"
     })
 }
 

@@ -43,7 +43,11 @@ fn missing_runner_is_no_confidence_and_inert_runner_can_be_resolved_without_exec
     git(repo, &["init", "-q"]);
     git(repo, &["config", "user.name", "Contract Fixture"]);
     git(repo, &["config", "user.email", "fixture@example.invalid"]);
-    std::fs::write(repo.join("target.test.mjs"), "throw new Error('must not run');\n").unwrap();
+    std::fs::write(
+        repo.join("target.test.mjs"),
+        "throw new Error('must not run');\n",
+    )
+    .unwrap();
     git(repo, &["add", "."]);
     git(repo, &["commit", "-qm", "baseline"]);
     std::fs::write(
