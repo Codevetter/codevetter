@@ -1282,6 +1282,10 @@ function matchesVitestCount(count, name) {
   return name ? count === 1 : count > 0;
 }
 
+function matchesVitestIdentity(assertion, name) {
+  return assertion.title === name || assertion.fullName === name;
+}
+
 function selectedCompleteVitestReport(output, selection, name) {
   if (selection.failed_tests !== 0) return false;
   const report = JSON.parse(output);
@@ -1294,7 +1298,7 @@ function selectedCompleteVitestReport(output, selection, name) {
   const executed = assertions.filter(
     (item) => item?.status === 'passed' && Number.isFinite(item.duration) && item.duration >= 0
   );
-  return executed.length === 1 && executed[0].title === name;
+  return executed.length === 1 && matchesVitestIdentity(executed[0], name);
 }
 
 function incompleteVitestReport(output) {
@@ -1337,7 +1341,7 @@ function selectedVitestWorkloadExecuted(entry, name) {
   const output = `${entry.stdout}\n${entry.stderr}`;
   const assertions = recoverVitestAssertions(output);
   if (assertions.length > 0) {
-    return name ? assertions.length === 1 && assertions[0].title === name : true;
+    return name ? assertions.length === 1 && matchesVitestIdentity(assertions[0], name) : true;
   }
   const summary = output.match(/^\s*Tests\s+(\d+)\s+passed(?:\s|$)/m);
   return summary ? matchesVitestCount(Number(summary[1]), name) : false;

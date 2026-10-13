@@ -321,6 +321,7 @@ test('accepts an exact passed Vitest identity from a truncated JSON report', () 
     stderr: '',
   };
   assert.equal(selectedWorkloadExecuted(entry, 'vitest', 'target work'), true);
+  assert.equal(selectedWorkloadExecuted(entry, 'vitest', 'suite target work'), true);
   assert.equal(selectedWorkloadExecuted(entry, 'vitest', 'other work'), false);
 });
 
