@@ -1273,31 +1273,46 @@ export function selectedWorkloadExecuted(entry, adapter, name) {
       if (selection.failed_tests !== 0) return false;
       const report = JSON.parse(entry.stdout);
       const assertions = Array.isArray(report.testResults)
-        ? report.testResults.flatMap((file) => Array.isArray(file.assertionResults) ? file.assertionResults : [])
+        ? report.testResults.flatMap((file) =>
+            Array.isArray(file.assertionResults) ? file.assertionResults : []
+          )
         : null;
       if (name && assertions) {
-        const executed = assertions.filter((item) => item.status === 'passed' && Number.isFinite(item.duration) && item.duration >= 0);
+        const executed = assertions.filter(
+          (item) => item.status === 'passed' && Number.isFinite(item.duration) && item.duration >= 0
+        );
         return executed.length === 1 && executed[0].title === name;
       }
       return name ? selection.executed_tests === 1 : selection.executed_tests > 0;
     }
     try {
       const report = JSON.parse(entry.stdout);
-      if (report && (Object.hasOwn(report, 'numTotalTests') || Object.hasOwn(report, 'testResults'))) {
+      if (
+        report &&
+        (Object.hasOwn(report, 'numTotalTests') || Object.hasOwn(report, 'testResults'))
+      ) {
         return false;
       }
-    } catch { /* Recover bounded fragments below. */ }
+    } catch {
+      /* Recover bounded fragments below. */
+    }
     // Recover only complete assertion objects from a bounded JSON fragment. A collected
     // identity with no duration, or a substring inside console output, is not execution.
     const assertions = [];
     for (const fragment of output.match(/\{[^{}]*\}/g) ?? []) {
       try {
         const assertion = JSON.parse(fragment);
-        if (assertion.status === 'passed' && Number.isFinite(assertion.duration) &&
-            assertion.duration > 0 && typeof assertion.title === 'string') {
+        if (
+          assertion.status === 'passed' &&
+          Number.isFinite(assertion.duration) &&
+          assertion.duration > 0 &&
+          typeof assertion.title === 'string'
+        ) {
           assertions.push(assertion);
         }
-      } catch { /* Incomplete objects cannot establish execution. */ }
+      } catch {
+        /* Incomplete objects cannot establish execution. */
+      }
     }
     if (assertions.length > 0) {
       return name ? assertions.length === 1 && assertions[0].title === name : true;

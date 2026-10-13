@@ -99,8 +99,13 @@ export function parseVitestSelection(output) {
   } catch {
     return null;
   }
-  const counts = ['numTotalTests', 'numPendingTests', 'numTodoTests', 'numFailedTests', 'numPassedTests']
-    .map((key) => report?.[key]);
+  const counts = [
+    'numTotalTests',
+    'numPendingTests',
+    'numTodoTests',
+    'numFailedTests',
+    'numPassedTests',
+  ].map((key) => report?.[key]);
   if (!counts.every((value) => Number.isSafeInteger(value) && value >= 0)) return null;
   const [total, pending, todo, failed, passed] = counts;
   if (pending + todo + failed + passed !== total) return null;

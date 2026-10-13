@@ -113,6 +113,13 @@ jobs:
           pnpm test:corpus-contracts
           pnpm test:retrieval
           pnpm test:core-tools
+      - name: Portable preflight and Vitest selection contracts
+        run: >-
+          node --test
+          --test-name-pattern='preflight|skipped Vitest|exact passed Vitest|repeated Vitest|incomplete, unrun|normalizes Vitest|classifies a Vitest'
+          scripts/runtime-failure-capsule/prerequisite-preflight.test.mjs
+          scripts/runtime-failure-capsule/runtime-failure-capsule.test.mjs
+          scripts/runtime-failure-capsule/runtime-performance-capsule.test.mjs
       - name: Prepare CLI and MCP companions
         run: |
           pnpm core:prepare-mcp
@@ -124,6 +131,8 @@ jobs:
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --bin codevetter-mcp
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --test mcp_stdio
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --bin codevetter
+      - name: Built CLI portable preflight contract
+        run: cargo test --locked --manifest-path crates/codevetter-core/Cargo.toml --test portable_preflight_contract
       - name: Read-only navigator engine
         run: |
           cargo test --locked --manifest-path crates/codevetter-navigator/Cargo.toml

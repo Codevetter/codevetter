@@ -130,8 +130,10 @@ export async function main(argv = process.argv.slice(2)) {
     repositoryRoot = resolve(options.repo ?? process.cwd());
     if (operation === 'preflight') {
       const receipt = await preflightAdapter({
-        repositoryRoot, adapter: required(options, 'adapter'),
-        target: required(options, 'target'), name: options.name,
+        repositoryRoot,
+        adapter: required(options, 'adapter'),
+        target: required(options, 'target'),
+        name: options.name,
       });
       writeJson(receipt);
       return receipt.status === 'ready' ? 0 : 2;

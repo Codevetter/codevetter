@@ -14,8 +14,15 @@ export async function preflightAdapter({ repositoryRoot, adapter, target, name }
     const resolved = await buildCommand({ root, adapter, scope, name, benchmarkCount: 1 });
     const candidates = isAbsolute(resolved.program)
       ? [resolved.program]
-      : (process.env.PATH ?? '').split(process.platform === 'win32' ? ';' : ':')
-          .filter(Boolean).map((directory) => join(directory, process.platform === 'win32' ? `${resolved.program}.exe` : resolved.program));
+      : (process.env.PATH ?? '')
+          .split(process.platform === 'win32' ? ';' : ':')
+          .filter(Boolean)
+          .map((directory) =>
+            join(
+              directory,
+              process.platform === 'win32' ? `${resolved.program}.exe` : resolved.program
+            )
+          );
     let available = false;
     for (const candidate of candidates) {
       try {
@@ -24,10 +31,16 @@ export async function preflightAdapter({ repositoryRoot, adapter, target, name }
         await access(candidate, process.platform === 'win32' ? 0 : 1);
         available = true;
         break;
-      } catch { /* Try the next configured executable location. */ }
+      } catch {
+        /* Try the next configured executable location. */
+      }
     }
     if (!available) throw new Error('required executable is unavailable');
-    return { schema_version: 'runtime-prerequisite-preflight/v1', status: 'ready', limitation: null };
+    return {
+      schema_version: 'runtime-prerequisite-preflight/v1',
+      status: 'ready',
+      limitation: null,
+    };
   } catch {
     return {
       schema_version: 'runtime-prerequisite-preflight/v1',

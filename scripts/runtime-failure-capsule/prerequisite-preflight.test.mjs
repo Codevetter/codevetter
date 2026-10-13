@@ -12,9 +12,15 @@ test('preflight retains unavailable runners and never loads project or runner co
   const input = { repositoryRoot: root, target: 'target.test.mjs', adapter: 'vitest' };
   assert.equal((await preflightAdapter(input)).status, 'unavailable');
   await mkdir(join(root, 'node_modules/vitest'), { recursive: true });
-  await writeFile(join(root, 'node_modules/vitest/vitest.mjs'), 'throw new Error("runner must not execute");');
+  await writeFile(
+    join(root, 'node_modules/vitest/vitest.mjs'),
+    'throw new Error("runner must not execute");'
+  );
   assert.equal((await preflightAdapter(input)).status, 'ready');
   assert.equal((await preflightAdapter({ ...input, adapter: 'node-test' })).status, 'ready');
   assert.equal((await preflightAdapter({ ...input, target: 'missing.mjs' })).status, 'unavailable');
-  assert.equal((await preflightAdapter({ ...input, adapter: 'unsupported' })).status, 'unavailable');
+  assert.equal(
+    (await preflightAdapter({ ...input, adapter: 'unsupported' })).status,
+    'unavailable'
+  );
 });
