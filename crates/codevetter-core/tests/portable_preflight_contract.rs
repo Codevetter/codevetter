@@ -1,3 +1,5 @@
+#![cfg(feature = "browser-agent")]
+
 use std::path::Path;
 use std::process::Command;
 
