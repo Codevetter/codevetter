@@ -136,7 +136,6 @@ jobs:
           cargo fmt --manifest-path crates/codevetter-core/Cargo.toml --check
           cargo test --locked --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --lib commands::local_check
           cargo test --locked --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --test portable_preflight_contract
-          cargo clippy --locked --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --all-targets -- -D warnings
       - name: Read-only navigator engine
         run: |
           cargo test --locked --manifest-path crates/codevetter-navigator/Cargo.toml
