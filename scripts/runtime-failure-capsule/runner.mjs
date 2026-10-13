@@ -1,10 +1,54 @@
 import { spawn } from 'node:child_process';
-import { lstat, readdir, realpath } from 'node:fs/promises';
+import { access, lstat, readdir, realpath, stat } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { LIMITS, boundedTimeout, repositoryRelative } from './contracts.mjs';
 import { assertPerformanceExecutionPlanCurrent } from './execution-governance.mjs';
+
+// Resolve the same command as execution without loading runner or project modules.
+export async function preflightAdapter({ repositoryRoot, adapter, target, name }) {
+  try {
+    const root = await realpath(resolve(repositoryRoot));
+    const scope = await resolveTarget(root, target);
+    const resolved = await buildCommand({ root, adapter, scope, name, benchmarkCount: 1 });
+    const candidates = isAbsolute(resolved.program)
+      ? [resolved.program]
+      : (process.env.PATH ?? '')
+          .split(process.platform === 'win32' ? ';' : ':')
+          .filter(Boolean)
+          .map((directory) =>
+            join(
+              directory,
+              process.platform === 'win32' ? `${resolved.program}.exe` : resolved.program
+            )
+          );
+    let available = false;
+    for (const candidate of candidates) {
+      try {
+        const metadata = await stat(candidate);
+        if (!metadata.isFile()) continue;
+        await access(candidate, process.platform === 'win32' ? 0 : 1);
+        available = true;
+        break;
+      } catch {
+        /* Try the next configured executable location. */
+      }
+    }
+    if (!available) throw new Error('required executable is unavailable');
+    return {
+      schema_version: 'runtime-prerequisite-preflight/v1',
+      status: 'ready',
+      limitation: null,
+    };
+  } catch {
+    return {
+      schema_version: 'runtime-prerequisite-preflight/v1',
+      status: 'unavailable',
+      limitation: `Executable prerequisites are unavailable for ${adapter}.`,
+    };
+  }
+}
 
 export async function runClosedAdapter({
   repositoryRoot,

@@ -29,11 +29,12 @@ import {
 } from './performance.mjs';
 import { qualifyPortfolioManifest, qualifyRepository } from './qualification.mjs';
 import { redactText } from './redact.mjs';
-import { runClosedAdapter } from './runner.mjs';
+import { preflightAdapter, runClosedAdapter } from './runner.mjs';
 import { inspectSupervisedRun, supervisePerformanceRun } from './supervision.mjs';
 
 const OPERATIONS = [
   'detect',
+  'preflight',
   'run',
   'import',
   'profile',
@@ -48,7 +49,7 @@ const OPERATIONS = [
   'inspect-performance-run',
   'plan-flow-campaign',
 ];
-const PLANNING_OPERATIONS = new Set(['plan-performance', 'plan-flow-campaign']);
+const PLANNING_OPERATIONS = new Set(['preflight', 'plan-performance', 'plan-flow-campaign']);
 const PROFILE_OPTIONS = [
   'repo',
   'adapter',
@@ -66,6 +67,7 @@ const PROFILE_OPTIONS = [
 ];
 const ALLOWED_OPTIONS = {
   detect: ['repo', 'json'],
+  preflight: ['repo', 'adapter', 'target', 'name', 'timeout-ms', 'json'],
   qualify: ['repo', 'json'],
   'qualify-portfolio': ['manifest', 'json'],
   'plan-performance': [
@@ -352,6 +354,16 @@ function parseArguments(argv) {
 }
 
 async function runPlanningOperation(operation, repositoryRoot, options) {
+  if (operation === 'preflight') {
+    const receipt = await preflightAdapter({
+      repositoryRoot,
+      adapter: required(options, 'adapter'),
+      target: required(options, 'target'),
+      name: options.name,
+    });
+    writeJson(receipt);
+    return receipt.status === 'ready' ? 0 : 2;
+  }
   if (operation === 'plan-performance') {
     const adapter = assertProfileAdapter(required(options, 'adapter'));
     const samples = profileSamples(options.samples);

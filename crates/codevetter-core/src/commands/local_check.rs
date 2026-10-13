@@ -416,6 +416,26 @@ pub async fn preflight_local_check(
         )
     });
     let mut limitations = Vec::new();
+    let mut prerequisites_ready = true;
+    for target in correctness_target.iter().chain(performance_target.iter()) {
+        let receipt = run_runtime(
+            &input.repo_path,
+            "preflight",
+            target,
+            input.samples,
+            input.warmups,
+            input.timeout_ms,
+            None,
+        )
+        .await;
+        if !runtime_prerequisites_ready(receipt.as_ref().ok()) {
+            prerequisites_ready = false;
+            limitations.push(format!(
+                "Executable prerequisites are unavailable for {}",
+                target.adapter
+            ));
+        }
+    }
     let missing_review_executors = if input.review_agent == "cross" {
         cross_review::missing_executors()
     } else {
@@ -458,7 +478,8 @@ pub async fn preflight_local_check(
             );
         }
     }
-    let status = if missing_review_executors.is_empty()
+    let status = if prerequisites_ready
+        && missing_review_executors.is_empty()
         && correctness_target.is_some()
         && spec_coverage.as_ref().is_none_or(|coverage| {
             coverage.summary.total_requirements > 0 && coverage.summary.selected_for_execution > 0
@@ -494,6 +515,12 @@ struct PreparedLocalCheck {
     correctness_target: Option<LocalCheckTarget>,
     performance_target: Option<LocalCheckTarget>,
     performance_selection_limitation: Option<String>,
+}
+
+fn runtime_prerequisites_ready(receipt: Option<&Value>) -> bool {
+    receipt.is_some_and(|value| {
+        value["schema_version"] == "runtime-prerequisite-preflight/v1" && value["status"] == "ready"
+    })
 }
 
 async fn prepare_local_check(input: &LocalCheckInput) -> Result<PreparedLocalCheck, String> {
@@ -1162,7 +1189,7 @@ async fn run_runtime(
         arguments.extend(["--name".into(), name.clone()]);
     }
     arguments.extend(["--timeout-ms".into(), timeout_ms.to_string()]);
-    if operation != "run" {
+    if operation != "run" && operation != "preflight" {
         arguments.extend([
             "--samples".into(),
             samples.to_string(),
@@ -1504,6 +1531,21 @@ fn elapsed_ms(started: Instant) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn executable_preflight_requires_a_versioned_ready_receipt() {
+        assert!(!runtime_prerequisites_ready(None));
+        for receipt in [
+            json!({}),
+            json!({"status": "ready"}),
+            json!({"schema_version": "runtime-prerequisite-preflight/v1", "status": "unavailable"}),
+        ] {
+            assert!(!runtime_prerequisites_ready(Some(&receipt)));
+        }
+        assert!(runtime_prerequisites_ready(Some(&json!({
+            "schema_version": "runtime-prerequisite-preflight/v1", "status": "ready"
+        }))));
+    }
 
     fn stage(status: LocalCheckStatus) -> LocalCheckStage {
         LocalCheckStage {

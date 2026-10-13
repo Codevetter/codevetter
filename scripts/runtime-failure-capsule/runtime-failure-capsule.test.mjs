@@ -50,7 +50,13 @@ test('ranks changed frame intersections ahead of same-file proximity', () => {
 test('distinguishes a skipped Vitest selection from an executed test', () => {
   assert.deepEqual(
     parseVitestSelection(
-      JSON.stringify({ numTotalTests: 2, numPendingTests: 2, numTodoTests: 0, numFailedTests: 0 })
+      JSON.stringify({
+        numTotalTests: 2,
+        numPendingTests: 2,
+        numTodoTests: 0,
+        numFailedTests: 0,
+        numPassedTests: 0,
+      })
     ),
     { total_tests: 2, executed_tests: 0, failed_tests: 0 }
   );

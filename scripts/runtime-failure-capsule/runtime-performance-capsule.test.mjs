@@ -316,14 +316,16 @@ test('fails Playwright timing closed for retries, ambiguity, and truncation', ()
 
 test('accepts an exact passed Vitest identity from a truncated JSON report', () => {
   const entry = {
-    stdout: '…"fullName":"suite target work","status":"passed","title":"target work","duration":1',
+    stdout:
+      '…{"fullName":"suite target work","status":"passed","title":"target work","duration":1}…',
     stderr: '',
   };
   assert.equal(selectedWorkloadExecuted(entry, 'vitest', 'target work'), true);
+  assert.equal(selectedWorkloadExecuted(entry, 'vitest', 'suite target work'), true);
   assert.equal(selectedWorkloadExecuted(entry, 'vitest', 'other work'), false);
 });
 
-test('accepts repeated successful Vitest executions when one bounded output confirms selection', () => {
+test('rejects repeated Vitest executions when a measurement has no selection evidence', () => {
   const execution = { status: 'exited', exitCode: 0 };
   assert.equal(
     requiredExecutionsCompleted(
@@ -339,7 +341,47 @@ test('accepts repeated successful Vitest executions when one bounded output conf
       'vitest',
       'target work'
     ),
-    true
+    false
+  );
+});
+
+test('fails closed for incomplete, unrun and zero-test Vitest selections', () => {
+  for (const stdout of [
+    '{"numTotalTests":1}',
+    '{"numTotalTests":1,"numPassedTests":0,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0}',
+    '{"status":"passed","title":"target work"}',
+    'Test Files  1 passed (1)\nTests  0 passed (0)',
+    '{"status":"passed","title":"other work","duration":1}',
+  ])
+    assert.equal(selectedWorkloadExecuted({ stdout, stderr: '' }, 'vitest', 'target work'), false);
+  assert.equal(requiredExecutionsCompleted([], 'node-test', null), false);
+  const skipped = JSON.stringify({
+    numTotalTests: 1,
+    numPassedTests: 0,
+    numFailedTests: 0,
+    numPendingTests: 1,
+    numTodoTests: 0,
+  });
+  assert.equal(
+    requiredExecutionsCompleted(
+      [
+        {
+          phase: 'measurement',
+          execution: { status: 'exited', exitCode: 0 },
+          stdout: skipped,
+          stderr: '',
+        },
+        {
+          phase: 'profile',
+          execution: { status: 'exited', exitCode: 0 },
+          stdout: 'Tests  1 passed (1)',
+          stderr: '',
+        },
+      ],
+      'vitest',
+      'target work'
+    ),
+    false
   );
 });
 

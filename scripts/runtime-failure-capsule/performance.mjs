@@ -1267,14 +1267,7 @@ export async function loadPerformanceCapsule(root, baselinePath) {
 export function selectedWorkloadExecuted(entry, adapter, name) {
   const output = `${entry.stdout}\n${entry.stderr}`;
   if (adapter === 'node-script') return true;
-  if (adapter === 'vitest') {
-    const selection = parseVitestSelection(entry.stdout);
-    if (selection) return name ? selection.executed_tests === 1 : selection.executed_tests > 0;
-    if (name && output.includes(`"status":"passed","title":${JSON.stringify(name)}`)) {
-      return true;
-    }
-    return /Test Files\s+[1-9]\d*\s+passed|Tests\s+[1-9]\d*\s+passed/.test(output);
-  }
+  if (adapter === 'vitest') return selectedVitestWorkloadExecuted(entry, name);
   if (adapter === 'go-bench') return parseGoBenchmarks(output).length > 0;
   if (adapter === 'playwright') {
     return parsePlaywrightTimings(
@@ -1285,15 +1278,81 @@ export function selectedWorkloadExecuted(entry, adapter, name) {
   return !name || output.includes(name);
 }
 
+function matchesVitestCount(count, name) {
+  return name ? count === 1 : count > 0;
+}
+
+function matchesVitestIdentity(assertion, name) {
+  return assertion.title === name || assertion.fullName === name;
+}
+
+function selectedCompleteVitestReport(output, selection, name) {
+  if (selection.failed_tests !== 0) return false;
+  const report = JSON.parse(output);
+  if (!name || !Array.isArray(report.testResults)) {
+    return matchesVitestCount(selection.executed_tests, name);
+  }
+  const assertions = report.testResults.flatMap((file) =>
+    Array.isArray(file?.assertionResults) ? file.assertionResults : []
+  );
+  const executed = assertions.filter(
+    (item) => item?.status === 'passed' && Number.isFinite(item.duration) && item.duration >= 0
+  );
+  return executed.length === 1 && matchesVitestIdentity(executed[0], name);
+}
+
+function incompleteVitestReport(output) {
+  try {
+    const report = JSON.parse(output);
+    return Boolean(
+      report && (Object.hasOwn(report, 'numTotalTests') || Object.hasOwn(report, 'testResults'))
+    );
+  } catch {
+    return false;
+  }
+}
+
+function recoverVitestAssertions(output) {
+  const assertions = [];
+  // Recover only complete assertion objects. Collection identities without a
+  // positive duration and incomplete objects cannot establish execution.
+  for (const fragment of output.match(/\{[^{}]*\}/g) ?? []) {
+    try {
+      const assertion = JSON.parse(fragment);
+      if (
+        assertion.status === 'passed' &&
+        Number.isFinite(assertion.duration) &&
+        assertion.duration > 0 &&
+        typeof assertion.title === 'string'
+      ) {
+        assertions.push(assertion);
+      }
+    } catch {
+      /* Incomplete objects cannot establish execution. */
+    }
+  }
+  return assertions;
+}
+
+function selectedVitestWorkloadExecuted(entry, name) {
+  const selection = parseVitestSelection(entry.stdout);
+  if (selection) return selectedCompleteVitestReport(entry.stdout, selection, name);
+  if (incompleteVitestReport(entry.stdout)) return false;
+  const output = `${entry.stdout}\n${entry.stderr}`;
+  const assertions = recoverVitestAssertions(output);
+  if (assertions.length > 0) {
+    return name ? assertions.length === 1 && matchesVitestIdentity(assertions[0], name) : true;
+  }
+  const summary = output.match(/^\s*Tests\s+(\d+)\s+passed(?:\s|$)/m);
+  return summary ? matchesVitestCount(Number(summary[1]), name) : false;
+}
+
 export function requiredExecutionsCompleted(entries, adapter, name) {
   const required = entries.filter((entry) => entry.phase !== 'coverage');
   const exitedSuccessfully = required.every(
     (entry) => entry.execution.status === 'exited' && entry.execution.exitCode === 0
   );
-  if (!exitedSuccessfully) return false;
-  if (adapter === 'vitest') {
-    return required.some((entry) => selectedWorkloadExecuted(entry, adapter, name));
-  }
+  if (required.length === 0 || !exitedSuccessfully) return false;
   return required.every((entry) => selectedWorkloadExecuted(entry, adapter, name));
 }
 
