@@ -5,7 +5,7 @@ import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { SourceMap, stripTypeScriptTypes } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { planPerformanceExecution } from './execution-governance.mjs';
 import { preflightAdapter, runClosedAdapter } from './runner.mjs';
 import { qualifySourceExecution, sourceDigest } from './source-execution.mjs';
@@ -115,6 +115,11 @@ async function executeStudy(root) {
     target: 'missing.test.ts',
   });
   assert.equal(prerequisite.status, 'unavailable');
+  const existingRuntime = await preflightAdapter({
+    repositoryRoot: fileURLToPath(new URL('../../', import.meta.url)),
+    adapter: 'vitest',
+    target: 'scripts/runtime-failure-capsule/source-execution.test.mjs',
+  });
   return {
     schema_version: 'codevetter.source-execution-study/v1',
     published_prerequisite: '0e8be1686ed11ad5bfc0e97b41f4fe4f49842144',
@@ -141,18 +146,21 @@ async function executeStudy(root) {
     reports,
     witnesses,
     vitest_environment: {
-      status: 'blocked',
-      prerequisite,
+      status: existingRuntime.status === 'ready' ? 'unqualified' : 'blocked',
+      missing_fixture_control: prerequisite,
+      existing_repository_prerequisite: existingRuntime,
       executed_tests: 0,
       reason:
-        'Vitest/jsdom are neither installed nor declared repository dependencies; no substitute runner or dependency added.',
+        existingRuntime.status === 'ready'
+          ? 'An existing Vitest executable is available, but this study does not execute Vitest/jsdom workloads.'
+          : 'No existing contained Vitest executable is available; no substitute runner or dependency added.',
     },
     limitations: [
       'Bounded synthetic TypeScript transform and exact-span execution only.',
       'No timing comparison, CPU attribution, recommendation, native or production qualification.',
       'The Node transformer is experimental; its exact runtime version is part of identity.',
       'Local consistency checks do not authenticate externally supplied evidence.',
-      'Representative Vitest/jsdom and repository-owned warm-verifier qualification remain blocked.',
+      'Representative Vitest/jsdom and repository-owned warm-verifier qualification remain unestablished.',
     ],
   };
 }
