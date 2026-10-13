@@ -344,6 +344,46 @@ test('rejects repeated Vitest executions when a measurement has no selection evi
   );
 });
 
+test('fails closed for incomplete, unrun and zero-test Vitest selections', () => {
+  for (const stdout of [
+    '{"numTotalTests":1}',
+    '{"numTotalTests":1,"numPassedTests":0,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0}',
+    '{"status":"passed","title":"target work"}',
+    'Test Files  1 passed (1)\nTests  0 passed (0)',
+    '{"status":"passed","title":"other work","duration":1}',
+  ])
+    assert.equal(selectedWorkloadExecuted({ stdout, stderr: '' }, 'vitest', 'target work'), false);
+  assert.equal(requiredExecutionsCompleted([], 'node-test', null), false);
+  const skipped = JSON.stringify({
+    numTotalTests: 1,
+    numPassedTests: 0,
+    numFailedTests: 0,
+    numPendingTests: 1,
+    numTodoTests: 0,
+  });
+  assert.equal(
+    requiredExecutionsCompleted(
+      [
+        {
+          phase: 'measurement',
+          execution: { status: 'exited', exitCode: 0 },
+          stdout: skipped,
+          stderr: '',
+        },
+        {
+          phase: 'profile',
+          execution: { status: 'exited', exitCode: 0 },
+          stdout: 'Tests  1 passed (1)',
+          stderr: '',
+        },
+      ],
+      'vitest',
+      'target work'
+    ),
+    false
+  );
+});
+
 test('classifies a Vitest scope dominated by runner startup', () => {
   const share = summarizeVitestExecutionShare(
     [{ duration_ms: { median: 1.25 } }, { duration_ms: { median: 0.75 } }],
@@ -933,43 +973,3 @@ function commandCapture(program, args, cwd) {
     child.once('close', (code) => resolvePromise({ code, stdout, stderr }));
   });
 }
-
-test('fails closed for incomplete, unrun and zero-test Vitest selections', () => {
-  for (const stdout of [
-    '{"numTotalTests":1}',
-    '{"numTotalTests":1,"numPassedTests":0,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0}',
-    '{"status":"passed","title":"target work"}',
-    'Test Files  1 passed (1)\nTests  0 passed (0)',
-    '{"status":"passed","title":"other work","duration":1}',
-  ])
-    assert.equal(selectedWorkloadExecuted({ stdout, stderr: '' }, 'vitest', 'target work'), false);
-  assert.equal(requiredExecutionsCompleted([], 'node-test', null), false);
-  const skipped = JSON.stringify({
-    numTotalTests: 1,
-    numPassedTests: 0,
-    numFailedTests: 0,
-    numPendingTests: 1,
-    numTodoTests: 0,
-  });
-  assert.equal(
-    requiredExecutionsCompleted(
-      [
-        {
-          phase: 'measurement',
-          execution: { status: 'exited', exitCode: 0 },
-          stdout: skipped,
-          stderr: '',
-        },
-        {
-          phase: 'profile',
-          execution: { status: 'exited', exitCode: 0 },
-          stdout: 'Tests  1 passed (1)',
-          stderr: '',
-        },
-      ],
-      'vitest',
-      'target work'
-    ),
-    false
-  );
-});
