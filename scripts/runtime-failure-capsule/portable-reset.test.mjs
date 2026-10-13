@@ -17,6 +17,11 @@ test('portable reset preserves failures, invalidation and owned cancellation', a
   assert.equal(report.invalidations.length, 3);
   assert.equal(report.cancellation.owned_child_gone, true);
   assert.equal(report.cancellation.result, null);
+  if (process.platform === 'linux') {
+    // This retained counterexample must be reassessed when supervision changes.
+    assert.equal(report.cancellation.workload_survived_supervisor, true);
+    assert.equal(report.cancellation.cancellation_qualified, false);
+  }
   assert.equal(
     report.cancellation.cancellation_qualified,
     !report.cancellation.workload_survived_supervisor
