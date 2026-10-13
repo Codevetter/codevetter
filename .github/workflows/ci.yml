@@ -120,6 +120,11 @@ jobs:
           scripts/runtime-failure-capsule/prerequisite-preflight.test.mjs
           scripts/runtime-failure-capsule/runtime-failure-capsule.test.mjs
           scripts/runtime-failure-capsule/runtime-performance-capsule.test.mjs
+      - name: Portable transformed-source and reset experiments
+        run: >-
+          node --test
+          scripts/runtime-failure-capsule/source-execution.test.mjs
+          scripts/runtime-failure-capsule/portable-reset.test.mjs
       - name: Prepare CLI and MCP companions
         run: |
           pnpm core:prepare-mcp

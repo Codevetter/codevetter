@@ -298,3 +298,8 @@ Vitest/jsdom comparison, reporter calibration and bounded-memory/reset proof
 remain necessary before adopting those optimizations; this experiment does not
 supply them. Source-pattern prescriptions also remain disabled until transformed
 coordinates and executed branches are qualified; static excerpts stay visible.
+
+The [portable source/reset follow-up](portable-qualification-2026-10-14.md) adds
+real transformed-span and block-execution evidence plus reset/invalidation and
+supervisor cancellation checks. Vitest/jsdom remain blocked by unavailable existing
+dependencies; this follow-up does not qualify runner acceleration or warm reuse.

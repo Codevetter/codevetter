@@ -1,0 +1,318 @@
+{
+  "schema_version": "codevetter.source-execution-study/v1",
+  "published_prerequisite": "0e8be1686ed11ad5bfc0e97b41f4fe4f49842144",
+  "runtime": {
+    "node": "v24.19.0",
+    "v8": "13.6.233.17-node.51",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "implementation_sha256": {
+    "source-execution.mjs": "cfbe619f83a5670cfe4308a4fc8524f534e0f2a3e40d312195da68a86cc1f970",
+    "source-execution-experiment.mjs": "8808672ef0fa89dd64306e4d5239b0f744d0c508835f55e5bb072939dd3aaf80",
+    "source-execution-fixture.mjs": "498100885578deb72e798981c6f117a398828d60c9c1db261979ac9cf978b883",
+    "runner.mjs": "c4c5a1acdc2bab8c71ed253c72b26dbfea7be7ba4a78ab3051390cb3c29b0e12",
+    "execution-governance.mjs": "b78782054cd579db49aa80173e1fb96f471c4195cd38428df8055cdec11e96e2"
+  },
+  "fixture_sha256": {
+    "fixture.ts": "402cde5ced0d8e3e0bdf6658dec2f1ba6122519efd6a9537e26ea86469330df7",
+    "generated.mjs": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6",
+    "capture.mjs": "eb0361e236a6ceba3fe6ccb41f2aa3864e5779271df54c2c04b7f9b632e713d3",
+    "missing.test.ts": "0b770c531660c0d43553df9e8320dbb368e9f422f6d7117ce28dd17983e78c5f"
+  },
+  "reports": [
+    {
+      "mode": 0,
+      "plan_id": "4fdfbabc15b48ab29a2e46bbe7ab245c61064b8deabb49cfb79f50dc3e317e5d",
+      "enforcement": {
+        "kind": "node_preload",
+        "network_scope": "loopback_only"
+      },
+      "capture": {
+        "identity": {
+          "source_sha256": "402cde5ced0d8e3e0bdf6658dec2f1ba6122519efd6a9537e26ea86469330df7",
+          "generated_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6",
+          "map_sha256": "0bc96abca070c9e2417ba73d73f589ae3f0d4a863bd3def6b452a8a4d05cb301",
+          "compiler": "node:stripTypeScriptTypes/transform:v24.19.0",
+          "runtime": "v24.19.0",
+          "node_binary_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+          "selection_sha256": "0765a433c1c441fb13d1a8b1d5ff2e9b1c049e1aef9f5c02eb15b7c8ee2c6514",
+          "run_id": "ca0fc9d1-b386-4d37-890b-cedfa2884cd6",
+          "mode": 0
+        },
+        "status": "completed",
+        "selected_tests": 1,
+        "executed_tests": 1,
+        "errors": 0,
+        "functions": [
+          {
+            "functionName": "",
+            "ranges": [
+              {
+                "startOffset": 0,
+                "endOffset": 665,
+                "count": 1
+              }
+            ],
+            "isBlockCoverage": true
+          },
+          {
+            "functionName": "",
+            "ranges": [
+              {
+                "startOffset": 25,
+                "endOffset": 140,
+                "count": 1
+              }
+            ],
+            "isBlockCoverage": true
+          },
+          {
+            "functionName": "choose",
+            "ranges": [
+              {
+                "startOffset": 161,
+                "endOffset": 296,
+                "count": 1
+              },
+              {
+                "startOffset": 213,
+                "endOffset": 263,
+                "count": 0
+              }
+            ],
+            "isBlockCoverage": true
+          },
+          {
+            "functionName": "",
+            "ranges": [
+              {
+                "startOffset": 242,
+                "endOffset": 255,
+                "count": 0
+              }
+            ],
+            "isBlockCoverage": false
+          }
+        ],
+        "executed_source_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6"
+      },
+      "results": [
+        {
+          "token": "values.sort",
+          "status": "not_executed",
+          "identity": {
+            "source_sha256": "402cde5ced0d8e3e0bdf6658dec2f1ba6122519efd6a9537e26ea86469330df7",
+            "generated_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6",
+            "map_sha256": "0bc96abca070c9e2417ba73d73f589ae3f0d4a863bd3def6b452a8a4d05cb301",
+            "compiler": "node:stripTypeScriptTypes/transform:v24.19.0",
+            "runtime": "v24.19.0",
+            "node_binary_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+            "selection_sha256": "0765a433c1c441fb13d1a8b1d5ff2e9b1c049e1aef9f5c02eb15b7c8ee2c6514",
+            "run_id": "ca0fc9d1-b386-4d37-890b-cedfa2884cd6",
+            "mode": 0
+          },
+          "mapped_anchor": {
+            "source": "fixture.ts",
+            "line": 4,
+            "column": 12
+          },
+          "generated_span": {
+            "start": 230,
+            "end": 241,
+            "original_line": 3,
+            "original_column": 11
+          },
+          "minimum_count": 0,
+          "recommendation_qualified": false,
+          "limitation": "Exact span execution is not CPU attribution, acceptance completeness, or optimization benefit."
+        },
+        {
+          "token": "values.slice",
+          "status": "executed",
+          "identity": {
+            "source_sha256": "402cde5ced0d8e3e0bdf6658dec2f1ba6122519efd6a9537e26ea86469330df7",
+            "generated_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6",
+            "map_sha256": "0bc96abca070c9e2417ba73d73f589ae3f0d4a863bd3def6b452a8a4d05cb301",
+            "compiler": "node:stripTypeScriptTypes/transform:v24.19.0",
+            "runtime": "v24.19.0",
+            "node_binary_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+            "selection_sha256": "0765a433c1c441fb13d1a8b1d5ff2e9b1c049e1aef9f5c02eb15b7c8ee2c6514",
+            "run_id": "ca0fc9d1-b386-4d37-890b-cedfa2884cd6",
+            "mode": 0
+          },
+          "mapped_anchor": {
+            "source": "fixture.ts",
+            "line": 6,
+            "column": 10
+          },
+          "generated_span": {
+            "start": 275,
+            "end": 287,
+            "original_line": 5,
+            "original_column": 9
+          },
+          "minimum_count": 1,
+          "recommendation_qualified": false,
+          "limitation": "Exact span execution is not CPU attribution, acceptance completeness, or optimization benefit."
+        }
+      ],
+      "elapsed_ms": null
+    },
+    {
+      "mode": 1,
+      "plan_id": "4fdfbabc15b48ab29a2e46bbe7ab245c61064b8deabb49cfb79f50dc3e317e5d",
+      "enforcement": {
+        "kind": "node_preload",
+        "network_scope": "loopback_only"
+      },
+      "capture": {
+        "identity": {
+          "source_sha256": "402cde5ced0d8e3e0bdf6658dec2f1ba6122519efd6a9537e26ea86469330df7",
+          "generated_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6",
+          "map_sha256": "0bc96abca070c9e2417ba73d73f589ae3f0d4a863bd3def6b452a8a4d05cb301",
+          "compiler": "node:stripTypeScriptTypes/transform:v24.19.0",
+          "runtime": "v24.19.0",
+          "node_binary_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+          "selection_sha256": "78465edd56b53e0cfc635c90119c62292dd27d850ddfd7ce92001911c0d2e9a9",
+          "run_id": "d95b4491-818c-4f93-9511-f9e94e6e2bb3",
+          "mode": 1
+        },
+        "status": "completed",
+        "selected_tests": 1,
+        "executed_tests": 1,
+        "errors": 0,
+        "functions": [
+          {
+            "functionName": "",
+            "ranges": [
+              {
+                "startOffset": 0,
+                "endOffset": 665,
+                "count": 1
+              }
+            ],
+            "isBlockCoverage": true
+          },
+          {
+            "functionName": "",
+            "ranges": [
+              {
+                "startOffset": 25,
+                "endOffset": 140,
+                "count": 1
+              }
+            ],
+            "isBlockCoverage": true
+          },
+          {
+            "functionName": "choose",
+            "ranges": [
+              {
+                "startOffset": 161,
+                "endOffset": 296,
+                "count": 1
+              },
+              {
+                "startOffset": 263,
+                "endOffset": 295,
+                "count": 0
+              }
+            ],
+            "isBlockCoverage": true
+          },
+          {
+            "functionName": "",
+            "ranges": [
+              {
+                "startOffset": 242,
+                "endOffset": 255,
+                "count": 4
+              }
+            ],
+            "isBlockCoverage": true
+          }
+        ],
+        "executed_source_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6"
+      },
+      "results": [
+        {
+          "token": "values.sort",
+          "status": "executed",
+          "identity": {
+            "source_sha256": "402cde5ced0d8e3e0bdf6658dec2f1ba6122519efd6a9537e26ea86469330df7",
+            "generated_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6",
+            "map_sha256": "0bc96abca070c9e2417ba73d73f589ae3f0d4a863bd3def6b452a8a4d05cb301",
+            "compiler": "node:stripTypeScriptTypes/transform:v24.19.0",
+            "runtime": "v24.19.0",
+            "node_binary_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+            "selection_sha256": "78465edd56b53e0cfc635c90119c62292dd27d850ddfd7ce92001911c0d2e9a9",
+            "run_id": "d95b4491-818c-4f93-9511-f9e94e6e2bb3",
+            "mode": 1
+          },
+          "mapped_anchor": {
+            "source": "fixture.ts",
+            "line": 4,
+            "column": 12
+          },
+          "generated_span": {
+            "start": 230,
+            "end": 241,
+            "original_line": 3,
+            "original_column": 11
+          },
+          "minimum_count": 1,
+          "recommendation_qualified": false,
+          "limitation": "Exact span execution is not CPU attribution, acceptance completeness, or optimization benefit."
+        },
+        {
+          "token": "values.slice",
+          "status": "not_executed",
+          "identity": {
+            "source_sha256": "402cde5ced0d8e3e0bdf6658dec2f1ba6122519efd6a9537e26ea86469330df7",
+            "generated_sha256": "03a0831d2b7e738b3a8eb889003052003c15668ee113e04bf5531ada97ac2bd6",
+            "map_sha256": "0bc96abca070c9e2417ba73d73f589ae3f0d4a863bd3def6b452a8a4d05cb301",
+            "compiler": "node:stripTypeScriptTypes/transform:v24.19.0",
+            "runtime": "v24.19.0",
+            "node_binary_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+            "selection_sha256": "78465edd56b53e0cfc635c90119c62292dd27d850ddfd7ce92001911c0d2e9a9",
+            "run_id": "d95b4491-818c-4f93-9511-f9e94e6e2bb3",
+            "mode": 1
+          },
+          "mapped_anchor": {
+            "source": "fixture.ts",
+            "line": 6,
+            "column": 10
+          },
+          "generated_span": {
+            "start": 275,
+            "end": 287,
+            "original_line": 5,
+            "original_column": 9
+          },
+          "minimum_count": 0,
+          "recommendation_qualified": false,
+          "limitation": "Exact span execution is not CPU attribution, acceptance completeness, or optimization benefit."
+        }
+      ],
+      "elapsed_ms": null
+    }
+  ],
+  "vitest_environment": {
+    "status": "blocked",
+    "prerequisite": {
+      "schema_version": "runtime-prerequisite-preflight/v1",
+      "status": "unavailable",
+      "limitation": "Executable prerequisites are unavailable for vitest."
+    },
+    "executed_tests": 0,
+    "reason": "Vitest/jsdom are neither installed nor declared repository dependencies; no substitute runner or dependency added."
+  },
+  "limitations": [
+    "Bounded synthetic TypeScript transform and exact-span execution only.",
+    "No timing comparison, CPU attribution, recommendation, native or production qualification.",
+    "The Node transformer is experimental; its exact runtime version is part of identity.",
+    "Local consistency checks do not authenticate externally supplied evidence.",
+    "Representative Vitest/jsdom and repository-owned warm-verifier qualification remain blocked."
+  ]
+}
