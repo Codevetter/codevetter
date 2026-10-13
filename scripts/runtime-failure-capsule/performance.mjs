@@ -1269,11 +1269,41 @@ export function selectedWorkloadExecuted(entry, adapter, name) {
   if (adapter === 'node-script') return true;
   if (adapter === 'vitest') {
     const selection = parseVitestSelection(entry.stdout);
-    if (selection) return name ? selection.executed_tests === 1 : selection.executed_tests > 0;
-    if (name && output.includes(`"status":"passed","title":${JSON.stringify(name)}`)) {
-      return true;
+    if (selection) {
+      if (selection.failed_tests !== 0) return false;
+      const report = JSON.parse(entry.stdout);
+      const assertions = Array.isArray(report.testResults)
+        ? report.testResults.flatMap((file) => Array.isArray(file.assertionResults) ? file.assertionResults : [])
+        : null;
+      if (name && assertions) {
+        const executed = assertions.filter((item) => item.status === 'passed' && Number.isFinite(item.duration) && item.duration >= 0);
+        return executed.length === 1 && executed[0].title === name;
+      }
+      return name ? selection.executed_tests === 1 : selection.executed_tests > 0;
     }
-    return /Test Files\s+[1-9]\d*\s+passed|Tests\s+[1-9]\d*\s+passed/.test(output);
+    try {
+      const report = JSON.parse(entry.stdout);
+      if (report && (Object.hasOwn(report, 'numTotalTests') || Object.hasOwn(report, 'testResults'))) {
+        return false;
+      }
+    } catch { /* Recover bounded fragments below. */ }
+    // Recover only complete assertion objects from a bounded JSON fragment. A collected
+    // identity with no duration, or a substring inside console output, is not execution.
+    const assertions = [];
+    for (const fragment of output.match(/\{[^{}]*\}/g) ?? []) {
+      try {
+        const assertion = JSON.parse(fragment);
+        if (assertion.status === 'passed' && Number.isFinite(assertion.duration) &&
+            assertion.duration > 0 && typeof assertion.title === 'string') {
+          assertions.push(assertion);
+        }
+      } catch { /* Incomplete objects cannot establish execution. */ }
+    }
+    if (assertions.length > 0) {
+      return name ? assertions.length === 1 && assertions[0].title === name : true;
+    }
+    const summary = output.match(/^\s*Tests\s+(\d+)\s+passed(?:\s|$)/m);
+    return summary ? (name ? Number(summary[1]) === 1 : Number(summary[1]) > 0) : false;
   }
   if (adapter === 'go-bench') return parseGoBenchmarks(output).length > 0;
   if (adapter === 'playwright') {
@@ -1290,10 +1320,7 @@ export function requiredExecutionsCompleted(entries, adapter, name) {
   const exitedSuccessfully = required.every(
     (entry) => entry.execution.status === 'exited' && entry.execution.exitCode === 0
   );
-  if (!exitedSuccessfully) return false;
-  if (adapter === 'vitest') {
-    return required.some((entry) => selectedWorkloadExecuted(entry, adapter, name));
-  }
+  if (required.length === 0 || !exitedSuccessfully) return false;
   return required.every((entry) => selectedWorkloadExecuted(entry, adapter, name));
 }
 

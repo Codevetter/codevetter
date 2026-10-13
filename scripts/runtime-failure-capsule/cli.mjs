@@ -29,11 +29,12 @@ import {
 } from './performance.mjs';
 import { qualifyPortfolioManifest, qualifyRepository } from './qualification.mjs';
 import { redactText } from './redact.mjs';
-import { runClosedAdapter } from './runner.mjs';
+import { preflightAdapter, runClosedAdapter } from './runner.mjs';
 import { inspectSupervisedRun, supervisePerformanceRun } from './supervision.mjs';
 
 const OPERATIONS = [
   'detect',
+  'preflight',
   'run',
   'import',
   'profile',
@@ -66,6 +67,7 @@ const PROFILE_OPTIONS = [
 ];
 const ALLOWED_OPTIONS = {
   detect: ['repo', 'json'],
+  preflight: ['repo', 'adapter', 'target', 'name', 'timeout-ms', 'json'],
   qualify: ['repo', 'json'],
   'qualify-portfolio': ['manifest', 'json'],
   'plan-performance': [
@@ -126,6 +128,14 @@ export async function main(argv = process.argv.slice(2)) {
   try {
     const { operation, options } = parseArguments(argv);
     repositoryRoot = resolve(options.repo ?? process.cwd());
+    if (operation === 'preflight') {
+      const receipt = await preflightAdapter({
+        repositoryRoot, adapter: required(options, 'adapter'),
+        target: required(options, 'target'), name: options.name,
+      });
+      writeJson(receipt);
+      return receipt.status === 'ready' ? 0 : 2;
+    }
     if (operation === 'detect') {
       writeJson(await detectRuntimeLanes(repositoryRoot));
       return 0;

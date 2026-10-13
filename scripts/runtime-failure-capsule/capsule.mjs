@@ -99,16 +99,15 @@ export function parseVitestSelection(output) {
   } catch {
     return null;
   }
-  const total = Number(report?.numTotalTests);
-  const pending = Number(report?.numPendingTests ?? 0);
-  const todo = Number(report?.numTodoTests ?? 0);
-  if (![total, pending, todo].every(Number.isFinite)) return null;
+  const counts = ['numTotalTests', 'numPendingTests', 'numTodoTests', 'numFailedTests', 'numPassedTests']
+    .map((key) => report?.[key]);
+  if (!counts.every((value) => Number.isSafeInteger(value) && value >= 0)) return null;
+  const [total, pending, todo, failed, passed] = counts;
+  if (pending + todo + failed + passed !== total) return null;
   return {
     total_tests: total,
-    executed_tests: Math.max(0, total - pending - todo),
-    failed_tests: Number.isFinite(Number(report?.numFailedTests))
-      ? Number(report.numFailedTests)
-      : null,
+    executed_tests: passed + failed,
+    failed_tests: failed,
   };
 }
 
