@@ -1,7 +1,7 @@
 # Making testing faster without weakening verification
 
-Date: 2026-10-02. Status: research and implementation recommendations; no runner
-configuration changes, dependency installs, or measured acceleration claimed.
+Date: 2026-10-02; bounded experiments added 2026-10-14. No runner defaults or
+production dependencies changed, and no measured acceleration claimed.
 The concurrent Fleet trial supplies real workload receipts. This study combines
 those receipts, CodeVetter source inspection, and upstream documentation.
 
@@ -271,28 +271,30 @@ as evidence about changed tests. Neither branch was executed in this study.
 [Coverage selection](https://github.com/stryker-mutator/stryker-js/blob/f2a49ff02437e3b7fe2682dba808ac93039895bf/packages/core/src/mutants/mutant-test-planner.ts#L100-L136),
 [Reuse assumptions](https://github.com/stryker-mutator/stryker-js/blob/f2a49ff02437e3b7fe2682dba808ac93039895bf/packages/core/src/mutants/incremental-differ.ts#L394-L435).
 
-## Experiments and decision criteria
-
-Start with three representative existing workloads: a startup-heavy pure logic
-test, a material computation benchmark, and a stateful integration suite.
-Use isolated compatible runners and fixed source, fixtures, lockfiles, runtime,
-test inventory, and resource budgets. Record cold and warm cases separately.
-
-Compare one change at a time: default vs Node environment; cold vs transform
-reuse; default vs combined metric collection; worker counts; cached build reuse.
-Alternate baseline/candidate order with recorded seeds and repeat on an idle
-runner. Pilot variance first, then predeclare repetition count and minimum
-meaningful saving; three noisy samples from this audit are not calibration.
-
-Require identical expected results, exercised acceptance checks, nonzero test
-counts, and no new order-dependent failures. Include known failing fixtures to
-verify failure detection. For selection changes, independently run the full
-suite and disclose missed failures. For cache changes, edit source/config and
-verify invalidation, cancellation, restart, and memory bounds.
-
-For CodeVetter's value, compare the same tasks with and without its assistance
-under equal total budgets. Count accepted correct outcomes, missed defects,
-false findings, stale evidence, blocked attempts, end-to-end time and measured
-cost. Agent-reported usefulness remains a separate signal. Adopt an optimization
-only after a measured saving with unchanged required evidence; reject changes
-that merely hide checks or shift elapsed time outside the reported window.
+## Bounded experiment checkpoint — 14 October
+Reproduce with `node scripts/runtime-failure-capsule/testing-speed-experiment.mjs`.
+The [retained JSON](testing-speed-experiment-2026-10-14.json) records Node/runtime
+identity, fixture hashes, raw alternating timing pairs and the decisions. These
+are synthetic zero-egress Node checks, not production or matched-agent trials.
+The owner dropped additional matched-agent trials on 9 October.
+- Exact file/name selection passed while omitting a deliberately failing oracle;
+  the complete file and explicitly selected failing oracle both failed.
+- A nonexistent name returned exit zero and a file-level TAP pass, despite no
+  named test executing. The existing exact-name evidence guard rejected it.
+- Missing Vitest prerequisites returned unavailable before project-module load.
+- Five alternating timing/metric pairs retained equal computation assertions.
+  Same-run metrics were captured, but this tiny reporter calibration does not
+  qualify removal of independent metric/profile executions. No speedup adopted.
+- The owned waiting process timed out; edited execution-plan identity was
+  rejected. Shared-module reuse carried state and stale source. A demonstrated
+  source/config/lock/runtime key changed on edits; this is not a production cache.
+- Instrumented child RSS is recorded without claiming peak allocation evidence
+  or matched memory reduction. Fresh processes and repeated host-cache states
+  are distinguished; machine/OS caches were not reset.
+Keep exact correctness checks inexpensive, but preserve failing acceptance and
+nonzero execution evidence. Reject transparent module reuse and a timing-only
+performance verdict. A compatible warm-verifier workload, representative
+Vitest/jsdom comparison, reporter calibration and bounded-memory/reset proof
+remain necessary before adopting those optimizations; this experiment does not
+supply them. Source-pattern prescriptions also remain disabled until transformed
+coordinates and executed branches are qualified; static excerpts stay visible.

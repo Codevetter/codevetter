@@ -42,6 +42,37 @@ import Testing
       runner: CodeVetterProcessRunner(executableURL: URL(fileURLWithPath: "/usr/bin/false")))
   }
 
+  @Test func invocationViewDoesNotStartLegacyHistoryButVerificationResultsStillLoad() async throws {
+    let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: root) }
+    let executable = root.appending(path: "codevetter")
+    let marker = root.appending(path: "arguments")
+    try """
+      #!/bin/sh
+      printf '%s' "$*" > '\(marker.path)'
+      printf '%s' '{"schema_version":"codevetter.run-history/v1","runs":[]}'
+      """.write(to: executable, atomically: true, encoding: .utf8)
+    try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: executable.path)
+    let model = WorkbenchModel(runner: CodeVetterProcessRunner(executableURL: executable))
+    model.section = .runs
+    model.loadVisibleRuns()
+    #expect(!model.runsLoading)
+    #expect(!FileManager.default.fileExists(atPath: marker.path))
+    model.runsShowsInvocations = false
+    model.section = .review
+    model.loadVisibleRuns()
+    #expect(!model.runsLoading)
+    model.section = .runs
+    model.loadVisibleRuns()
+    for _ in 0..<100 where model.runsLoading {
+      try await Task.sleep(for: .milliseconds(10))
+    }
+    #expect(!model.runsLoading)
+    #expect(model.runsIssue == nil)
+    #expect(try String(contentsOf: marker, encoding: .utf8) == "runs --json --limit 50")
+  }
+
   @Test func unknownProviderAndBenefitRemainUnknownDespiteHelpedAndMatchedHash() throws {
     let receipt = try InvocationLedgerReceipt.decode(fixture())
     let row = try #require(receipt.invocations.first)

@@ -48,12 +48,8 @@ export function diagnosePerformanceCapsule(
     : capsule.observed.profile_repeatability === undefined
       ? capsule.observed.hotspots.find((hotspot) => hotspot.role === 'application')
       : null;
-  const applicationHotspot = alignHotspotToSourceContext(
-    capturedApplicationHotspot,
-    sourceContexts
-  );
+  const applicationHotspot = capturedApplicationHotspot;
   const benchmark = capsule.observed.go_benchmarks[0] ?? null;
-  const sourcePattern = selectSourcePattern(sourceContexts);
 
   const evidence = rankEvidence({
     capsule,
@@ -74,7 +70,6 @@ export function diagnosePerformanceCapsule(
     allocation,
     applicationHotspot,
     benchmark,
-    sourcePattern,
   });
   const evidenceIds = evidence
     .filter((entry) => diagnosis.evidence_kinds.includes(entry.kind))
@@ -88,7 +83,6 @@ export function diagnosePerformanceCapsule(
     benchmark,
     comparison,
     startup,
-    sourcePattern,
   });
   const unverified = buildHypotheses({
     diagnosis,
@@ -97,7 +91,6 @@ export function diagnosePerformanceCapsule(
     applicationHotspot,
     benchmark,
     scaleCurve,
-    sourcePattern,
   });
   const nextAction = buildNextAction(diagnosis, evidenceIds);
   const report = {
@@ -126,7 +119,17 @@ export function diagnosePerformanceCapsule(
       baseline_json_pointer: '/performance_capsule',
       success_criteria: verificationCriteria(diagnosis.kind),
     },
-    limitations: [...new Set([...capsule.limitations, ...sourceLimitations])],
+    limitations: [
+      ...new Set([
+        ...capsule.limitations,
+        ...sourceLimitations,
+        ...(sourceContexts.length > 0
+          ? [
+              'Source patterns are static context only: transformed source coordinates and execution of their branches are not qualified. No pattern-specific optimization is recommended.',
+            ]
+          : []),
+      ]),
+    ],
     performance_capsule: capsule,
     verdict: diagnosis.verdict,
   };
@@ -207,7 +210,11 @@ function rankEvidence({
   }
   if (scaleCurve) evidence.push({ kind: 'input_scale_curve', ...scaleCurve });
   for (const context of sourceContexts) {
-    evidence.push({ kind: 'runtime_source_context', ...context });
+    evidence.push({
+      kind: 'runtime_source_context',
+      ...context,
+      qualification: 'static_context_only; source_mapping_and_branch_execution_unverified',
+    });
   }
   if (benchmark) {
     evidence.push({
@@ -265,7 +272,6 @@ function classifyDiagnosis({
   startup,
   allocation,
   applicationHotspot,
-  sourcePattern,
 }) {
   if (capsule.verdict.status === 'no_confidence') {
     return classification(
@@ -310,91 +316,12 @@ function classifyDiagnosis({
       'The exact operation is already cheap at the largest recorded supported input.'
     );
   }
-  if (
-    sourcePattern?.pattern.kind === 'repeated_source_traversal' &&
-    scaleCurve &&
-    scaleCurve.input_ratio >= 10 &&
-    applicationHotspot
-  ) {
-    return classification(
-      'repeated_input_traversal',
-      `${sourcePattern.pattern.collection} is traversed ${sourcePattern.pattern.lines.length} times along a measured repository CPU path.`,
-      'medium',
-      ['input_scale_curve', 'runtime_source_context', 'repository_cpu_hotspot'],
-      'actionable',
-      'A growing deterministic workload intersects repeated traversal of the same source collection.'
-    );
-  }
-  if (
-    sourcePattern?.pattern.kind === 'nested_collection_lookup' &&
-    scaleCurve &&
-    scaleCurve.input_ratio >= 10 &&
-    applicationHotspot
-  ) {
-    return classification(
-      'nested_lookup_hotspot',
-      `${sourcePattern.source.function} performs a nested collection scan along a measured growing CPU path.`,
-      'medium',
-      ['input_scale_curve', 'runtime_source_context', 'repository_cpu_hotspot'],
-      'actionable',
-      'A growing deterministic workload intersects a nested repository-owned lookup.'
-    );
-  }
-  if (
-    sourcePattern?.pattern.kind === 'split_for_prefix' &&
-    scaleCurve &&
-    scaleCurve.input_ratio >= 10 &&
-    applicationHotspot
-  ) {
-    return classification(
-      'prefix_split_hotspot',
-      `${sourcePattern.source.function} splits a string only to retain its prefix along a measured growing CPU path.`,
-      'medium',
-      ['input_scale_curve', 'runtime_source_context', 'repository_cpu_hotspot'],
-      'actionable',
-      'A growing deterministic workload intersects an avoidable temporary split result.'
-    );
-  }
-  if (
-    sourcePattern?.pattern.kind === 'linear_membership_over_keys' &&
-    scaleCurve &&
-    scaleCurve.input_ratio >= 10 &&
-    scaleCurve.normalized_cost_ratio >= 1.15 &&
-    applicationHotspot
-  ) {
-    return classification(
-      'repeated_linear_membership',
-      `${sourcePattern.source.function} repeatedly scans materialized object keys along a superlinear CPU path.`,
-      'medium',
-      ['input_scale_curve', 'runtime_source_context', 'repository_cpu_hotspot'],
-      'actionable',
-      'A superlinear deterministic workload intersects repeated linear membership checks.'
-    );
-  }
-  if (
-    sourcePattern &&
-    sourcePattern.pattern.kind === 'full_sort_before_bounded_slice' &&
-    scaleCurve &&
-    scaleCurve.input_ratio >= 10 &&
-    scaleCurve.normalized_cost_ratio >= 1.15
-  ) {
-    return classification(
-      'bounded_result_overwork',
-      `Per-input cost grew ${scaleCurve.normalized_cost_ratio}x while the measured source fully sorts before retaining a bounded prefix.`,
-      'medium',
-      ['input_scale_curve', 'runtime_source_context', 'repository_cpu_hotspot'],
-      'actionable',
-      'A growing deterministic workload intersects a concrete full-sort/bounded-result source pattern.'
-    );
-  }
   if (scaleCurve?.classification === 'superlinear') {
     return classification(
       'superlinear_scaling',
       `Measured cost grew ${scaleCurve.value_ratio}x for ${scaleCurve.input_ratio}x more input.`,
       'medium',
-      sourcePattern
-        ? ['input_scale_curve', 'runtime_source_context', 'repository_cpu_hotspot']
-        : ['input_scale_curve', 'repository_cpu_hotspot'],
+      ['input_scale_curve', 'repository_cpu_hotspot'],
       'actionable',
       'The deterministic endpoint exponent exceeds the superlinear threshold.'
     );
@@ -462,7 +389,6 @@ function buildInferences({
   benchmark,
   comparison,
   startup,
-  sourcePattern,
 }) {
   const shared = { confidence: diagnosis.confidence, evidence_ids: evidenceIds };
   if (diagnosis.kind === 'demonstrated_regression') {
@@ -477,51 +403,13 @@ function buildInferences({
       },
     ];
   }
-  if (diagnosis.kind === 'repeated_input_traversal') {
-    return [
-      {
-        kind: 'duplicate_pass_candidate',
-        summary: `${sourcePattern.source.file}:${sourcePattern.pattern.lines.join(' and ')} traverses ${sourcePattern.pattern.collection} more than once; this observed source pattern intersects the measured ${scaleCurve.exponent} scaling exponent and ${applicationHotspot.file}:${applicationHotspot.line} CPU candidate.`,
-        ...shared,
-      },
-    ];
-  }
-  if (diagnosis.kind === 'nested_lookup_hotspot') {
-    return [
-      {
-        kind: 'nested_lookup_candidate',
-        summary: `${sourcePattern.source.file}:${sourcePattern.pattern.lines[0]} performs ${sourcePattern.pattern.operations.join(' plus ')} for each lookup; this observed source pattern is on the path of the measured ${applicationHotspot.file}:${applicationHotspot.line} CPU candidate.`,
-        ...shared,
-      },
-    ];
-  }
-  if (diagnosis.kind === 'prefix_split_hotspot') {
-    return [
-      {
-        kind: 'temporary_split_candidate',
-        summary: `${sourcePattern.source.file}:${sourcePattern.pattern.lines[0]} splits on ${JSON.stringify(sourcePattern.pattern.delimiter)} and retains only element zero; this observed source pattern is on the path of the measured ${applicationHotspot.file}:${applicationHotspot.line} CPU candidate.`,
-        ...shared,
-      },
-    ];
-  }
-  if (diagnosis.kind === 'repeated_linear_membership') {
-    return [
-      {
-        kind: 'linear_membership_candidate',
-        summary: `${sourcePattern.source.file}:${sourcePattern.pattern.lines.join(' and ')} materializes ${sourcePattern.pattern.collection} and scans it for membership on the measured ${applicationHotspot.file}:${applicationHotspot.line} CPU path.`,
-        ...shared,
-      },
-    ];
-  }
-  if (diagnosis.kind === 'superlinear_scaling' || diagnosis.kind === 'bounded_result_overwork') {
+  if (diagnosis.kind === 'superlinear_scaling') {
     return [
       {
         kind: 'scaling_bottleneck_candidate',
-        summary: sourcePattern
-          ? `${sourcePattern.source.file}:${sourcePattern.pattern.lines[0]} fully sorts candidates before retaining a bounded prefix; this observed source pattern intersects the measured ${scaleCurve.exponent} scaling exponent and ${applicationHotspot?.file ?? sourcePattern.source.file}:${applicationHotspot?.line ?? sourcePattern.source.line} CPU candidate.`
-          : applicationHotspot
-            ? `The high-end scaling cost is concentrated around ${applicationHotspot.file}:${applicationHotspot.line}; the current evidence is consistent with repeated per-item work.`
-            : `The measured endpoint exponent of ${scaleCurve.exponent} is consistent with a superlinear algorithmic path.`,
+        summary: applicationHotspot
+          ? `The high-end scaling cost is concentrated around ${applicationHotspot.file}:${applicationHotspot.line}; the current evidence is consistent with repeated per-item work.`
+          : `The measured endpoint exponent of ${scaleCurve.exponent} is consistent with a superlinear algorithmic path.`,
         ...shared,
       },
     ];
@@ -573,7 +461,6 @@ function buildHypotheses({
   applicationHotspot,
   benchmark,
   scaleCurve,
-  sourcePattern,
 }) {
   if (diagnosis.kind === 'allocation_pressure') {
     return [
@@ -586,59 +473,13 @@ function buildHypotheses({
       },
     ];
   }
-  if (diagnosis.kind === 'repeated_input_traversal') {
-    return [
-      {
-        kind: 'single_pass_hypothesis',
-        summary: `Combining the passes over ${sourcePattern.pattern.collection} at ${sourcePattern.source.file}:${sourcePattern.pattern.lines.join(' and ')} may lower largest-input cost without changing output.`,
-        evidence_ids: evidenceIds,
-        falsification:
-          'Rerun every recorded input size; reject this hypothesis if the largest-input cost does not improve or the scale curve regresses.',
-      },
-    ];
-  }
-  if (diagnosis.kind === 'nested_lookup_hotspot') {
-    return [
-      {
-        kind: 'indexed_lookup_hypothesis',
-        summary: `Pre-indexing the catalog used by ${sourcePattern.source.function} at ${sourcePattern.source.file}:${sourcePattern.pattern.lines[0]} may lower the largest-input cost by replacing repeated nested scans with direct lookup.`,
-        evidence_ids: evidenceIds,
-        falsification:
-          'Rerun every recorded input size; reject this hypothesis if the largest-input cost does not improve or the scale curve regresses.',
-      },
-    ];
-  }
-  if (diagnosis.kind === 'prefix_split_hotspot') {
-    return [
-      {
-        kind: 'direct_prefix_hypothesis',
-        summary: `Replacing the split at ${sourcePattern.source.file}:${sourcePattern.pattern.lines[0]} with direct delimiter search and slicing may reduce temporary work and largest-input cost.`,
-        evidence_ids: evidenceIds,
-        falsification:
-          'Rerun every recorded input size; reject this hypothesis if the largest-input cost does not improve or the scale curve regresses.',
-      },
-    ];
-  }
-  if (diagnosis.kind === 'repeated_linear_membership') {
-    return [
-      {
-        kind: 'indexed_membership_hypothesis',
-        summary: `Using indexed membership for ${sourcePattern.pattern.collection} at ${sourcePattern.source.file}:${sourcePattern.pattern.lines.join(' and ')} may reduce the largest-input cost and current ${scaleCurve.exponent} exponent.`,
-        evidence_ids: evidenceIds,
-        falsification:
-          'Rerun every recorded input size; reject this hypothesis if the largest-input cost and scale curve do not improve.',
-      },
-    ];
-  }
-  if (diagnosis.kind === 'superlinear_scaling' || diagnosis.kind === 'bounded_result_overwork') {
+  if (diagnosis.kind === 'superlinear_scaling') {
     return [
       {
         kind: 'scaling_reduction_hypothesis',
-        summary: sourcePattern
-          ? `Replacing the full sort with bounded top-k selection and deferring mapped result materialization may lower the largest-input cost and the current ${scaleCurve.exponent} endpoint exponent.`
-          : applicationHotspot
-            ? `Reducing full-input work around ${applicationHotspot.file}:${applicationHotspot.line} may lower the largest-input cost and the current ${scaleCurve.exponent} endpoint exponent.`
-            : `Reducing full-input work may lower the largest-input cost and the current ${scaleCurve.exponent} endpoint exponent.`,
+        summary: applicationHotspot
+          ? `Reducing full-input work around ${applicationHotspot.file}:${applicationHotspot.line} may lower the largest-input cost and the current ${scaleCurve.exponent} endpoint exponent.`
+          : `Reducing full-input work may lower the largest-input cost and the current ${scaleCurve.exponent} endpoint exponent.`,
         evidence_ids: evidenceIds,
         falsification:
           'Rerun every recorded input size; reject this hypothesis if the largest-input cost and scale curve do not improve.',
@@ -657,38 +498,6 @@ function buildHypotheses({
     ];
   }
   return [];
-}
-
-function selectSourcePattern(sourceContexts) {
-  for (const context of sourceContexts) {
-    const pattern = context.patterns.find(
-      (candidate) => candidate.kind === 'repeated_source_traversal'
-    );
-    if (pattern) return { source: context.source, pattern };
-  }
-  for (const context of sourceContexts) {
-    const pattern = context.patterns.find(
-      (candidate) => candidate.kind === 'nested_collection_lookup'
-    );
-    if (pattern) return { source: context.source, pattern };
-  }
-  for (const context of sourceContexts) {
-    const pattern = context.patterns.find((candidate) => candidate.kind === 'split_for_prefix');
-    if (pattern) return { source: context.source, pattern };
-  }
-  for (const context of sourceContexts) {
-    const pattern = context.patterns.find(
-      (candidate) => candidate.kind === 'linear_membership_over_keys'
-    );
-    if (pattern) return { source: context.source, pattern };
-  }
-  for (const context of sourceContexts) {
-    const pattern = context.patterns.find(
-      (candidate) => candidate.kind === 'full_sort_before_bounded_slice'
-    );
-    if (pattern) return { source: context.source, pattern };
-  }
-  return null;
 }
 
 function buildNextAction(diagnosis, evidenceIds) {
@@ -777,26 +586,6 @@ function verificationCriteria(kind) {
       'workload passes',
     ];
   return ['workload passes', 'compatible evidence is captured'];
-}
-
-function alignHotspotToSourceContext(hotspot, sourceContexts) {
-  if (!hotspot) return null;
-  const context = sourceContexts.find(
-    (candidate) =>
-      candidate.source.file === hotspot.file &&
-      (candidate.source.function === hotspot.function ||
-        candidate.source.reported_function === hotspot.function)
-  );
-  if (!context || context.source.line === hotspot.line) return hotspot;
-  return {
-    ...hotspot,
-    line: context.source.line,
-    function: context.source.function,
-    reported_line: hotspot.line,
-    ...(context.source.reported_function === undefined
-      ? {}
-      : { reported_function: hotspot.function }),
-  };
 }
 
 function round(value, digits = 3) {

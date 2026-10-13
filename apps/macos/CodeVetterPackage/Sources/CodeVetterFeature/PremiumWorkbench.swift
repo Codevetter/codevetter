@@ -69,13 +69,13 @@ public struct PremiumWorkbenchRootView: View {
     .task {
       model.loadOnboarding()
     }
-    .task(id: model.section) {
+    .task(id: "\(model.section.rawValue):\(model.runsShowsInvocations)") {
       if model.section == .repository, model.unpackSnapshots.isEmpty {
         model.loadUnpackSnapshots()
       } else if model.section == .settings, model.settingsReceipt == nil {
         model.loadNativeSettings()
       } else if model.section == .runs {
-        model.loadRuns()
+        model.loadVisibleRuns()
       }
     }
   }
