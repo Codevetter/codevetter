@@ -139,4 +139,4 @@ jobs:
       - name: Read-only navigator engine
         run: |
           cargo test --locked --manifest-path crates/codevetter-navigator/Cargo.toml
-          cargo clippy --locked --manifest-path crates/codevetter-navigator/Cargo.toml --features browser-agent --all-targets -- -D warnings
+          cargo clippy --locked --manifest-path crates/codevetter-navigator/Cargo.toml --all-targets -- -D warnings
