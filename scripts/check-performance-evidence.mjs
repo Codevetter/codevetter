@@ -10,9 +10,11 @@ function requireCondition(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function readRegularFile(root, relativePath) {
+function readRegularFile(root, relativePath, maxBytes) {
   const absolute = path.join(root, relativePath);
-  requireCondition(lstatSync(absolute).isFile(), `Not a regular file: ${relativePath}`);
+  const stat = lstatSync(absolute);
+  requireCondition(stat.isFile(), `Not a regular file: ${relativePath}`);
+  requireCondition(stat.size <= maxBytes, `Evidence byte cap exceeded: ${relativePath}`);
   return readFileSync(absolute);
 }
 
@@ -52,7 +54,7 @@ export function assessPerformanceEvidence(root, base, changedPaths, addedPaths) 
     requireCondition(manifests.length === 1, 'Exactly one dated evidence manifest required');
     const manifestPath = manifests[0];
     requireCondition(added.has(manifestPath), 'Evidence manifest must be added');
-    const manifest = JSON.parse(readRegularFile(root, manifestPath));
+    const manifest = JSON.parse(readRegularFile(root, manifestPath, 64 * 1024));
     requireCondition(manifest.schemaVersion === 1, 'Unsupported evidence manifest schema');
     requireCondition(
       manifest.reviewedBase === base && /^[a-f0-9]{40}$/.test(manifest.reviewedHead),
@@ -91,7 +93,7 @@ export function assessPerformanceEvidence(root, base, changedPaths, addedPaths) 
       );
       requireCondition(/^[a-f0-9]{64}$/.test(sha256), `Invalid evidence hash: ${file}`);
       listed.add(file);
-      const content = readRegularFile(root, file);
+      const content = readRegularFile(root, file, limits.bytes - bytes);
       requireCondition(
         createHash('sha256').update(content).digest('hex') === sha256,
         `Evidence hash differs: ${file}`

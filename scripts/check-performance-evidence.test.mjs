@@ -153,6 +153,24 @@ test('rejects evidence over 4,000 lines even when every byte is hashed', (t) => 
   );
 });
 
+test('rejects oversized artifact and manifest before parsing their bytes', (t) => {
+  const item = fixture(t);
+  const oversized = `# Source check\n${'x'.repeat(1024 * 1024)}`;
+  item.write(mdPath, oversized);
+  item.manifest.artifacts[1].sha256 = sha(oversized);
+  item.saveManifest();
+  assert.match(
+    assessPerformanceEvidence(item.root, base, item.changed, item.added).reason,
+    /byte cap exceeded/
+  );
+  item.manifest.scope = 'x'.repeat(64 * 1024);
+  item.saveManifest();
+  assert.match(
+    assessPerformanceEvidence(item.root, base, item.changed, item.added).reason,
+    /reviewed-artifacts.*byte cap exceeded|byte cap exceeded.*reviewed-artifacts/
+  );
+});
+
 test('integration: source growth still fails the unchanged 4,000-line gate', (t) => {
   const item = fixture(t);
   const scripts = path.join(item.root, 'scripts');
