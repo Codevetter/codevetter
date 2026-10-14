@@ -126,6 +126,7 @@ jobs:
           scripts/runtime-failure-capsule/source-execution.test.mjs
           scripts/runtime-failure-capsule/portable-reset.test.mjs
           scripts/runtime-failure-capsule/portable-repair.test.mjs
+          scripts/runtime-failure-capsule/supervision.test.mjs
           scripts/runtime-failure-capsule/vitest-consumer.test.mjs
       - name: Prepare CLI and MCP companions
         run: |

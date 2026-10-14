@@ -140,7 +140,7 @@ test('successor consumer report retains executed selections and repairs every di
   const current = JSON.parse(
     await readFile(
       new URL(
-        '../../evidence/performance/vitest-consumer-invalidation-2026-10-14.json',
+        '../../evidence/performance/vitest-consumer-owned-output-2026-10-14.json',
         import.meta.url
       )
     )

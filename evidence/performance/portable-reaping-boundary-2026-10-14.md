@@ -3,8 +3,9 @@
 This is the final scope of [PR #390](https://github.com/Codevetter/codevetter/pull/390),
 a successor to frozen #389 at `903dfb6b9f7bf76baa9c66c4750017eea0c619ee`.
 **Dirty-input invalidation is repaired. Owned process-tree cancellation is not
-qualified and remains open.** The default runner/supervisor are restored exactly
-to #389; no unsafe process-ownership implementation is proposed for adoption.
+qualified and remains open.** The default runner and process-launch/cancellation paths remain those of #389.
+The supervisor supplies a verified input-identity context only; no unsafe
+process-ownership implementation is proposed for adoption.
 
 ## Reproduced review finding
 
@@ -75,11 +76,11 @@ This is not a provider, credential, private-corpus or native-app-access blocker.
 ## Completed safe slice
 
 The opaque raw input digest implementation remains, with meaningful stale-edit,
-untracked/staged/deleted/mode/symlink/privacy regressions. The final
+untracked/staged/deleted/mode/symlink/privacy regressions. The intermediate
 [invalidation report](portable-invalidation-2026-10-14.json) reruns the same
 fixture against the final source and retains the original detached-workload
 cancellation failure, including explicit study cleanup and unowned protection.
-The [fresh consumer report](vitest-consumer-invalidation-2026-10-14.json) retains
+The [intermediate consumer report](vitest-consumer-invalidation-2026-10-14.json) retains
 29 Vitest rows / 12 qualified selections, the 18-test default runner, exact
 source/lock/compiler/runtime/assertion identities, all negative controls and all
 six passing clean/already-dirty invalidation controls. Reader's published
@@ -89,3 +90,31 @@ Source review and CI are reported against the final PR head. No production
 merge, release, dependency, provider trial, native app/MCP change, generalized
 warm reuse, timing or acceleration claim is made. The original negative reports
 and the rejected candidate remain available by exact commit and evidence hash.
+
+
+## Subsequent input-ownership review correction
+
+Review at `bc92f5d505c8ddd3a39aad31494d82bb67cf421e` found that the directory-wide
+untracked-output exemption could hide an imported helper or receipt-shaped
+configuration. The [same-fixture before/after report](portable-owned-output-2026-10-14.json)
+records both changed values actually executing under stale plans before the
+correction; the final source rejects both before execution.
+
+Ordinary plans now exempt **no** files under the runs directory. The supervisor
+reserves one run directory exclusively before launching its diagnostic. Only
+that run's untracked `receipt.json`, `result.json` and their atomic temporary
+files are exempt. All tracked files, other runs and non-output helper/config
+files remain bound, including helpers inside the current directory. The
+private supervisor-to-diagnostic environment context is checked against a
+validated receipt's run ID, parent PID and exact child PID before use. It is
+not forwarded into the workload's minimal environment. The opaque digest binds
+the context as well as the files, so it is not interchangeable across runs.
+There is no CLI flag or receipt-schema change. Process ownership/cancellation
+behavior remains unchanged and unqualified.
+
+Regressions exercise the reported helper/config execution bypass, tracked
+receipts, current-run non-output inputs, unproved context rejection, live
+heartbeat compatibility and non-forwarding of the private context to actual
+workloads. [Fresh final consumer evidence](vitest-consumer-owned-output-2026-10-14.json)
+retains the same 29 rows / 12 qualified selections and all clean/dirty input
+controls. Prior raw reports remain immutable, source-pinned observations.

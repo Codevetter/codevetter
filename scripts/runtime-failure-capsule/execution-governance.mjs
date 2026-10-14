@@ -47,6 +47,7 @@ export async function planPerformanceExecution({
   timeoutMs,
   processCount = 1,
   approvalIdentity = null,
+  ownedRunDirectory,
 }) {
   const root = await realpath(resolve(repositoryRoot));
   if (!GOVERNED_ADAPTERS.includes(adapter)) throw new Error(`unsupported adapter: ${adapter}`);
@@ -66,7 +67,7 @@ export async function planPerformanceExecution({
     schema_version: PERFORMANCE_EXECUTION_PLAN_SCHEMA_VERSION,
     subject: {
       repository_revision: git.repository_revision,
-      diff_identity: await performanceInputIdentity(root),
+      diff_identity: await performanceInputIdentity(root, ownedRunDirectory),
       dirty: git.dirty,
       target_sha256: sha256(safeTarget.source),
     },

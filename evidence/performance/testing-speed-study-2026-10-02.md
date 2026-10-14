@@ -318,3 +318,8 @@ a non-reaping parent and was withdrawn. The
 [final scope and reproduced boundary](portable-reaping-boundary-2026-10-14.md)
 retain the dirty-input repair and fresh consumer checks. Complete owned-tree
 reaping still needs an OS lifecycle bridge; it is not qualified by group signals.
+
+The final input-identity correction removes the broad runs-directory exemption:
+only registered current-run output files are exempt. Imported helpers and
+receipt-shaped configurations reproduce stale execution before the correction
+and are rejected afterward; see the [reviewed boundary follow-up](portable-reaping-boundary-2026-10-14.md).

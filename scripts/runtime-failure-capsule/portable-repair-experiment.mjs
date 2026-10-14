@@ -174,7 +174,84 @@ async function isRunning(pid) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href)
-  process.stdout.write(
-    `${JSON.stringify(await portableRepairExperiment(process.argv[2]), null, 2)}\n`
+export async function reservedInputExperiment(
+  sourceRoot = fileURLToPath(new URL('../../', import.meta.url))
+) {
+  const moduleRoot = join(resolve(sourceRoot), 'scripts/runtime-failure-capsule');
+  const { planPerformanceExecution } = await import(
+    pathToFileURL(join(moduleRoot, 'execution-governance.mjs'))
   );
+  const { runClosedAdapter } = await import(pathToFileURL(join(moduleRoot, 'runner.mjs')));
+  const root = await mkdtemp(join(tmpdir(), 'codevetter-reserved-input-'));
+  try {
+    const target =
+      "import {readFileSync} from 'node:fs'; import {value} from './.codevetter/performance-runs/foreign/helper.mjs'; const config=JSON.parse(readFileSync('.codevetter/performance-runs/foreign/receipt.json')); console.log(JSON.stringify({executed:true,value,flag:config.flag}));";
+    await writeFile(join(root, 'test.mjs'), target);
+    execFileSync('git', ['init', '-q'], { cwd: root });
+    execFileSync('git', ['add', '.'], { cwd: root });
+    execFileSync(
+      'git',
+      [
+        '-c',
+        'user.name=Fixture',
+        '-c',
+        'user.email=fixture@example.invalid',
+        'commit',
+        '-qm',
+        'fixture',
+      ],
+      { cwd: root }
+    );
+    const directory = '.codevetter/performance-runs/foreign';
+    await mkdir(join(root, directory), { recursive: true });
+    const files = { 'helper.mjs': 'export const value=1;', 'receipt.json': '{"flag":1}' };
+    for (const [file, bytes] of Object.entries(files))
+      await writeFile(join(root, directory, file), bytes);
+    const rows = [];
+    for (const [file, bytes] of Object.entries(files)) {
+      const scope = {
+        repositoryRoot: root,
+        adapter: 'node-script',
+        target: 'test.mjs',
+        timeoutMs: 5000,
+      };
+      const plan = await planPerformanceExecution(scope);
+      assert.equal(plan.decision.status, 'admitted');
+      await writeFile(join(root, directory, file), bytes.replace('1', '2'));
+      let stdout = null;
+      let rejected = false;
+      try {
+        const execution = await runClosedAdapter({ ...scope, executionPlan: plan });
+        assert.equal(execution.exitCode, 0, execution.stderr);
+        stdout = JSON.parse(execution.stdout);
+        assert.equal(stdout.executed, true);
+        assert.equal(file === 'helper.mjs' ? stdout.value : stdout.flag, 2);
+      } catch (error) {
+        assert.match(error.message, /stale/);
+        rejected = true;
+      }
+      rows.push({
+        file: `${directory}/${file}`,
+        already_dirty: plan.subject.dirty,
+        stale_rejected: rejected,
+        executed: stdout,
+      });
+      await writeFile(join(root, directory, file), bytes);
+    }
+    return {
+      runtime: process.version,
+      fixture_sha256: createHash('sha256').update(JSON.stringify({ target, files })).digest('hex'),
+      rows,
+    };
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  const report =
+    process.argv[2] === '--reserved-inputs'
+      ? await reservedInputExperiment(process.argv[3])
+      : await portableRepairExperiment(process.argv[2]);
+  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+}

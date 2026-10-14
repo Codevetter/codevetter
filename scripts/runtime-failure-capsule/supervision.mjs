@@ -26,6 +26,8 @@ import {
   assertSupervisedRunReceipt,
 } from './supervision-contracts.mjs';
 
+import { SUPERVISION_INPUT_ENV } from './supervised-inputs.mjs';
+
 const RUNS_DIRECTORY = '.codevetter/performance-runs';
 let temporarySequence = 0;
 
@@ -63,7 +65,9 @@ export async function supervisePerformanceRun({
   }
   await assertTarget(root, target);
   const git = await inspectGitDiff(root);
+  const relativeDirectory = `${RUNS_DIRECTORY}/${safeRunId}`;
   const executionPlan = await planPerformanceExecution({
+    ownedRunDirectory: relativeDirectory,
     repositoryRoot: root,
     adapter: safeAdapter,
     target,
@@ -75,7 +79,6 @@ export async function supervisePerformanceRun({
       warmups: safeWarmups,
     }),
   });
-  const relativeDirectory = `${RUNS_DIRECTORY}/${safeRunId}`;
   const lexicalRunsDirectory = resolve(root, RUNS_DIRECTORY);
   await mkdir(lexicalRunsDirectory, { recursive: true });
   const realRunsDirectory = await realpath(lexicalRunsDirectory);
@@ -160,7 +163,10 @@ export async function supervisePerformanceRun({
     program: command.program,
     args: command.args,
     cwd: command.cwd ?? root,
-    environment: command.environment ?? minimalEnvironment(),
+    environment: {
+      ...(command.environment ?? minimalEnvironment()),
+      [SUPERVISION_INPUT_ENV]: relativeDirectory,
+    },
     deadlineMs: receipt.policy.supervisor_deadline_ms,
     heartbeatMs,
     repositoryRoot: root,

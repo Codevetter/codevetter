@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { validateSupervisedRunReceipt } from './supervision-contracts.mjs';
 import { inspectSupervisedRun, supervisePerformanceRun } from './supervision.mjs';
+import { ownedSupervisionInputs, SUPERVISION_INPUT_ENV } from './supervised-inputs.mjs';
 
 test('persists and inspects a successful validated diagnosis', async (context) => {
   const root = await gitFixture(context);
@@ -19,6 +20,15 @@ test('persists and inspects a successful validated diagnosis', async (context) =
   assert.equal(receipt.capture.truncated, false);
   assert.equal(receipt.result.path, '.codevetter/performance-runs/success/result.json');
   assert.match(receipt.result.sha256, /^[0-9a-f]{64}$/);
+
+  const previous = process.env[SUPERVISION_INPUT_ENV];
+  try {
+    process.env[SUPERVISION_INPUT_ENV] = '.codevetter/performance-runs/success';
+    await assert.rejects(ownedSupervisionInputs(root), /does not match parent/);
+  } finally {
+    if (previous === undefined) delete process.env[SUPERVISION_INPUT_ENV];
+    else process.env[SUPERVISION_INPUT_ENV] = previous;
+  }
 
   const inspected = await inspectSupervisedRun(root, 'success');
   assert.equal(inspected.receipt.run_id, 'success');
@@ -35,6 +45,7 @@ test('runs the existing diagnosis pipeline through the public supervisor boundar
   const root = await gitFixture(
     context,
     [
+      'if (process.env.CODEVETTER_OWNED_RUN_DIRECTORY !== undefined) throw new Error("private context leaked to workload");',
       'let total = 0;',
       'for (let index = 0; index < 5000; index += 1) total += index;',
       "console.log('[benchmark] size5000=0.25ms/op total=' + total + 'count');",

@@ -156,6 +156,8 @@ async function experiment(root) {
       'runner.mjs',
       'execution-governance.mjs',
       'execution-identity.mjs',
+      'supervised-inputs.mjs',
+      'supervision.mjs',
       'node-egress-preload.mjs',
     ]),
     fixtures: Object.fromEntries(

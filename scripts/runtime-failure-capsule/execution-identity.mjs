@@ -4,12 +4,15 @@ import { createReadStream } from 'node:fs';
 import { lstat, readlink, realpath, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { repositoryRelative } from './contracts.mjs';
+import { ownedSupervisionInputs, isOwnedSupervisionOutput } from './supervised-inputs.mjs';
 
 // Bind raw bytes, not Git's dirty boolean or normalized/textconv diff. Only the
 // opaque digest leaves this boundary. Ignored outputs/dependencies are not inputs.
-export async function performanceInputIdentity(root) {
-  const paths = await inputPaths(root);
+export async function performanceInputIdentity(root, ownedRunDirectory) {
+  const owned = await ownedSupervisionInputs(root, ownedRunDirectory);
+  const paths = await inputPaths(root, owned);
   const hash = createHash('sha256');
+  hash.update(JSON.stringify({ owned_output_directory: owned }));
   let bytes = 0;
   for (const path of paths) {
     const absolute = resolve(root, path);
@@ -42,7 +45,7 @@ export async function performanceInputIdentity(root) {
   return `worktree-sha256:${hash.digest('hex')}`;
 }
 
-function inputPaths(root) {
+function inputPaths(root, owned) {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(
       'git',
@@ -74,7 +77,7 @@ function inputPaths(root) {
           decoded
             .split('\0')
             .filter(Boolean)
-            .filter((entry) => !entry.startsWith('? .codevetter/performance-runs/'))
+            .filter((entry) => !isOwnedSupervisionOutput(entry, owned))
             .map((entry) => entry.slice(2))
         ),
       ].sort();

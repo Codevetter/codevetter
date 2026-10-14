@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, readFile, writeFile, rm, symlink, chmod } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm, symlink, chmod, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { portableRepairExperiment } from './portable-repair-experiment.mjs';
+import { performanceInputIdentity } from './execution-identity.mjs';
+import { ownedSupervisionInputs, SUPERVISION_INPUT_ENV } from './supervised-inputs.mjs';
+import {
+  portableRepairExperiment,
+  reservedInputExperiment,
+} from './portable-repair-experiment.mjs';
 import {
   planPerformanceExecution,
   assertPerformanceExecutionPlanCurrent,
@@ -71,6 +76,28 @@ test('input identity binds untracked bytes, staged edits, deletion, modes and co
   await assert.rejects(assertPerformanceExecutionPlanCurrent({ ...scope, plan }), /stale/);
   assert.match(plan.subject.diff_identity, /^worktree-sha256:[a-f0-9]{64}$/);
   assert.doesNotMatch(JSON.stringify(plan), /untracked.json|config.json|changed/);
+  const owned = '.codevetter/performance-runs/current';
+  await mkdir(join(root, owned), { recursive: true });
+  await writeFile(join(root, owned, 'receipt.json'), '{}');
+  let identity = await performanceInputIdentity(root, owned);
+  await writeFile(join(root, owned, 'receipt.json'), '{"heartbeat":2}');
+  assert.equal(await performanceInputIdentity(root, owned), identity);
+  await writeFile(join(root, owned, 'helper.mjs'), 'export const x=1;');
+  identity = await performanceInputIdentity(root, owned);
+  await writeFile(join(root, owned, 'helper.mjs'), 'export const x=2;');
+  assert.notEqual(await performanceInputIdentity(root, owned), identity);
+  execFileSync('git', ['add', `${owned}/receipt.json`], { cwd: root });
+  identity = await performanceInputIdentity(root, owned);
+  await writeFile(join(root, owned, 'receipt.json'), '{"heartbeat":3}');
+  assert.notEqual(await performanceInputIdentity(root, owned), identity);
+  const previous = process.env[SUPERVISION_INPUT_ENV];
+  try {
+    process.env[SUPERVISION_INPUT_ENV] = owned;
+    await assert.rejects(ownedSupervisionInputs(root), /invalid supervised run receipt/);
+  } finally {
+    if (previous === undefined) delete process.env[SUPERVISION_INPUT_ENV];
+    else process.env[SUPERVISION_INPUT_ENV] = previous;
+  }
   if (process.platform !== 'win32') {
     plan = await planPerformanceExecution(scope);
     await chmod(join(root, 'test.mjs'), 0o755);
@@ -82,4 +109,11 @@ test('input identity binds untracked bytes, staged edits, deletion, modes and co
     await symlink(process.execPath, join(root, 'escape'));
     await assert.rejects(planPerformanceExecution(scope), /symlink escapes/);
   }
+});
+
+test('an imported helper or receipt-shaped configuration beneath another run cannot escape invalidation', async () => {
+  const report = await reservedInputExperiment();
+  assert.ok(
+    report.rows.every((row) => row.already_dirty && row.stale_rejected && row.executed === null)
+  );
 });
