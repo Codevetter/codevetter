@@ -298,3 +298,28 @@ Vitest/jsdom comparison, reporter calibration and bounded-memory/reset proof
 remain necessary before adopting those optimizations; this experiment does not
 supply them. Source-pattern prescriptions also remain disabled until transformed
 coordinates and executed branches are qualified; static excerpts stay visible.
+
+The [portable source/reset follow-up](portable-qualification-2026-10-14.md) adds
+real transformed-span and block-execution evidence plus reset/invalidation and
+supervisor cancellation checks. It also executes a pinned public Reader workload
+with its existing Vitest/happy-dom dependencies: fresh/repeated contexts, Node
+environment comparison, selection/assertion oracles, reset, invalidation and
+cancellation. Dirty-tree invalidation misses and detached-workload cancellation
+failures are retained. This follow-up does not qualify runner acceleration,
+production warm reuse, jsdom equivalence or memory improvement.
+
+The [bounded successor repair](portable-repair-2026-10-14.md) reproduces and fixes
+already-dirty input invalidation and owned POSIX runner-group cleanup against
+frozen #389. It appends fresh synthetic and pinned-consumer evidence while
+preserving the prior negatives; it does not qualify acceleration or warm reuse.
+
+**Review correction:** the successor's attempted group guard left zombies under
+a non-reaping parent and was withdrawn. The
+[final scope and reproduced boundary](portable-reaping-boundary-2026-10-14.md)
+retain the dirty-input repair and fresh consumer checks. Complete owned-tree
+reaping still needs an OS lifecycle bridge; it is not qualified by group signals.
+
+The final input-identity correction removes the broad runs-directory exemption:
+only registered current-run output files are exempt. Imported helpers and
+receipt-shaped configurations reproduce stale execution before the correction
+and are rejected afterward; see the [reviewed boundary follow-up](portable-reaping-boundary-2026-10-14.md).

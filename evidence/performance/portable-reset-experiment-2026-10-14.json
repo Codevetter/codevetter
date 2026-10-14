@@ -1,0 +1,115 @@
+{
+  "schema_version": "codevetter.portable-reset-study/v1",
+  "runtime": "v24.19.0",
+  "implementation_sha256": "cdd2227f380c31da897ad366fc25220bfd6c597d478b3ea7744b63bef07725da",
+  "fixture_sha256": {
+    "dependency.mjs": "4c40d8373723c86567d6b6e23ed01be0610e285d1398571b205dff34f17dcbb9",
+    "config.json": "822babbc3f316f524e87023577eaac6949fcd603ee21d697c6a48891d0623abf",
+    "fixture.lock": "14493f5f5470ed48c3f103d917ec52ae9005fa3913128031d0fac2a49ac3cc41",
+    "reset.test.mjs": "bc4d67e7c7fd36ac511085d5d7f5619837fc50bf3d8ad40051ea6340133121d0",
+    "reuse.mjs": "f37785a44779e64ab2190798670b60bc87b4d1e0ef1d5a149b8bec87e3cca7e1",
+    "wait.mjs": "274b1aabd2c424f7242439b7db9b6d425ea7ef070148972ffbb66382e30cf26c"
+  },
+  "runs": [
+    {
+      "name": "module reset",
+      "status": "exited",
+      "exit": 0,
+      "executed": true,
+      "stdout": "TAP version 13\n# Subtest: module reset\nok 1 - module reset\n  ---\n  duration_ms: 0.676796\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 81.080353\n"
+    },
+    {
+      "name": "node environment",
+      "status": "exited",
+      "exit": 0,
+      "executed": true,
+      "stdout": "TAP version 13\n# Subtest: node environment\nok 1 - node environment\n  ---\n  duration_ms: 0.768083\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 88.735252\n"
+    },
+    {
+      "name": "timer reset",
+      "status": "exited",
+      "exit": 0,
+      "executed": true,
+      "stdout": "TAP version 13\n# Subtest: timer reset\nok 1 - timer reset\n  ---\n  duration_ms: 1.3392\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 87.290053\n"
+    },
+    {
+      "name": "module reset",
+      "status": "exited",
+      "exit": 0,
+      "executed": true,
+      "stdout": "TAP version 13\n# Subtest: module reset\nok 1 - module reset\n  ---\n  duration_ms: 0.723766\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 74.840685\n"
+    },
+    {
+      "name": "failing oracle",
+      "status": "exited",
+      "exit": 1,
+      "executed": true,
+      "stdout": "TAP version 13\n# Subtest: failing oracle\nnot ok 1 - failing oracle\n  ---\n  duration_ms: 1.227953\n  type: 'test'\n  location: '/tmp/codevetter-reset-eIyxTy/reset.test.mjs:7:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 99\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 99\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///tmp/codevetter-reset-eIyxTy/reset.test.mjs:7:37)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.start (node:internal/test_runner/test:1242:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 74.152677\n"
+    },
+    {
+      "name": "absent",
+      "status": "exited",
+      "exit": 0,
+      "executed": false,
+      "stdout": "TAP version 13\n1..0\n# Subtest: reset.test.mjs\nok 1 - reset.test.mjs\n  ---\n  duration_ms: 64.758368\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 71.021959\n"
+    }
+  ],
+  "full_suite": {
+    "name": null,
+    "status": "exited",
+    "exit": 1,
+    "executed": true,
+    "stdout": "TAP version 13\n# Subtest: module reset\nok 1 - module reset\n  ---\n  duration_ms: 0.902254\n  type: 'test'\n  ...\n# Subtest: node environment\nok 2 - node environment\n  ---\n  duration_ms: 0.154853\n  type: 'test'\n  ...\n# Subtest: timer reset\nok 3 - timer reset\n  ---\n  duration_ms: 0.565909\n  type: 'test'\n  ...\n# Subtest: failing oracle\nnot ok 4 - failing oracle\n  ---\n  duration_ms: 0.725158\n  type: 'test'\n  location: '/tmp/codevetter-reset-eIyxTy/reset.test.mjs:7:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 99\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 99\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///tmp/codevetter-reset-eIyxTy/reset.test.mjs:7:37)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n    Test.postRun (node:internal/test_runner/test:1522:19)\n    Test.run (node:internal/test_runner/test:1447:12)\n    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n  ...\n1..4\n# tests 4\n# suites 0\n# pass 3\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 82.268116\n"
+  },
+  "module_reuse": {
+    "name": null,
+    "status": "exited",
+    "exit": 0,
+    "executed": null,
+    "stdout": "{\"same_module\":true,\"shared_counter\":2}\n"
+  },
+  "invalidations": [
+    {
+      "file": "dependency.mjs",
+      "stale_plan_rejected": true
+    },
+    {
+      "file": "config.json",
+      "stale_plan_rejected": true
+    },
+    {
+      "file": "fixture.lock",
+      "stale_plan_rejected": true
+    }
+  ],
+  "edited": {
+    "name": "module reset",
+    "status": "exited",
+    "exit": 1,
+    "executed": true,
+    "stdout": "TAP version 13\n# Subtest: module reset\nnot ok 1 - module reset\n  ---\n  duration_ms: 1.784669\n  type: 'test'\n  location: '/tmp/codevetter-reset-eIyxTy/reset.test.mjs:3:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    2 !== 1\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 1\n  actual: 2\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file:///tmp/codevetter-reset-eIyxTy/reset.test.mjs:3:62)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.start (node:internal/test_runner/test:1242:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 78.353987\n"
+  },
+  "recovered": {
+    "name": "module reset",
+    "status": "exited",
+    "exit": 0,
+    "executed": true,
+    "stdout": "TAP version 13\n# Subtest: module reset\nok 1 - module reset\n  ---\n  duration_ms: 0.755384\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 77.991248\n"
+  },
+  "cancellation": {
+    "workload_survived_supervisor": true,
+    "study_cleanup_signal_sent": true,
+    "cancellation_qualified": false,
+    "state": "signaled",
+    "signal": "SIGTERM",
+    "result": null,
+    "owned_child_gone": true,
+    "verdict": "no_confidence"
+  },
+  "limitations": [
+    "Node synthetic checks only; Node environment is not jsdom equivalence.",
+    "Fresh-child reset is not a supported warm-verifier or transform-cache qualification.",
+    "No elapsed-time, memory improvement, or agent-benefit claim.",
+    "A signaled supervisor does not prove descendant cleanup; inspect cancellation_qualified."
+  ]
+}

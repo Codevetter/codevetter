@@ -3,6 +3,7 @@ import { readFile, realpath, stat } from 'node:fs/promises';
 import { isAbsolute, resolve } from 'node:path';
 
 import { LIMITS, PROFILE_ADAPTERS, repositoryRelative } from './contracts.mjs';
+import { performanceInputIdentity } from './execution-identity.mjs';
 import { inspectGitDiff } from './git-diff.mjs';
 
 export const PERFORMANCE_EXECUTION_PLAN_SCHEMA_VERSION = 'performance-execution-plan/v1';
@@ -46,6 +47,7 @@ export async function planPerformanceExecution({
   timeoutMs,
   processCount = 1,
   approvalIdentity = null,
+  ownedRunDirectory,
 }) {
   const root = await realpath(resolve(repositoryRoot));
   if (!GOVERNED_ADAPTERS.includes(adapter)) throw new Error(`unsupported adapter: ${adapter}`);
@@ -65,7 +67,7 @@ export async function planPerformanceExecution({
     schema_version: PERFORMANCE_EXECUTION_PLAN_SCHEMA_VERSION,
     subject: {
       repository_revision: git.repository_revision,
-      diff_identity: git.diff_identity,
+      diff_identity: await performanceInputIdentity(root, ownedRunDirectory),
       dirty: git.dirty,
       target_sha256: sha256(safeTarget.source),
     },
@@ -177,7 +179,7 @@ export async function assertPerformanceExecutionPlanCurrent({
     plan.scope.target !== safeTarget.relative ||
     plan.scope.name !== name ||
     plan.subject.repository_revision !== git.repository_revision ||
-    plan.subject.diff_identity !== git.diff_identity ||
+    plan.subject.diff_identity !== (await performanceInputIdentity(root)) ||
     plan.subject.dirty !== git.dirty ||
     plan.subject.target_sha256 !== sha256(safeTarget.source)
   ) {
