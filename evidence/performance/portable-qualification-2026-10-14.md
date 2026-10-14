@@ -56,11 +56,12 @@ The [reset experiment](portable-reset-experiment-2026-10-14.json) executes:
 
 ## Negative and unknown results
 
-Vitest and jsdom are neither declared dependencies nor installed in this checkout.
-The experiment retains an unavailable Vitest preflight and **zero executed tests**;
-Node tests are not presented as a Vitest or jsdom substitute. Representative
-Vitest/environment equivalence, supported warm-verifier reuse, and memory bounds
-remain unqualified. No new dependency or alternate runner default was added.
+The earlier unavailable CodeVetter-local Vitest preflight remains recorded with
+zero executed tests. It is not the final prerequisite outcome: the owner-authorized
+public consumer experiment below uses Reader's existing frozen dependencies.
+No CodeVetter dependency or default runner was changed. jsdom is not declared by
+either checkout; the representative DOM environment is Reader's actual happy-dom.
+Supported production warm reuse and memory bounds remain unqualified.
 
 No timing improvement is claimed, so there is no baseline/candidate timing
 comparison. Raw correctness-run TAP durations are retained, not interpreted as
@@ -68,6 +69,83 @@ acceleration. The prior 208-line experiment remains a bounded synthetic study.
 The default diagnosis pipeline, metric/profile passes, instrumentation completeness,
 acceptance contracts and disabled pattern-specific recommendations are unchanged.
 No native, production, installed-app, provider or agent benefit is established.
+
+## Published Vitest consumer experiment
+
+The [consumer report](vitest-consumer-experiment-2026-10-14.json) executes Reader's
+published pure-logic `src/lib/spa-route.test.ts` (18 route assertions), pinned to
+[`4c45b25f2c0320d7d25901940973dcb9cbe40dde`](https://github.com/Significant-Hobbies/reader/tree/4c45b25f2c0320d7d25901940973dcb9cbe40dde).
+The original checkout stays detached and clean. Experiments archive that exact
+public commit into a disposable repository and hard-link its installed package
+inputs; source mutations and synthetic controls exist only in the disposable copy.
+No Reader branch, product source, lockfile or dependency declaration is changed.
+
+`corepack pnpm install --frozen-lockfile` succeeded using pnpm 10.33.2 and the
+persistent store `/root/.local/share/pnpm/store/v10`. Resolution was skipped;
+639 packages were reused and three downloaded. The normal policy ran `prepare`
+(Husky) and retained pnpm's ignored dependency build scripts. A repeat frozen
+install reported the lock up to date and all packages already installed. The
+installed virtual-store lock exactly matches the published lock SHA-256:
+`ce041879ea878b0514385888bc85f11246bd38c5b3f477310432b0bc7b51416e`.
+This installation step accesses public package sources; **test workloads** run
+under the existing zero-egress Node preload with minimal inherited environment.
+
+Tool identities are Node 24.19.0, Vitest/@vitest/coverage-v8 4.1.10, Vite 8.1.5,
+Rolldown 1.1.5, happy-dom 20.11.1 and declared TypeScript 6.0.3. TypeScript's
+package version is recorded, not misidentified as Vite's transform compiler.
+The report binds published source/test/config/lock hashes, installed package
+manifests, Node binary, study implementation, selection, and each assertion's
+fresh run ID. Vite transform-code/map/input hashes are retained for traceability;
+these are not an inspector proof of exact executed Vite script bytes. Exact-span
+execution qualification remains the separate Node transformer experiment above.
+
+| Experiment | Observed result |
+| --- | --- |
+| Existing default Vitest adapter/config | All 18 named route assertions pass |
+| Fresh context and same-context rerun, each environment | 18 passing assertions in happy-dom and in Node |
+| Exact `/app` selection, each environment | One assertion executes; 17 tests skipped |
+| Absent selection / collection, each environment | Zero assertions; execution unqualified |
+| Explicit module, fake-timer, global and spy reset, twice per environment | Four tests / nine assertions pass each time |
+| Unreset singleton control, each environment | Second assertion fails as expected |
+| Imported source edit + explicit transform invalidation | One route assertion fails; restoration passes all 18 |
+| Passing body followed by seeded afterAll failure | Body assertion passes, module failure retained; execution unqualified |
+| Seeded test assertion oracle | Five assertions fail; restoration passes all 18 |
+| Config edit with a new context, then restore | Node then happy-dom each pass all 18 |
+| Cancel after real test-body start | Both tests skipped, zero assertions; queued body never starts; owned worker gone after close |
+| Source/config/lock plan invalidation from clean tree | Stale plan rejected in all three controls |
+| Same edits with already-dirty tree | Existing plan check misses all three; exact hashes detect edits; reuse unqualified |
+
+“Cold” means a fresh Vitest context, not cleared machine/filesystem caches.
+“Warm” means a repeated run in the same context with isolation retained. This is
+correctness/reset evidence only: there is no elapsed-time comparison or speedup
+claim. The results apply to this pure-logic module, not DOM-dependent tests or
+all Reader behavior. Instrumentation passes and production acceptance remain intact.
+
+Vitest's run result can retain modules from previous runs. The study selects the
+exact requested module and requires positive assertion counts with the current
+run ID and exact expected names. Collection, exit zero, duplicate names, partial
+selection, failed tests, stale run IDs and changed identities cannot qualify.
+The cancellation API observation does not erase the independent supervisor's
+surviving-detached-workload counterexample. Likewise, a clean-to-dirty transition
+is insufficient as a reusable source/config/lock cache identity; the dirty-tree
+negative is retained rather than promoted to a warm-verifier recommendation.
+
+Reproduce on Linux with a separate public checkout (do not use an active product
+worktree). Install the already-declared dependencies through the frozen flow:
+
+```sh
+git clone https://github.com/Significant-Hobbies/reader.git /tmp/reader-348
+git -C /tmp/reader-348 checkout --detach 4c45b25f2c0320d7d25901940973dcb9cbe40dde
+(cd /tmp/reader-348 && corepack pnpm install --frozen-lockfile)
+node scripts/runtime-failure-capsule/vitest-consumer-experiment.mjs /tmp/reader-348
+CODEVETTER_READER_STUDY_ROOT=/tmp/reader-348 node --test scripts/runtime-failure-capsule/vitest-consumer.test.mjs
+```
+
+The live consumer integration and source/reset focused suite passed all ten tests.
+CI runs the deterministic consumer-evidence rejection regressions alongside the
+live synthetic source/reset studies. The consumer integration is explicitly
+skipped without its pinned, frozen checkout; a replay is not a live Vitest run.
+CodeVetter CI does not acquire a mandatory sibling-product dependency.
 
 ## Reproduction and checks
 
@@ -78,7 +156,7 @@ node --test scripts/runtime-failure-capsule/source-execution.test.mjs scripts/ru
 ```
 
 Focused regressions execute the real studies, not only fabricated JSON. The CI
-workflow includes these two test files. On this Linux host, the portable runtime
+workflow includes these source/reset test files and the consumer evidence regressions. On this Linux host, the portable runtime
 suite passes with the two Go cases explicitly excluded. Both Go failures also
 reproduce on the untouched published prerequisite: Go is absent and portable
 Go zero-egress enforcement is unavailable. The existing platform-specific skip

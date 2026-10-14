@@ -301,5 +301,9 @@ coordinates and executed branches are qualified; static excerpts stay visible.
 
 The [portable source/reset follow-up](portable-qualification-2026-10-14.md) adds
 real transformed-span and block-execution evidence plus reset/invalidation and
-supervisor cancellation checks. Vitest/jsdom remain blocked by unavailable existing
-dependencies; this follow-up does not qualify runner acceleration or warm reuse.
+supervisor cancellation checks. It also executes a pinned public Reader workload
+with its existing Vitest/happy-dom dependencies: fresh/repeated contexts, Node
+environment comparison, selection/assertion oracles, reset, invalidation and
+cancellation. Dirty-tree invalidation misses and detached-workload cancellation
+failures are retained. This follow-up does not qualify runner acceleration,
+production warm reuse, jsdom equivalence or memory improvement.
