@@ -5,6 +5,7 @@ import { lstatSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assessUnpackBatch } from './check-unpack-batch.mjs';
+import { assessPerformanceEvidence } from './check-performance-evidence.mjs';
 
 const standardLimits = Object.freeze({
   changedFiles: 40,
@@ -185,8 +186,39 @@ try {
       process.exit(0);
     }
   }
+  const added = git([
+    'diff',
+    '--name-only',
+    '--find-renames=50%',
+    '--diff-filter=A',
+    comparisonBase,
+    '--',
+  ]);
+  if (added.status !== 0) throw new Error(added.stderr.trim() || 'git diff failed');
+  const performance = assessPerformanceEvidence(
+    repositoryRoot,
+    comparisonBase,
+    [...changed.stdout.split('\n').filter(Boolean), ...untracked.files],
+    added.stdout.split('\n').filter(Boolean)
+  );
+  if (performance.passed) {
+    const excluded = new Set(performance.artifacts);
+    const source = addUntracked(
+      measureNumstat(['--no-renames', '--diff-filter=ACDMR'], excluded),
+      countUntracked(excluded)
+    );
+    if (Object.entries(standardLimits).every(([metric, limit]) => source[metric] <= limit)) {
+      console.log(
+        `Change-size gate: PASS qualified performance evidence (${performance.artifacts.length} files, ${performance.lines} lines, ${performance.bytes} bytes; source ${source.changedFiles} files, ${source.addedLines} additions, ${source.grossLines} gross lines)`
+      );
+      process.exit(0);
+    }
+  }
   console.error(
     `Corpus batch exception: ${batch.passed ? 'source changes exceed standard limits' : batch.reason}`
+  );
+  console.error(
+    `Performance evidence exception: ${performance.passed ? 'source changes exceed standard limits' : performance.reason}`
   );
 
   const retirement = retirementAssessment(untracked);

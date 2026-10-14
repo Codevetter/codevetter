@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "reviewedBase": "0e8be1686ed11ad5bfc0e97b41f4fe4f49842144",
+  "reviewedHead": "b4e9e1d5daa82a1efb6d3cee8a02d18231d55120",
+  "scope": "#348 reviewed portable performance evidence; no speedup or process-tree cleanup claim",
+  "artifacts": [
+    {
+      "path": "evidence/performance/portable-invalidation-2026-10-14.json",
+      "sha256": "6f9fa8e3e38c6c2e2e525885ab793fe2a7b0346e83c64548bad797c742d46b26"
+    },
+    {
+      "path": "evidence/performance/portable-owned-output-2026-10-14.json",
+      "sha256": "f2109bea66555ec996180522334026bfbbb1cb597adadfa3a679ebe4947860c8"
+    },
+    {
+      "path": "evidence/performance/portable-qualification-2026-10-14.md",
+      "sha256": "3bd4542e3aa9c14903772542d5d3851e0796a8bd3419e7351a2de19178ecf3ab"
+    },
+    {
+      "path": "evidence/performance/portable-reaping-boundary-2026-10-14.json",
+      "sha256": "bd29e0ad83895a18449bab4c8f68dbcb1b5f7b1e2fb4fba36c1edbf7c31554f5"
+    },
+    {
+      "path": "evidence/performance/portable-reaping-boundary-2026-10-14.md",
+      "sha256": "110b85bbc09af9998de9374e6a5c0fddb5e894d39c1ffc8f91cfa75353f50511"
+    },
+    {
+      "path": "evidence/performance/portable-repair-2026-10-14.json",
+      "sha256": "f898476522edb391a3bfe61c787a64c8a33a708bdbf65f99b355e762db38ed43"
+    },
+    {
+      "path": "evidence/performance/portable-repair-2026-10-14.md",
+      "sha256": "12b5ed17e69154b0847a7fb5ccb81377e5eb2b149f972542e355ec26cfe4cc7b"
+    },
+    {
+      "path": "evidence/performance/portable-reset-experiment-2026-10-14.json",
+      "sha256": "617f86a299497df390fcfc41803b48f86c72db432d5edd5cb9bafccf4750317a"
+    },
+    {
+      "path": "evidence/performance/source-execution-experiment-2026-10-14.json",
+      "sha256": "59030798e60cf8888a37d288c2d691c6ce9747f566da0a653900fa939c681ad1"
+    },
+    {
+      "path": "evidence/performance/vitest-consumer-experiment-2026-10-14.json",
+      "sha256": "2b947ed70b87b31ae9b31751b448d653dacc9384d132a7ec4eb18d709b5ba9a1"
+    },
+    {
+      "path": "evidence/performance/vitest-consumer-invalidation-2026-10-14.json",
+      "sha256": "98e236302266503c0cf44cf6f036fc510023e648affda3edd7ff17d493017708"
+    },
+    {
+      "path": "evidence/performance/vitest-consumer-owned-output-2026-10-14.json",
+      "sha256": "9d75b1b1e755585df49ccf857ef1395761a15b9864eccee62f9ef0bf37727e6e"
+    },
+    {
+      "path": "evidence/performance/vitest-consumer-repair-2026-10-14.json",
+      "sha256": "73768e3756636d25e64483d97fa8a0ba5664c64aba8fd4cf850f872590e5adaf"
+    }
+  ]
+}
