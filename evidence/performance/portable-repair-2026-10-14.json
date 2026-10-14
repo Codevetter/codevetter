@@ -1,0 +1,142 @@
+{
+  "schema_version": "codevetter.portable-repair-study/v1",
+  "published_prerequisite": "903dfb6b9f7bf76baa9c66c4750017eea0c619ee",
+  "prerequisite_tree": "57fba90e2d83c6862fd61babfb5a088fcd49c4f5",
+  "runtime": {
+    "node": "v24.19.0",
+    "binary_sha256": "bc17c508ffeed0ec622934f9b7fa72f8e78da65350e63c3eceb56fa688aa5e12",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "harness_sha256": "a56c49e2c34803a9cb058dc5af7bd4d6113cf7a2368b0e4b461362f5ba1c5e78",
+  "candidate_implementation_sha256": {
+    "scripts/runtime-failure-capsule/campaign-cli.mjs": "50065eb5c0faa43eafd72b9129d8398e90c4197d261b9bbe5c6ebd9a466c9983",
+    "scripts/runtime-failure-capsule/campaign-contracts.mjs": "f11bffb2e706dc4a2387178e07e4da3cb79664db0a1cf0e8d5aad321e234c660",
+    "scripts/runtime-failure-capsule/campaign.mjs": "71fc692a18107581fa0fde36770d2d60a79e721cb8f1b36cc67779eedb392dc9",
+    "scripts/runtime-failure-capsule/capsule.mjs": "53d710ff5e27691199ae9a29dc3b9542dbd704962ec7d652579ea0e63c720e9d",
+    "scripts/runtime-failure-capsule/change-cost.mjs": "4d2a750a4880fdae20d77cf27c9dc1ddf913e1388cf9641734c94ef0bbf38a59",
+    "scripts/runtime-failure-capsule/cli.mjs": "276913fe300daf5c87de40f2ce39198c58e9f9d673ebaa979ab1c13420090dd8",
+    "scripts/runtime-failure-capsule/contracts.mjs": "78d22e2481286bd8b6605001ab603e58f4f8a10a86e071e204939957d5ea9123",
+    "scripts/runtime-failure-capsule/contribution-contracts.mjs": "534cb5bf3dae36965d7243bebbb3b1aaf930dbfbf07b32f7ff805bfeffc56358",
+    "scripts/runtime-failure-capsule/contribution.mjs": "17aa1d26a55b3f759dc247ce5db43798ebde03de2bd529bac97eee4db4be72e8",
+    "scripts/runtime-failure-capsule/detect.mjs": "ed312618de8ca85dd128cea35e6ec135421b3f7b0c565b0a5a9a173a4a3e37f3",
+    "scripts/runtime-failure-capsule/execution-governance.mjs": "753e772734b76c60a1f09258bc113f95fd40bd8aaab664a7c9030e134cd77156",
+    "scripts/runtime-failure-capsule/execution-identity.mjs": "9ef9311eca115254f3bfeba103c9ac01af21abe283983d6c57d67350074f6894",
+    "scripts/runtime-failure-capsule/flow-campaign-planner.mjs": "27b84603a70f913fdcbcee851661b0d3255dbb9001a35abffb889dc2f322eef0",
+    "scripts/runtime-failure-capsule/flow-capture.mjs": "5a15176c75a8363eb535875664b05dc446326af17a70bae83ac7815798555ade",
+    "scripts/runtime-failure-capsule/flow-service.mjs": "06290baaa678ee78ff234dad982910edb74c0a3f4665cc541a469bab14b25199",
+    "scripts/runtime-failure-capsule/flow.mjs": "a162f455f1a3690ba2ff5ef00af4bee15602ddaece5bc44a64e27bddeef23daf",
+    "scripts/runtime-failure-capsule/function-coverage.mjs": "d05438ab90635fca556cb7f37390df336cf843f56fb2c37f497ec4b7def129a5",
+    "scripts/runtime-failure-capsule/git-diff.mjs": "c54815cfc8b519bec7f42240da97c1f0f300ad5bba5c9280096ffd46a3b83204",
+    "scripts/runtime-failure-capsule/mcp.mjs": "587df375aeb7843649c8f51d740d1cebc3fcfc47d9f9f8c325b227d5675b0ee7",
+    "scripts/runtime-failure-capsule/node-egress-preload.mjs": "ad5733c7ce50ae3169b9df7fc78a72d912a142d2113ca2355675a48b9d69f091",
+    "scripts/runtime-failure-capsule/node-flow-preload.mjs": "d7b326534686046bd136e60b61fe1664d515d288740cc3ac2841d6c8751348ab",
+    "scripts/runtime-failure-capsule/optimization-verification.mjs": "25e1a9cf3215db5d802efbe2784d28da93c6da7ab57c0472165b2820bb7f3fd1",
+    "scripts/runtime-failure-capsule/owned-process-guard.mjs": "606550a2101fffbe9d2a90921363857189156dd53c4e2367c4c0d5f0b6f60e51",
+    "scripts/runtime-failure-capsule/owned-process.mjs": "10475e8d8b437441a44b267344edcd7d2eead20752b8728e89983083a45b15b3",
+    "scripts/runtime-failure-capsule/paired-verification.mjs": "4ccd9344e5002a3059a46b4984f642dc432520e902df9475194f5342c769a9e2",
+    "scripts/runtime-failure-capsule/performance-diagnosis.mjs": "b8f99ede8dd402f9787b9c453d50298e14cd231c81ab461c5e0f7199ff91fd65",
+    "scripts/runtime-failure-capsule/performance.mjs": "516055f32072814e075b0e8c2b8b76182b54e80a0f5686802c1568722e946a62",
+    "scripts/runtime-failure-capsule/portable-repair-experiment.mjs": "a56c49e2c34803a9cb058dc5af7bd4d6113cf7a2368b0e4b461362f5ba1c5e78",
+    "scripts/runtime-failure-capsule/portable-reset-experiment.mjs": "24902dbbeeb77a4b34697b5bf3dc63c30d84940d9b30aade7d879fd34cfbc094",
+    "scripts/runtime-failure-capsule/qualification-contracts.mjs": "c4ee7eb382c98cc62cad8b1646e64768fb916ea4cd466f8789c35052728439da",
+    "scripts/runtime-failure-capsule/qualification.mjs": "20d0c1d388aa0fc39b39a00a2b405579d891dbc451208dfb88286dad45cd9493",
+    "scripts/runtime-failure-capsule/redact.mjs": "ee68da049bc7502f1fecd00c3f340ce8f00016c000425ad6c89a45b4b2caaed8",
+    "scripts/runtime-failure-capsule/runner.mjs": "6282b23e1905dc2d623e42a89299f362f65b8919caff8234ed4b32e53273dd3b",
+    "scripts/runtime-failure-capsule/source-context.mjs": "6c97d2b01dc777e45b171e314a95b4cde0c722175c0e4a27e445c644d314b7e5",
+    "scripts/runtime-failure-capsule/source-execution-experiment.mjs": "ac007a933af71414b5aff0f68cf0c9593482ce2ede0d9737d5afc78d2b8919c5",
+    "scripts/runtime-failure-capsule/source-execution-fixture.mjs": "498100885578deb72e798981c6f117a398828d60c9c1db261979ac9cf978b883",
+    "scripts/runtime-failure-capsule/source-execution.mjs": "cfbe619f83a5670cfe4308a4fc8524f534e0f2a3e40d312195da68a86cc1f970",
+    "scripts/runtime-failure-capsule/supervision-contracts.mjs": "06e2c4af016c7b7b2bdc15aa571cfa080640a6c91369485ea3c56519c41cf504",
+    "scripts/runtime-failure-capsule/supervision.mjs": "e780ccfcbf794754104cebaaae2c9bad5ffdfa97aa5dfcbee84cc5017a2e892d",
+    "scripts/runtime-failure-capsule/testing-speed-experiment.mjs": "f1dc0ec01c90c32717376e56a7bd7001d8ca89569d0916dac9035bd180ce34e8",
+    "scripts/runtime-failure-capsule/vite-artifact.mjs": "6541f79c78a1b30107876697c12a039a61495b681220131453870c406ce9db62",
+    "scripts/runtime-failure-capsule/vitest-consumer-evidence.mjs": "80fd13f29f60da290675227c9d167a6806a48f97bb1c3a2b37e32cddf53b813b",
+    "scripts/runtime-failure-capsule/vitest-consumer-experiment.mjs": "b80bbd8f59c77ea4c10dd7beafbab7cf81a848be2470e669e6b5eeeaf77846e2",
+    "scripts/runtime-failure-capsule/vitest-consumer-fixtures.mjs": "5378aeae8120cb6086a178b872a7713b5f3513aa0f56bba8135a4dfb817fb7f3",
+    "scripts/runtime-failure-capsule/vitest-consumer-worker.mjs": "0f875d79f3edb45b97a98719a26e4fb0666e06a22c5744c401e0bbb4492ee595"
+  },
+  "before": {
+    "runtime": "v24.19.0",
+    "platform": "linux",
+    "fixture_sha256": {
+      ".gitignore": "942196b088fb5dae0384be3f3b2179d0c3301dc151b82f9d414ea687d41a317c",
+      "wait.mjs": "6027df597277557244d4710d042dba22981c555fa66f5597b230ce4d01fc6581",
+      "source.mjs": "2bf28849cade87113ec4170ef2bf9ffb1179fc9a276afa675c9de2424349560b",
+      "config.json": "26b3426b2593763c96d0890b4a77a0bbf66d13fc512b0c6b138a23c290f30a2a",
+      "fixture.lock": "14493f5f5470ed48c3f103d917ec52ae9005fa3913128031d0fac2a49ac3cc41"
+    },
+    "invalidations": [
+      {
+        "file": "source.mjs",
+        "already_dirty": true,
+        "stale_rejected": false
+      },
+      {
+        "file": "config.json",
+        "already_dirty": true,
+        "stale_rejected": false
+      },
+      {
+        "file": "fixture.lock",
+        "already_dirty": true,
+        "stale_rejected": false
+      }
+    ],
+    "cancellation": {
+      "actual_body_started": true,
+      "workload_running_after_cancel": true,
+      "study_cleanup_required": true,
+      "unowned_alive": true,
+      "state": "signaled",
+      "signal": "SIGTERM",
+      "result": null,
+      "failure_kind": "signaled"
+    }
+  },
+  "after": {
+    "runtime": "v24.19.0",
+    "platform": "linux",
+    "fixture_sha256": {
+      ".gitignore": "942196b088fb5dae0384be3f3b2179d0c3301dc151b82f9d414ea687d41a317c",
+      "wait.mjs": "6027df597277557244d4710d042dba22981c555fa66f5597b230ce4d01fc6581",
+      "source.mjs": "2bf28849cade87113ec4170ef2bf9ffb1179fc9a276afa675c9de2424349560b",
+      "config.json": "26b3426b2593763c96d0890b4a77a0bbf66d13fc512b0c6b138a23c290f30a2a",
+      "fixture.lock": "14493f5f5470ed48c3f103d917ec52ae9005fa3913128031d0fac2a49ac3cc41"
+    },
+    "invalidations": [
+      {
+        "file": "source.mjs",
+        "already_dirty": true,
+        "stale_rejected": true
+      },
+      {
+        "file": "config.json",
+        "already_dirty": true,
+        "stale_rejected": true
+      },
+      {
+        "file": "fixture.lock",
+        "already_dirty": true,
+        "stale_rejected": true
+      }
+    ],
+    "cancellation": {
+      "actual_body_started": true,
+      "workload_running_after_cancel": false,
+      "study_cleanup_required": false,
+      "unowned_alive": true,
+      "state": "signaled",
+      "signal": "SIGTERM",
+      "result": null,
+      "failure_kind": "signaled"
+    }
+  },
+  "limitations": [
+    "Same synthetic workload, no timing claim.",
+    "POSIX owned groups only; Windows direct-child fallback is not process-tree qualification.",
+    "Arbitrary application-created sessions and external SIGKILL of the guard are outside the guarantee.",
+    "Source inventory is Git tracked/nonignored input bytes, not ignored dependency authenticity or an atomic filesystem snapshot.",
+    "Hosted transport omitted close after explicit IPC disconnect; exit plus independent child liveness verifies that control."
+  ]
+}

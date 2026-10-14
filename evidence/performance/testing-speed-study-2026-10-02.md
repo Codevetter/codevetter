@@ -307,3 +307,8 @@ environment comparison, selection/assertion oracles, reset, invalidation and
 cancellation. Dirty-tree invalidation misses and detached-workload cancellation
 failures are retained. This follow-up does not qualify runner acceleration,
 production warm reuse, jsdom equivalence or memory improvement.
+
+The [bounded successor repair](portable-repair-2026-10-14.md) reproduces and fixes
+already-dirty input invalidation and owned POSIX runner-group cleanup against
+frozen #389. It appends fresh synthetic and pinned-consumer evidence while
+preserving the prior negatives; it does not qualify acceleration or warm reuse.

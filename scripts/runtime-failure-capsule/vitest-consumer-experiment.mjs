@@ -126,7 +126,7 @@ async function experiment(root) {
   const invalidations = await invalidationControls(root);
   return {
     schema_version: 'codevetter.vitest-consumer-study/v1',
-    published_prerequisite: '0e8be1686ed11ad5bfc0e97b41f4fe4f49842144',
+    published_prerequisite: '903dfb6b9f7bf76baa9c66c4750017eea0c619ee',
     consumer: {
       repository: 'Significant-Hobbies/reader',
       commit: READER_BASE,
@@ -154,6 +154,10 @@ async function experiment(root) {
       'vitest-consumer-fixtures.mjs',
       'vitest-consumer-evidence.mjs',
       'runner.mjs',
+      'execution-governance.mjs',
+      'execution-identity.mjs',
+      'owned-process.mjs',
+      'owned-process-guard.mjs',
       'node-egress-preload.mjs',
     ]),
     fixtures: Object.fromEntries(
@@ -174,8 +178,8 @@ async function experiment(root) {
       'Cold means a fresh Vitest context; warm means rerun in that context, not a machine or filesystem cache flush.',
       'No duration comparison or acceleration, memory, agent, native, production, or provider claim.',
       'Cancellation is observed after the actual body starts; cancellation never qualifies execution.',
-      'Existing plan identity misses dependency/config/lock edits when already dirty; exact-hash study guards detect them, but production warm reuse remains unqualified.',
-      'The earlier supervisor detached-descendant cancellation counterexample remains unresolved.',
+      'Plan identity binds raw Git-owned/nonignored input bytes including already-dirty edits; production warm reuse remains unqualified.',
+      'The PR #389 detached-descendant cancellation report is historical; see the separate successor cleanup experiment.',
       'Linux local study setup uses cp -al for existing installed package inputs. No product source or dependency declaration is changed.',
     ],
   };
@@ -256,7 +260,7 @@ async function invalidationControls(root) {
       }
       const changed = sourceDigest(await readFile(join(root, file))) !== sourceDigest(bytes);
       assert.equal(changed, true);
-      assert.equal(rejected, !plan.subject.dirty);
+      assert.equal(rejected, true);
       rows.push({
         file,
         baseline_dirty: plan.subject.dirty,

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { sourceDigest } from './source-execution.mjs';
 import { test } from 'node:test';
 import { qualifyConsumerSelection, routeTestNames } from './vitest-consumer-evidence.mjs';
 import { READER_BASE, vitestConsumerExperiment } from './vitest-consumer-experiment.mjs';
@@ -134,3 +135,28 @@ function assertRecordedCancellation(row) {
     JSON.stringify(row)
   );
 }
+
+test('successor consumer report retains executed selections and repairs every dirty invalidation', async () => {
+  const current = JSON.parse(
+    await readFile(
+      new URL('../../evidence/performance/vitest-consumer-repair-2026-10-14.json', import.meta.url)
+    )
+  );
+  assert.equal(current.published_prerequisite, '903dfb6b9f7bf76baa9c66c4750017eea0c619ee');
+  assert.equal(current.consumer.commit, READER_BASE);
+  assert.equal(current.rows.length, 29);
+  assert.equal(current.rows.filter((row) => row.execution_qualified).length, 12);
+  assert.equal(current.default_runner.assertion_results.length, 18);
+  assert.equal(
+    qualifyConsumerSelection(
+      current.rows.find((row) => row.label === 'happy-dom:cold'),
+      expected
+    ),
+    true
+  );
+  assertRecordedCancellation(current.rows.find((row) => row.cancelled));
+  for (const group of Object.values(current.invalidations))
+    assert.ok(group.every((row) => row.stale_plan_rejected && row.exact_hash_changed));
+  for (const [file, hash] of Object.entries(current.implementation))
+    assert.equal(sourceDigest(await readFile(new URL(file, import.meta.url))), hash, file);
+});
