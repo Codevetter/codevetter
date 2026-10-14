@@ -139,7 +139,10 @@ function assertRecordedCancellation(row) {
 test('successor consumer report retains executed selections and repairs every dirty invalidation', async () => {
   const current = JSON.parse(
     await readFile(
-      new URL('../../evidence/performance/vitest-consumer-repair-2026-10-14.json', import.meta.url)
+      new URL(
+        '../../evidence/performance/vitest-consumer-invalidation-2026-10-14.json',
+        import.meta.url
+      )
     )
   );
   assert.equal(current.published_prerequisite, '903dfb6b9f7bf76baa9c66c4750017eea0c619ee');

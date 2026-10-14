@@ -312,3 +312,9 @@ The [bounded successor repair](portable-repair-2026-10-14.md) reproduces and fix
 already-dirty input invalidation and owned POSIX runner-group cleanup against
 frozen #389. It appends fresh synthetic and pinned-consumer evidence while
 preserving the prior negatives; it does not qualify acceleration or warm reuse.
+
+**Review correction:** the successor's attempted group guard left zombies under
+a non-reaping parent and was withdrawn. The
+[final scope and reproduced boundary](portable-reaping-boundary-2026-10-14.md)
+retain the dirty-input repair and fresh consumer checks. Complete owned-tree
+reaping still needs an OS lifecycle bridge; it is not qualified by group signals.

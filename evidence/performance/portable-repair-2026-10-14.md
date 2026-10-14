@@ -113,3 +113,13 @@ the testing skill's recorded `blocked/setup_blocked` assessment remains valid.
 These native Node reports are not installed-CLI benefit evidence. No matched
 agent trials, provider work, native app change or production configuration is
 part of this successor.
+
+## Review correction — cleanup candidate withdrawn
+
+The implementation/results above describe candidate
+`38f9e70e7ba17b1c1982fa13c65bbabc4eda4803`. A subsequently reproduced non-reaping
+parent counterexample left three zombies. The guard and its runner integration
+were withdrawn; the input-identity repair remains. Read the
+[final scope and exact reaper requirement](portable-reaping-boundary-2026-10-14.md).
+The raw candidate reports above remain unchanged historical observations and
+must not be read as the final source's cleanup qualification.

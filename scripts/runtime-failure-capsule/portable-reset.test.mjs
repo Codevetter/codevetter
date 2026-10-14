@@ -18,9 +18,9 @@ test('portable reset preserves failures, invalidation and owned cancellation', a
   assert.equal(report.cancellation.owned_child_gone, true);
   assert.equal(report.cancellation.result, null);
   if (process.platform === 'linux') {
-    // PR #389 retains the historical failure; the successor must now clean up.
-    assert.equal(report.cancellation.workload_survived_supervisor, false);
-    assert.equal(report.cancellation.cancellation_qualified, true);
+    // This retained counterexample must be reassessed when supervision changes.
+    assert.equal(report.cancellation.workload_survived_supervisor, true);
+    assert.equal(report.cancellation.cancellation_qualified, false);
   }
   assert.equal(
     report.cancellation.cancellation_qualified,

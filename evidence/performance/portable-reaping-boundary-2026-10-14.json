@@ -1,0 +1,67 @@
+{
+  "schema_version": "codevetter.portable-reaping-boundary/v1",
+  "reviewed_head": "38f9e70e7ba17b1c1982fa13c65bbabc4eda4803",
+  "reviewed_tree": "0334f6cb89bb32cb8fada34c34464bdfd9fa12a2",
+  "compiler": "cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+  "compiler_flags": [
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "probe_source_sha256": "0f68f6b028573c6e378a2f148315670b02c294c0806b810929e4ab88bc96c22c",
+  "probe_binary_sha256": "eeb7221a3ad523e09bfe3a8b9bce7b3bfc7c1530584674baba655c4ec5c00e93",
+  "probe_stderr": "adopted_zombies_reaped_by_probe=3 program_exit=0 all_children_reaped=1\n",
+  "adopted_zombies_reaped_by_probe": 3,
+  "all_children_reaped": true,
+  "cleanup_qualified": false,
+  "node_experiment": {
+    "runtime": "v24.19.0",
+    "platform": "linux",
+    "fixture_sha256": {
+      ".gitignore": "942196b088fb5dae0384be3f3b2179d0c3301dc151b82f9d414ea687d41a317c",
+      "wait.mjs": "6027df597277557244d4710d042dba22981c555fa66f5597b230ce4d01fc6581",
+      "source.mjs": "2bf28849cade87113ec4170ef2bf9ffb1179fc9a276afa675c9de2424349560b",
+      "config.json": "26b3426b2593763c96d0890b4a77a0bbf66d13fc512b0c6b138a23c290f30a2a",
+      "fixture.lock": "14493f5f5470ed48c3f103d917ec52ae9005fa3913128031d0fac2a49ac3cc41"
+    },
+    "invalidations": [
+      {
+        "file": "source.mjs",
+        "already_dirty": true,
+        "stale_rejected": true
+      },
+      {
+        "file": "config.json",
+        "already_dirty": true,
+        "stale_rejected": true
+      },
+      {
+        "file": "fixture.lock",
+        "already_dirty": true,
+        "stale_rejected": true
+      }
+    ],
+    "cancellation": {
+      "actual_body_started": true,
+      "workload_running_after_cancel": true,
+      "study_cleanup_required": true,
+      "unowned_alive": true,
+      "state": "signaled",
+      "signal": "SIGTERM",
+      "result": null,
+      "failure_kind": "signaled"
+    }
+  },
+  "namespace_attempt": {
+    "command": [
+      "unshare",
+      "--pid",
+      "--fork",
+      "--mount-proc",
+      "/bin/true"
+    ],
+    "exit": 1,
+    "stderr": "unshare: unshare failed: Operation not permitted"
+  },
+  "decision": "Withdraw the unqualified guard; retain input invalidation repair. Complete reaping needs an OS lifecycle bridge outside the Node-only contract."
+}

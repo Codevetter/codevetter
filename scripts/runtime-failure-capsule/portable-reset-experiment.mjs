@@ -212,7 +212,13 @@ async function cancelOwnedSupervisor(root) {
     assert.equal(receipt.state, 'signaled');
     assert.equal(receipt.result, null);
     assert.throws(() => process.kill(running.child.pid, 0), { code: 'ESRCH' });
-    const workloadSurvived = await remainsAfterCleanup(workload.pid);
+    let workloadSurvived = false;
+    try {
+      process.kill(workload.pid, 0);
+      workloadSurvived = true;
+    } catch {
+      /* gone */
+    }
     if (workloadSurvived) process.kill(workload.pid, 'SIGKILL');
     workload = null; // Do not signal a numeric PID again after cleanup.
     return {
@@ -235,19 +241,6 @@ async function cancelOwnedSupervisor(root) {
     }
     if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
   }
-}
-
-async function remainsAfterCleanup(pid) {
-  for (let attempt = 0; attempt < 100; attempt++) {
-    try {
-      process.kill(pid, 0);
-    } catch (error) {
-      if (error.code !== 'ESRCH') throw error;
-      return false;
-    }
-    await delay(10);
-  }
-  return true;
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href)

@@ -1,5 +1,5 @@
-import { spawnOwnedProcess, terminateOwnedProcess, ownedProcessOutcome } from './owned-process.mjs';
 import { createHash } from 'node:crypto';
+import { spawn } from 'node:child_process';
 import { mkdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -121,12 +121,7 @@ export async function supervisePerformanceRun({
       truncated: false,
       redaction_count: 0,
     },
-    limitations: [
-      'A supervised run proves only the recorded local performance scope.',
-      process.platform === 'win32'
-        ? 'Windows cleanup covers direct children only; process-tree cleanup requires a Job Object implementation.'
-        : 'Cleanup covers owned POSIX groups and nested runner guards; arbitrary session escapes and external SIGKILL of a guard are outside this boundary.',
-    ],
+    limitations: ['A supervised run proves only the recorded local performance scope.'],
   };
   if (executionPlan.decision.status === 'blocked') {
     const completedAt = new Date().toISOString();
@@ -384,7 +379,11 @@ function superviseChild({
     };
     const handleShutdown = (signal) => {
       shutdownSignal = signal;
-      terminateOwnedProcess(child, 'SIGTERM');
+      terminateOwned(child, 'SIGTERM');
+      setTimeout(
+        () => terminateOwned(child, 'SIGKILL'),
+        SUPERVISION_LIMITS.terminationGraceMs
+      ).unref();
     };
     const handleSigint = () => handleShutdown('SIGINT');
     const handleSigterm = () => handleShutdown('SIGTERM');
@@ -392,7 +391,7 @@ function superviseChild({
     process.once('SIGTERM', handleSigterm);
 
     try {
-      child = spawnOwnedProcess(program, args, {
+      child = spawn(program, args, {
         cwd,
         env: environment,
         shell: false,
@@ -419,14 +418,14 @@ function superviseChild({
         if (!settled) scheduleHeartbeat();
       });
     });
-    child.once('close', (code, signal) => {
-      const outcome = ownedProcessOutcome(child, code, signal);
-      operationalError ??= outcome.error;
-      finish(outcome.code, outcome.signal);
-    });
+    child.once('close', (code, signal) => finish(code, signal));
     deadlineTimer = setTimeout(() => {
       timedOut = true;
-      terminateOwnedProcess(child, 'SIGTERM');
+      terminateOwned(child, 'SIGTERM');
+      setTimeout(
+        () => terminateOwned(child, 'SIGKILL'),
+        SUPERVISION_LIMITS.terminationGraceMs
+      ).unref();
     }, deadlineMs);
     deadlineTimer.unref();
   });
@@ -555,6 +554,16 @@ function minimalEnvironment() {
     if (typeof process.env[name] === 'string') environment[name] = process.env[name];
   }
   return environment;
+}
+
+function terminateOwned(child, signal) {
+  if (!child?.pid) return;
+  try {
+    if (process.platform === 'win32') child.kill(signal);
+    else process.kill(-child.pid, signal);
+  } catch {
+    // The owned child already exited.
+  }
 }
 
 function sha256(value) {

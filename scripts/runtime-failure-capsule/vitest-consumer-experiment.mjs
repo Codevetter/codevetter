@@ -156,8 +156,6 @@ async function experiment(root) {
       'runner.mjs',
       'execution-governance.mjs',
       'execution-identity.mjs',
-      'owned-process.mjs',
-      'owned-process-guard.mjs',
       'node-egress-preload.mjs',
     ]),
     fixtures: Object.fromEntries(
@@ -179,7 +177,7 @@ async function experiment(root) {
       'No duration comparison or acceleration, memory, agent, native, production, or provider claim.',
       'Cancellation is observed after the actual body starts; cancellation never qualifies execution.',
       'Plan identity binds raw Git-owned/nonignored input bytes including already-dirty edits; production warm reuse remains unqualified.',
-      'The PR #389 detached-descendant cancellation report is historical; see the separate successor cleanup experiment.',
+      'Detached-descendant supervisor cancellation remains unqualified; the attempted POSIX guard was withdrawn after a non-reaping-parent counterexample.',
       'Linux local study setup uses cp -al for existing installed package inputs. No product source or dependency declaration is changed.',
     ],
   };

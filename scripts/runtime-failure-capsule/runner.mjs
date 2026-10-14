@@ -1,4 +1,4 @@
-import { spawnOwnedProcess, terminateOwnedProcess, ownedProcessOutcome } from './owned-process.mjs';
+import { spawn } from 'node:child_process';
 import { access, lstat, readdir, realpath, stat } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -436,7 +436,7 @@ function runOwnedProcess({ program, args, cwd, environment, timeoutMs }) {
     const startedAt = Date.now();
     let child;
     try {
-      child = spawnOwnedProcess(program, args, {
+      child = spawn(program, args, {
         cwd,
         env: environment,
         shell: false,
@@ -456,14 +456,11 @@ function runOwnedProcess({ program, args, cwd, environment, timeoutMs }) {
     child.once('error', (error) => (spawnError = error));
     const timer = setTimeout(() => {
       timedOut = true;
-      terminateOwnedProcess(child, 'SIGTERM');
+      terminate(child, 'SIGTERM');
+      setTimeout(() => terminate(child, 'SIGKILL'), 500).unref();
     }, timeoutMs);
     timer.unref();
     child.once('close', (code, signal) => {
-      const outcome = ownedProcessOutcome(child, code, signal);
-      code = outcome.code;
-      signal = outcome.signal;
-      if (outcome.error) spawnError = new Error(outcome.error);
       clearTimeout(timer);
       resolvePromise({
         status: spawnError ? 'operational_failure' : timedOut ? 'timeout' : 'exited',
@@ -502,6 +499,15 @@ function createBoundedCollector() {
     totalBytes: () => total,
     truncated: () => wasTruncated,
   };
+}
+
+function terminate(child, signal) {
+  try {
+    if (process.platform === 'win32') child.kill(signal);
+    else process.kill(-child.pid, signal);
+  } catch {
+    // The process already exited.
+  }
 }
 
 function operationalFailure(error, startedAt) {
