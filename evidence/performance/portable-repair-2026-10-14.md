@@ -101,18 +101,15 @@ clean/already-dirty source/config/lock controls rejected stale plans. The
 18-test default runner oracle and failure/selection/reset/cancellation negative
 controls are retained. The prior reports are not rewritten.
 
-To reproduce these historical observations, use a detached checkout of exact
-candidate `38f9e70e7ba17b1c1982fa13c65bbabc4eda4803` and the pinned, frozen consumer
-setup documented in the previous study, then run from that candidate checkout
-(do not restore its guard into the final branch):
-
-```sh
-node scripts/runtime-failure-capsule/portable-repair-experiment.mjs /path/to/frozen-389
-node scripts/runtime-failure-capsule/portable-repair-experiment.mjs
-node scripts/runtime-failure-capsule/vitest-consumer-experiment.mjs /path/to/reader-348
-CODEVETTER_READER_STUDY_ROOT=/path/to/reader-348 node --test scripts/runtime-failure-capsule/vitest-consumer.test.mjs
-node --test scripts/runtime-failure-capsule/portable-repair.test.mjs
-```
+Historical observations are pinned to candidate
+`38f9e70e7ba17b1c1982fa13c65bbabc4eda4803` and the frozen consumer setup in the
+previous study. **Do not run the candidate's guard-exercising experiments or
+tests directly on a non-reaping host:** they can leave orphaned zombies.
+Use the retained [Linux subreaper reproduction procedure](portable-reaping-boundary-2026-10-14.md#reproduced-review-finding),
+which runs the candidate experiment under the probe and reaps its adopted
+children. Any additional candidate command that exercises the guard requires
+that same owned subreaper wrapper or a verified reaping host. Do not restore
+the candidate guard into the final branch.
 
 Candidate CI included the synthetic repair tests; consumer replay was not
 a live Vitest run. Its portable checks retained the prerequisite's two excluded
