@@ -308,6 +308,11 @@ cancellation. Dirty-tree invalidation misses and detached-workload cancellation
 failures are retained. This follow-up does not qualify runner acceleration,
 production warm reuse, jsdom equivalence or memory improvement.
 
+The [Node metric-pass experiment](metric-pass-experiment-2026-10-14.md) measures
+five alternating pairs on an admitted CodeVetter parser workload. Combined
+measurement/metric collection meets its stage-only wall-time threshold; full
+diagnosis parity remains unqualified, so the default is unchanged.
+
 The [bounded successor repair](portable-repair-2026-10-14.md) reproduces and fixes
 already-dirty input invalidation and owned POSIX runner-group cleanup against
 frozen #389. It appends fresh synthetic and pinned-consumer evidence while

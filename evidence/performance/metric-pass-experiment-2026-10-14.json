@@ -1,0 +1,282 @@
+{
+  "schema_version": "codevetter.metric-pass-experiment/v1",
+  "source_sha256": {
+    "benchmarks/runtime-challenges/temperature-aggregation/metric-pass-workload.test.mjs": "23ab85fde15410bd55a8aefc9716f972c29fd418ba0c1e08e7ec8e71dd7d0030",
+    "benchmarks/runtime-challenges/temperature-aggregation/parser.mjs": "ef1eeecfe5fb718ae8220da2969cab337d83e82e4a2cc106f0b1178ba8fbb0a8",
+    "scripts/runtime-failure-capsule/metric-pass-experiment.mjs": "df17804ffcd52441783ffe766a8b5497b7702dd76828d87dff02ac883767b750"
+  },
+  "runtime": {
+    "node": "v26.10.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "protocol": {
+    "pairs": 5,
+    "samples_per_arm": 3,
+    "baseline": "three timing executions followed by three separate metric executions",
+    "candidate": "three executions supplying both timing and metric observations",
+    "order": "alternating AB/BA, one arm at a time",
+    "decision_rule": "Consider only if median paired wall saving is at least 20% with all assertions, metric inventory, and sample counts intact; full diagnosis parity and memory bounds remain separate gates."
+  },
+  "pairs": [
+    {
+      "pair": 0,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "arms": {
+        "separate": {
+          "plan_id": "ee09c25d21997ee24db4d0b94441f876d34c33d4e5b72f0ad9231ad466a7f62a",
+          "wall_time_ms": 3948.343,
+          "child_duration_ms": [
+            236,
+            247,
+            359,
+            319,
+            238,
+            254
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 8.323
+        },
+        "combined": {
+          "plan_id": "0bc0e70e368a65ac2d86a4c1f6f9a122817c99d85ac84c4ea3701f2f0951ff44",
+          "wall_time_ms": 1858.097,
+          "child_duration_ms": [
+            228,
+            286,
+            307
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 11.009
+        }
+      }
+    },
+    {
+      "pair": 1,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "arms": {
+        "combined": {
+          "plan_id": "0bc0e70e368a65ac2d86a4c1f6f9a122817c99d85ac84c4ea3701f2f0951ff44",
+          "wall_time_ms": 2456.314,
+          "child_duration_ms": [
+            288,
+            349,
+            313
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 11.288
+        },
+        "separate": {
+          "plan_id": "ee09c25d21997ee24db4d0b94441f876d34c33d4e5b72f0ad9231ad466a7f62a",
+          "wall_time_ms": 3756.766,
+          "child_duration_ms": [
+            313,
+            262,
+            225,
+            226,
+            226,
+            226
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 7.682
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "arms": {
+        "separate": {
+          "plan_id": "ee09c25d21997ee24db4d0b94441f876d34c33d4e5b72f0ad9231ad466a7f62a",
+          "wall_time_ms": 3090.185,
+          "child_duration_ms": [
+            239,
+            232,
+            223,
+            221,
+            230,
+            227
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 7.859
+        },
+        "combined": {
+          "plan_id": "0bc0e70e368a65ac2d86a4c1f6f9a122817c99d85ac84c4ea3701f2f0951ff44",
+          "wall_time_ms": 1529.905,
+          "child_duration_ms": [
+            229,
+            231,
+            233
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 7.889
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "order": [
+        "combined",
+        "separate"
+      ],
+      "arms": {
+        "combined": {
+          "plan_id": "0bc0e70e368a65ac2d86a4c1f6f9a122817c99d85ac84c4ea3701f2f0951ff44",
+          "wall_time_ms": 1611.287,
+          "child_duration_ms": [
+            232,
+            236,
+            232
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 7.907
+        },
+        "separate": {
+          "plan_id": "ee09c25d21997ee24db4d0b94441f876d34c33d4e5b72f0ad9231ad466a7f62a",
+          "wall_time_ms": 3042.283,
+          "child_duration_ms": [
+            221,
+            226,
+            229,
+            221,
+            227,
+            226
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 7.59
+        }
+      }
+    },
+    {
+      "pair": 4,
+      "order": [
+        "separate",
+        "combined"
+      ],
+      "arms": {
+        "separate": {
+          "plan_id": "ee09c25d21997ee24db4d0b94441f876d34c33d4e5b72f0ad9231ad466a7f62a",
+          "wall_time_ms": 3050.345,
+          "child_duration_ms": [
+            238,
+            228,
+            231,
+            222,
+            228,
+            224
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 7.952
+        },
+        "combined": {
+          "plan_id": "0bc0e70e368a65ac2d86a4c1f6f9a122817c99d85ac84c4ea3701f2f0951ff44",
+          "wall_time_ms": 1515.17,
+          "child_duration_ms": [
+            225,
+            228,
+            227
+          ],
+          "execution_status": "completed",
+          "metric_inventory": [
+            {
+              "name": "aggregate",
+              "unit": "ms/op",
+              "sample_count": 3
+            }
+          ],
+          "metric_median": 7.765
+        }
+      }
+    }
+  ],
+  "paired_saving_percent": {
+    "values": [
+      52.939828176022196,
+      34.61626303048953,
+      50.49147542946458,
+      47.036912739544604,
+      50.32791372779144
+    ],
+    "median": 50.32791372779144,
+    "minimum": 34.61626303048953,
+    "maximum": 52.939828176022196
+  },
+  "threshold_met": true,
+  "limitations": [
+    "One repository-owned Node test workload on a shared host; host caches and competing work were not controlled.",
+    "Combined samples couple wall timing and console metrics; independent metric repeatability was not established.",
+    "This measures only the metric stage. Profile, flow, full diagnosis verdict, Vitest reporter parity, warm reuse, cancellation, and memory bounds were not compared.",
+    "No production optimization or real-agent benefit follows from this experiment."
+  ]
+}
