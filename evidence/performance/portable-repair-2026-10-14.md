@@ -105,11 +105,12 @@ Historical observations are pinned to candidate
 `38f9e70e7ba17b1c1982fa13c65bbabc4eda4803` and the frozen consumer setup in the
 previous study. **Do not run the candidate's guard-exercising experiments or
 tests directly on a non-reaping host:** they can leave orphaned zombies.
-Use the retained [Linux subreaper reproduction procedure](portable-reaping-boundary-2026-10-14.md#reproduced-review-finding),
-which runs the candidate experiment under the probe and reaps its adopted
-children. Any additional candidate command that exercises the guard requires
-that same owned subreaper wrapper or a verified reaping host. Do not restore
-the candidate guard into the final branch.
+The retained [Linux subreaper counterexample procedure](portable-reaping-boundary-2026-10-14.md#reproduced-review-finding)
+documents the exact validated experiment only. Its fixed-delay probe is not a
+general cleanup wrapper and does not guarantee reaping if descendants remain
+live after its wait. Any rerun of the rejected candidate requires a verified
+reaping host; this report authorizes no unwrapped non-reaping-host recipe.
+Do not restore the candidate guard into the final branch.
 
 Candidate CI included the synthetic repair tests; consumer replay was not
 a live Vitest run. Its portable checks retained the prerequisite's two excluded
