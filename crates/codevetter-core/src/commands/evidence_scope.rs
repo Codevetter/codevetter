@@ -637,6 +637,14 @@ fn first_go_benchmark(content: &str) -> Option<String> {
 }
 
 fn matching_paths(root: &Path, files: &[String], query: &str) -> Vec<String> {
+    // A known repository file is an exact scope, not a bag of generic path words.
+    if safe_relative(query)
+        && !excluded_path(query)
+        && is_source_path(query)
+        && files.iter().any(|path| path == query)
+    {
+        return vec![query.to_string()];
+    }
     let tokens = intent_tokens(query);
     let mut remaining = MAX_CONTENT_BYTES;
     files
@@ -681,26 +689,33 @@ fn score_targets(
                 "scope-{:x}",
                 Sha256::digest(format!("{}:{}", target.adapter, target.target))
             );
-            Some(EvidenceScopeCandidate {
-                id: id[..22].to_string(),
-                adapter: target.adapter,
-                target: target.target,
-                name: target.name,
-                reason,
-                source_paths,
-                confidence_milli,
-                testing_supported: target.testing_supported,
-                performance_supported: target.performance_supported,
-            })
+            Some((
+                score,
+                EvidenceScopeCandidate {
+                    id: id[..22].to_string(),
+                    adapter: target.adapter,
+                    target: target.target,
+                    name: target.name,
+                    reason,
+                    source_paths,
+                    confidence_milli,
+                    testing_supported: target.testing_supported,
+                    performance_supported: target.performance_supported,
+                },
+            ))
         })
         .collect::<Vec<_>>();
-    candidates.sort_by(|left, right| {
+    candidates.sort_by(|(left_score, left), (right_score, right)| {
         right
             .confidence_milli
             .cmp(&left.confidence_milli)
+            .then_with(|| right_score.cmp(left_score))
             .then_with(|| left.target.cmp(&right.target))
     });
     candidates
+        .into_iter()
+        .map(|(_, candidate)| candidate)
+        .collect()
 }
 
 fn target_score(
