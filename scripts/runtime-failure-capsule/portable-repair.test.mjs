@@ -117,3 +117,30 @@ test('an imported helper or receipt-shaped configuration beneath another run can
     report.rows.every((row) => row.already_dirty && row.stale_rejected && row.executed === null)
   );
 });
+
+test('supervisor input validates a receipt through an aliased repository root', {
+  skip: process.platform === 'win32' && 'POSIX symlink fixture',
+}, async (context) => {
+  const root = await mkdtemp(join(tmpdir(), 'codevetter-owned-alias-'));
+  const alias = `${root}-alias`;
+  context.after(() => rm(root, { recursive: true, force: true }));
+  context.after(() => rm(alias, { force: true }));
+  const directory = '.codevetter/performance-runs/alias';
+  await mkdir(join(root, directory), { recursive: true });
+  await writeFile(join(root, directory, 'receipt.json'), '{}');
+  await symlink(root, alias);
+  const previous = process.env[SUPERVISION_INPUT_ENV];
+  try {
+    process.env[SUPERVISION_INPUT_ENV] = directory;
+    await assert.rejects(ownedSupervisionInputs(alias), /invalid supervised run receipt/);
+    const outside = await mkdtemp(join(tmpdir(), 'codevetter-owned-outside-'));
+    context.after(() => rm(outside, { recursive: true, force: true }));
+    const escapedDirectory = '.codevetter/performance-runs/escape';
+    await symlink(outside, join(root, escapedDirectory));
+    process.env[SUPERVISION_INPUT_ENV] = escapedDirectory;
+    await assert.rejects(ownedSupervisionInputs(alias), /escapes repository/);
+  } finally {
+    if (previous === undefined) delete process.env[SUPERVISION_INPUT_ENV];
+    else process.env[SUPERVISION_INPUT_ENV] = previous;
+  }
+});

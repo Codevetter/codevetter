@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { LIMITS, boundedTimeout, repositoryRelative } from './contracts.mjs';
 import { assertPerformanceExecutionPlanCurrent } from './execution-governance.mjs';
+import { parseNodeTestSelection } from './node-test-selection.mjs';
 
 // Resolve the same command as execution without loading runner or project modules.
 export async function preflightAdapter({ repositoryRoot, adapter, target, name }) {
@@ -116,6 +117,7 @@ export async function runClosedAdapter({
   }
   const zeroEgress = executionPlan !== null;
   const environment = minimalEnvironment({
+    nodeTestScope: adapter === 'node-test' ? { target: scope.relative, name: name ?? null } : null,
     profileDirectory:
       profileDirectory && ['node-test', 'node-script'].includes(adapter) ? profileDirectory : null,
     flowDirectory:
@@ -134,6 +136,10 @@ export async function runClosedAdapter({
   });
   return {
     ...execution,
+    nodeTestSelection:
+      adapter === 'node-test' && !execution.truncated
+        ? parseNodeTestSelection(execution.stdout, { target: scope.relative, name })
+        : null,
     scope: { target: scope.relative, name: name ?? null },
     command: {
       executable_identity: command.executableIdentity,
@@ -210,10 +216,7 @@ async function buildCommand({
         .join('/')
     : null;
   if (adapter === 'node-test') {
-    const args = ['--test', '--test-reporter=tap'];
-    if (exactPattern) args.push(`--test-name-pattern=${exactPattern}`);
-    args.push(scope.relative);
-    return command(root, process.execPath, args, `node:${process.version}`, args);
+    return nodeTestCommand(root, scope, exactPattern);
   }
   if (adapter === 'node-script') {
     if (!/\.(?:cjs|js|mjs)$/.test(scope.relative)) {
@@ -332,6 +335,17 @@ async function buildCommand({
   throw new Error(`unsupported adapter: ${adapter}`);
 }
 
+function nodeTestCommand(root, scope, exactPattern) {
+  const reporter = fileURLToPath(new URL('./node-test-reporter.mjs', import.meta.url));
+  const args = ['--test', `--test-reporter=${reporter}`];
+  if (exactPattern) args.push(`--test-name-pattern=${exactPattern}`);
+  args.push(scope.relative);
+  const publicArguments = args.map((arg) =>
+    arg.startsWith('--test-reporter=') ? '--test-reporter=codevetter-node-events-and-tap' : arg
+  );
+  return command(root, process.execPath, args, `node:${process.version}`, publicArguments);
+}
+
 function command(cwd, program, args, executableIdentity, publicArguments, workingDirectory = '.') {
   return { program, args, cwd, executableIdentity, publicArguments, workingDirectory };
 }
@@ -390,6 +404,7 @@ async function containedRegularFile(root, candidate) {
 }
 
 function minimalEnvironment({
+  nodeTestScope = null,
   profileDirectory = null,
   flowDirectory = null,
   coverageDirectory = null,
@@ -397,6 +412,7 @@ function minimalEnvironment({
 } = {}) {
   const allowed = ['PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'SYSTEMROOT', 'COMSPEC', 'PATHEXT'];
   const environment = { CI: '1', FORCE_COLOR: '0', NO_COLOR: '1' };
+  if (nodeTestScope) environment.CODEVETTER_NODE_TEST_SCOPE = JSON.stringify(nodeTestScope);
   for (const name of allowed) {
     if (typeof process.env[name] === 'string') environment[name] = process.env[name];
   }

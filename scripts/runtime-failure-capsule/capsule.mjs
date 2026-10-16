@@ -11,6 +11,8 @@ import {
 import { detectRuntimeLanes } from './detect.mjs';
 import { inspectGitDiff, rankRelevantChanges } from './git-diff.mjs';
 import { redactJsonValue, redactText } from './redact.mjs';
+import { nodeTestSelectionExecuted } from './node-test-selection.mjs';
+const RUNNER_LABELS = { 'node-test': 'Node test', vitest: 'Vitest' };
 
 export async function capsuleFromExecution({ repositoryRoot, adapter, execution, diffRange }) {
   const lexicalRoot = resolve(repositoryRoot);
@@ -23,9 +25,12 @@ export async function capsuleFromExecution({ repositoryRoot, adapter, execution,
   const combined = `${sanitized.stdout.text}\n${sanitized.stderr.text}`;
   const frames = extractSourceFrames(combined, { target: execution.scope.target });
   const relevantChanges = rankRelevantChanges(frames, git.changed_lines).slice(0, LIMITS.changes);
-  const selection = adapter === 'vitest' ? parseVitestSelection(sanitized.stdout.text) : null;
-  const selectedNameAppears = !execution.scope.name || combined.includes(execution.scope.name);
-  const selectedTestExecuted = selection ? selection.executed_tests > 0 : selectedNameAppears;
+  const { selection, selectedNameAppears, selectedTestExecuted } = executionSelection(
+    adapter,
+    execution,
+    sanitized.stdout.text,
+    combined
+  );
   const reproduced =
     execution.status === 'exited' && execution.exitCode !== 0 && selectedTestExecuted;
   const limitations = [];
@@ -36,12 +41,19 @@ export async function capsuleFromExecution({ repositoryRoot, adapter, execution,
     );
   }
   if (selection && selection.executed_tests === 0) {
-    limitations.push('The selected Vitest identity matched zero executed tests.');
+    limitations.push(
+      `The selected ${RUNNER_LABELS[adapter]} identity matched zero executed tests.`
+    );
   } else if (execution.status === 'exited' && execution.exitCode === 0) {
     limitations.push('The selected failure did not reproduce during the diagnostic run.');
   }
   if (!selection && !selectedNameAppears)
     limitations.push('The selected test identity did not appear in runner output.');
+  if (adapter === 'node-test' && !selectedTestExecuted) {
+    limitations.push(
+      'No complete, unambiguous Node test-body execution evidence was captured for the selection.'
+    );
+  }
   if (frames.length === 0) limitations.push('No repository source frame was captured.');
   if (relevantChanges.length === 0) {
     limitations.push('No captured source frame matched the selected Git diff.');
@@ -90,6 +102,27 @@ export async function capsuleFromExecution({ repositoryRoot, adapter, execution,
     },
   });
   return capsule;
+}
+
+function executionSelection(adapter, execution, output, combined) {
+  const selectedNameAppears = !execution.scope.name || combined.includes(execution.scope.name);
+  if (adapter === 'node-test') {
+    return {
+      selection: execution.nodeTestSelection,
+      selectedNameAppears,
+      selectedTestExecuted: nodeTestSelectionExecuted(
+        execution.nodeTestSelection,
+        execution.scope.name,
+        { allowFailed: true }
+      ),
+    };
+  }
+  const selection = adapter === 'vitest' ? parseVitestSelection(output) : null;
+  return {
+    selection,
+    selectedNameAppears,
+    selectedTestExecuted: selection ? selection.executed_tests > 0 : selectedNameAppears,
+  };
 }
 
 export function parseVitestSelection(output) {

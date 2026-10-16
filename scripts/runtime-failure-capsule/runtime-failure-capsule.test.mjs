@@ -368,7 +368,7 @@ test('a timed-out Node diagnostic is terminated and returns no-confidence', asyn
     'package.json': JSON.stringify({ type: 'module' }),
     'timeout.test.js': [
       "import test from 'node:test';",
-      "test('never finishes', async () => new Promise(() => {}));",
+      "test('never finishes', async () => { console.log('timeout body started'); await new Promise(resolve => setTimeout(resolve, 60000)); });",
       '',
     ].join('\n'),
   });
@@ -385,6 +385,7 @@ test('a timed-out Node diagnostic is terminated and returns no-confidence', asyn
     execution,
   });
   assert.equal(execution.status, 'timeout');
+  assert.match(execution.stdout, /timeout body started/);
   assert.equal(capsule.verdict.status, 'no_confidence');
 });
 

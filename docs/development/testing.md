@@ -104,6 +104,12 @@ uses the Fleet skill trial to prioritize startup, selection, reuse, and evidence
 collection experiments. Its recommendations are unimplemented and require
 paired validation; they do not change these qualification requirements.
 
+- Node-test qualification uses the built-in runner's structured completion events,
+  retaining TAP output for metrics and failure frames. Named checks require one
+  completed, unambiguous body; skips, TODOs, file-only wrappers, printed names,
+  stale/incomplete reports and cancellation cannot establish execution. Performance
+  execution receipts retain the bounded selection counts. These are local runtime
+  observations, not authentication of externally supplied evidence.
 - A unit test proves its contract, not a production release.
 - A local package may be ad-hoc signed; shipping requires Developer ID and
   notarization receipts.
