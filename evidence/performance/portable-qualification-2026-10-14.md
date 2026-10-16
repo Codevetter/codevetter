@@ -155,6 +155,16 @@ live synthetic source/reset studies. The consumer integration is explicitly
 skipped without its pinned, frozen checkout; a replay is not a live Vitest run.
 CodeVetter CI does not acquire a mandatory sibling-product dependency.
 
+The [16 October replay](vitest-consumer-node-selection-2026-10-16.json) binds the
+current Node completion reporter and runtime implementation instead of replacing
+the historical report's hashes. It ran on macOS arm64 with Node 24.21.0 and a
+separately installed frozen Reader checkout: all 18 default route assertions
+passed, with 29 retained experiment rows and 12 qualified selections. All six
+clean/already-dirty source, configuration and lockfile edits rejected stale plans.
+Cancellation retained zero completed assertions and the owned worker was gone
+after close. The checkout returned to its exact clean pinned commit. This is a
+fresh consumer replay, not production transformed-source or warm-reuse acceptance.
+
 ## Reproduction and checks
 
 ```sh
