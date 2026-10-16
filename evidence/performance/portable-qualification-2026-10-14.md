@@ -137,11 +137,19 @@ worktree). Install the already-declared dependencies through the frozen flow:
 git clone https://github.com/Significant-Hobbies/reader.git /tmp/reader-348
 git -C /tmp/reader-348 checkout --detach 4c45b25f2c0320d7d25901940973dcb9cbe40dde
 (cd /tmp/reader-348 && corepack pnpm install --frozen-lockfile)
-node scripts/runtime-failure-capsule/vitest-consumer-experiment.mjs /tmp/reader-348
+node scripts/runtime-failure-capsule/vitest-consumer-experiment.mjs /tmp/reader-348 --disposable-checkout
 CODEVETTER_READER_STUDY_ROOT=/tmp/reader-348 node --test scripts/runtime-failure-capsule/vitest-consumer.test.mjs
 ```
 
 The live consumer integration and source/reset focused suite passed all ten tests.
+
+The current replayer requires an explicitly disposable, clean checkout with its
+own frozen install. It restores the known public source/configuration inputs and
+removes only its own study fixtures, including after failure. It does not copy
+dependency/build directories or mutate Git refs/index state. Fleet agents use
+`fleet-workspace` for this checkout and its install; the command above shows the
+standalone reproduction. Historical reports remain tied to their recorded source
+hashes; a fresh report is required when the covered runtime implementation changes.
 CI runs the deterministic consumer-evidence rejection regressions alongside the
 live synthetic source/reset studies. The consumer integration is explicitly
 skipped without its pinned, frozen checkout; a replay is not a live Vitest run.
