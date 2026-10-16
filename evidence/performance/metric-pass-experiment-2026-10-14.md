@@ -43,3 +43,55 @@ metric/profile completeness, and negative controls is the next adoption gate.
 The result measures local runner wall time; it does not measure agent time saved
 or establish incremental agent benefit. The [owner's 9 October decision](https://github.com/Codevetter/codevetter/issues/348#issuecomment-6073387497)
 to drop additional matched real-agent trials still applies.
+
+## Complete Node component check — 16 October 2026
+
+The [follow-up campaign](metric-pass-full-pipeline-2026-10-16.json) used clean
+source `8bc720b0be0e3625c50d5c3b7b46aabea8a79ade` (tree-equivalent to merged
+`2df2a2a6059cabbd8515735b4b546a3756617cd8`) and Node 24.21.0 on this shared
+macOS arm64 host. It compared the complete Node profiling/diagnosis component
+with flow enabled. This excludes the Rust CLI supervisor/resource sampler and
+native viewer; it is not whole-CLI or app latency.
+
+A private copy of `performance.mjs` removed only Node-test's separate metric
+loop and its planned metric process count. Production source was not changed.
+Both paths kept one warmup, three measurements, two CPU profiles, a flow pass
+and a function-coverage pass. Combined metrics explicitly retain measurement
+provenance; no synthetic metric execution was added to the receipt.
+
+Before execution the campaign required 20% median paired wall saving,
+three metric samples, at most 20% paired metric-value difference, matching
+diagnosis class, selected passing tests, profile/flow/coverage presence,
+zero egress, cleanup and unchanged rejection of negative controls.
+Five pairs alternated baseline/candidate order, one arm at a time.
+
+| Evidence | Result |
+| --- | ---: |
+| Selected positive executions | 95/95 passed |
+| Processes per positive arm | 11 baseline; 8 combined |
+| Metric observations | Same `aggregate` / `ms/op`, three samples |
+| Profiles, flow and function coverage | Retained in every arm |
+| Paired component-wall saving | 24.59–28.94%; median 25.11% |
+| Largest paired metric difference | 3.27% |
+| Wrong-selection / failed-assertion controls | Both rejected in both arms |
+| External requests / retained profiling files | Zero / none |
+
+The four negative controls returned `no_confidence`; printed metrics did not
+turn failed assertions or an unexecuted selection into a passing capture.
+The bounded campaign gates passed. Its raw report SHA-256 is
+`21e8536fcbc3212ef67f8dd7abc48fa9ebb7f7ee229c56b855df6f559182ac49`.
+
+[The replayer](../../scripts/runtime-failure-capsule/full-metric-pass-experiment.mjs)
+accepts repository root and output directory as positional arguments; its
+measurement/control body matches the executed fixed-root script. It writes
+raw capsules, diagnoses and predeclared protocol before summarizing. Use Node
+24 for the same runtime. The executed entry-point SHA-256 was
+`86d8b3a63bfc067934d9f6c19a349215eee970751479eb4291a5ecb29e1f2ab5`.
+
+**Decision:** keep the default unchanged. This is one Node-test workload on a
+shared host, with filesystem-accounting work and unreset OS caches. Coupled
+metrics passed this tolerance check; that is not general metric equivalence.
+Whole-process-tree memory/cancellation, warm reuse, Vitest reporter parity and
+a separately supported timing-only lane remain unqualified. No canonical
+paired-optimization verdict, product speedup, source-pattern recommendation or
+independent agent-benefit result follows from this component campaign.

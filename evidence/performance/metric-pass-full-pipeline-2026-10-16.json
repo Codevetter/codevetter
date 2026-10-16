@@ -1,0 +1,2475 @@
+{
+  "schema_version": "codevetter.full-metric-experiment/v1",
+  "source_revision": "8bc720b0be0e3625c50d5c3b7b46aabea8a79ade",
+  "source_sha256": "516055f32072814e075b0e8c2b8b76182b54e80a0f5686802c1568722e946a62",
+  "candidate_sha256": "c4cd7fa33bb8e779048ce08eefa24c538958f54af2d952e47de29d590754836d",
+  "workload_sha256": "23ab85fde15410bd55a8aefc9716f972c29fd418ba0c1e08e7ec8e71dd7d0030",
+  "runtime": {
+    "node": "v24.21.0",
+    "node_binary_sha256": "e4b5a3af0e05c75de2eae013904145f40fe7fc2a6e6f17510128bf45cca4e79b",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "logical_cpus": 18
+  },
+  "protocol": {
+    "pairs": 5,
+    "samples": 3,
+    "warmups": 1,
+    "capture_flow": true,
+    "minimum_median_saving_percent": 20,
+    "maximum_paired_metric_difference_percent": 20,
+    "baseline_processes": 11,
+    "candidate_processes": 8,
+    "order": "alternating baseline/candidate and candidate/baseline, sequential arms",
+    "acceptance": "Preserve selected successful executions, three metric samples, both CPU profiles, flow/coverage capture, diagnosis class, zero egress and cleanup. Preserve wrong-selection and assertion-failure rejection. Missing cancellation/memory/Vitest qualification prevents default adoption regardless of bounded results."
+  },
+  "pairs": [
+    {
+      "index": 0,
+      "order": [
+        "baseline",
+        "candidate"
+      ],
+      "arms": {
+        "baseline": {
+          "wall_ms": 4220.534167000001,
+          "host_load_before": [
+            2.21728515625,
+            2.65625,
+            3.26123046875
+          ],
+          "host_load_after": [
+            2.27978515625,
+            2.66162109375,
+            3.25927734375
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 102,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 101,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 99,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 99,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 99,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 99,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 101,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 101,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 155,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 114,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 113,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 4.947,
+              "provenance": "unprofiled_metrics_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 61467,
+            "profile_samples": 73,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "a2b2da5330ebc402726378d3cd95cff69e11c6a9813b74d96999c379dda75f7e",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 330000,
+              "max_processes": 11,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 1183,
+              "processes": 11,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        },
+        "candidate": {
+          "wall_ms": 2998.9650840000004,
+          "host_load_before": [
+            2.27978515625,
+            2.66162109375,
+            3.25927734375
+          ],
+          "host_load_after": [
+            2.17724609375,
+            2.6337890625,
+            3.24560546875
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 99,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 102,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 101,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 158,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 113,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 112,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.109,
+              "provenance": "unprofiled_measurement_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 58936,
+            "profile_samples": 74,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "e262997914e6e4ccfc3b5d54fbb9f70ff0ae985f0e886501094329fb43432c98",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 240000,
+              "max_processes": 8,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 885,
+              "processes": 8,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        }
+      },
+      "gates": {
+        "baseline": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "candidate": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "metric_difference_percent": 3.2747119466343224,
+        "metric_tolerance": true,
+        "same_diagnosis_class": true
+      },
+      "wall_saving_percent": 28.943471007801467
+    },
+    {
+      "index": 1,
+      "order": [
+        "candidate",
+        "baseline"
+      ],
+      "arms": {
+        "candidate": {
+          "wall_ms": 2976.888749999999,
+          "host_load_before": [
+            2.17724609375,
+            2.6337890625,
+            3.24560546875
+          ],
+          "host_load_after": [
+            2.40283203125,
+            2.6728515625,
+            3.255859375
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 101,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 99,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 106,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 159,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 110,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 112,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 4.987,
+              "provenance": "unprofiled_measurement_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 58317,
+            "profile_samples": 73,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "e262997914e6e4ccfc3b5d54fbb9f70ff0ae985f0e886501094329fb43432c98",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 240000,
+              "max_processes": 8,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 887,
+              "processes": 8,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        },
+        "baseline": {
+          "wall_ms": 3975.2465829999983,
+          "host_load_before": [
+            2.40283203125,
+            2.6728515625,
+            3.255859375
+          ],
+          "host_load_after": [
+            2.40283203125,
+            2.6728515625,
+            3.255859375
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 101,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 98,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 99,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 100,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 102,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 158,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 111,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 119,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.04,
+              "provenance": "unprofiled_metrics_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 65910,
+            "profile_samples": 76,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "a2b2da5330ebc402726378d3cd95cff69e11c6a9813b74d96999c379dda75f7e",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 330000,
+              "max_processes": 11,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 1188,
+              "processes": 11,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        }
+      },
+      "gates": {
+        "baseline": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "candidate": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "metric_difference_percent": 1.0515873015873003,
+        "metric_tolerance": true,
+        "same_diagnosis_class": true
+      },
+      "wall_saving_percent": 25.11436239627099
+    },
+    {
+      "index": 2,
+      "order": [
+        "baseline",
+        "candidate"
+      ],
+      "arms": {
+        "baseline": {
+          "wall_ms": 4065.5451250000006,
+          "host_load_before": [
+            2.40283203125,
+            2.6728515625,
+            3.255859375
+          ],
+          "host_load_after": [
+            2.6103515625,
+            2.71142578125,
+            3.265625
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 98,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 167,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 118,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 117,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.044,
+              "provenance": "unprofiled_metrics_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 66751,
+            "profile_samples": 76,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "a2b2da5330ebc402726378d3cd95cff69e11c6a9813b74d96999c379dda75f7e",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 330000,
+              "max_processes": 11,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 1229,
+              "processes": 11,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        },
+        "candidate": {
+          "wall_ms": 3065.642541999998,
+          "host_load_before": [
+            2.6103515625,
+            2.71142578125,
+            3.265625
+          ],
+          "host_load_after": [
+            2.72119140625,
+            2.732421875,
+            3.26953125
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 106,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 107,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 160,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 114,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 115,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.076,
+              "provenance": "unprofiled_measurement_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 65375,
+            "profile_samples": 75,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "e262997914e6e4ccfc3b5d54fbb9f70ff0ae985f0e886501094329fb43432c98",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 240000,
+              "max_processes": 8,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 915,
+              "processes": 8,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        }
+      },
+      "gates": {
+        "baseline": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "candidate": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "metric_difference_percent": 0.6344171292624907,
+        "metric_tolerance": true,
+        "same_diagnosis_class": true
+      },
+      "wall_saving_percent": 24.594551339532917
+    },
+    {
+      "index": 3,
+      "order": [
+        "candidate",
+        "baseline"
+      ],
+      "arms": {
+        "candidate": {
+          "wall_ms": 3028.904791000001,
+          "host_load_before": [
+            2.72119140625,
+            2.732421875,
+            3.26953125
+          ],
+          "host_load_after": [
+            2.72119140625,
+            2.732421875,
+            3.26953125
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 102,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 107,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 158,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 116,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 115,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.02,
+              "provenance": "unprofiled_measurement_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 69864,
+            "profile_samples": 76,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "e262997914e6e4ccfc3b5d54fbb9f70ff0ae985f0e886501094329fb43432c98",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 240000,
+              "max_processes": 8,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 909,
+              "processes": 8,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        },
+        "baseline": {
+          "wall_ms": 4091.069083000002,
+          "host_load_before": [
+            2.72119140625,
+            2.732421875,
+            3.26953125
+          ],
+          "host_load_after": [
+            2.7431640625,
+            2.73681640625,
+            3.267578125
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 112,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 161,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 116,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 117,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.18,
+              "provenance": "unprofiled_metrics_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 68262,
+            "profile_samples": 77,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "a2b2da5330ebc402726378d3cd95cff69e11c6a9813b74d96999c379dda75f7e",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 330000,
+              "max_processes": 11,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 1236,
+              "processes": 11,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        }
+      },
+      "gates": {
+        "baseline": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "candidate": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "metric_difference_percent": 3.0888030888030915,
+        "metric_tolerance": true,
+        "same_diagnosis_class": true
+      },
+      "wall_saving_percent": 25.963000635059203
+    },
+    {
+      "index": 4,
+      "order": [
+        "baseline",
+        "candidate"
+      ],
+      "arms": {
+        "baseline": {
+          "wall_ms": 4012.4662499999977,
+          "host_load_before": [
+            2.7431640625,
+            2.73681640625,
+            3.267578125
+          ],
+          "host_load_after": [
+            2.603515625,
+            2.70751953125,
+            3.25390625
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 106,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "metrics",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 102,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 105,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 161,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 115,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 115,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.108,
+              "provenance": "unprofiled_metrics_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 67516,
+            "profile_samples": 76,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "a2b2da5330ebc402726378d3cd95cff69e11c6a9813b74d96999c379dda75f7e",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 330000,
+              "max_processes": 11,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 1225,
+              "processes": 11,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        },
+        "candidate": {
+          "wall_ms": 3015.5879590000004,
+          "host_load_before": [
+            2.603515625,
+            2.70751953125,
+            3.25390625
+          ],
+          "host_load_after": [
+            2.55517578125,
+            2.6953125,
+            3.24609375
+          ],
+          "verdict": {
+            "status": "profiled",
+            "reason": "The exact workload completed with bounded performance evidence."
+          },
+          "diagnosis": {
+            "kind": "application_cpu_hotspot",
+            "status": "actionable"
+          },
+          "executions": [
+            {
+              "phase": "warmup",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 103,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 106,
+              "workload_selected": true
+            },
+            {
+              "phase": "measurement",
+              "index": 2,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 106,
+              "workload_selected": true
+            },
+            {
+              "phase": "flow",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 104,
+              "workload_selected": true
+            },
+            {
+              "phase": "coverage",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 162,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 0,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 116,
+              "workload_selected": true
+            },
+            {
+              "phase": "profile",
+              "index": 1,
+              "status": "exited",
+              "exit_code": 0,
+              "signal": null,
+              "duration_ms": 114,
+              "workload_selected": true
+            }
+          ],
+          "metrics": [
+            {
+              "kind": "console_benchmark_metrics",
+              "name": "aggregate",
+              "unit": "ms/op",
+              "samples": 3,
+              "value": 5.127,
+              "provenance": "unprofiled_measurement_execution_median"
+            }
+          ],
+          "capture": {
+            "profile_kind": "v8_cpu",
+            "profile_files": 2,
+            "profile_bytes": 66894,
+            "profile_samples": 75,
+            "truncated": false,
+            "redaction_count": 0,
+            "temporary_artifacts_retained": false,
+            "flow_files": 1,
+            "flow_events": 0,
+            "coverage_files": 1,
+            "coverage_bytes": 628982,
+            "coverage_functions": 1
+          },
+          "execution_receipt": {
+            "schema_version": "performance-execution-receipt/v1",
+            "plan_id": "e262997914e6e4ccfc3b5d54fbb9f70ff0ae985f0e886501094329fb43432c98",
+            "decision": "admitted",
+            "status": "completed",
+            "planned": {
+              "max_wall_time_ms": 240000,
+              "max_processes": 8,
+              "max_concurrency": 1,
+              "max_retries": 0,
+              "max_external_requests": 0,
+              "max_cost_microusd": 0
+            },
+            "observed": {
+              "wall_time_ms": 915,
+              "processes": 8,
+              "max_concurrency": 1,
+              "retries": 0,
+              "successful_external_requests": 0,
+              "blocked_external_attempts": 0,
+              "external_services": [],
+              "cost_microusd": 0
+            },
+            "enforcement": {
+              "kind": "macos_sandbox_node_preload",
+              "network_scope": "loopback_only"
+            },
+            "terminal_reason": "The admitted local workload completed within the execution policy.",
+            "limitations": [
+              "Admission applies only to the exact repository-owned workload identity."
+            ]
+          },
+          "temporary_artifacts_retained": false
+        }
+      },
+      "gates": {
+        "baseline": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "candidate": {
+          "receipt_completed": true,
+          "process_count": true,
+          "zero_egress": true,
+          "selected_and_successful": true,
+          "three_measurements": true,
+          "phases_preserved": true,
+          "metric_inventory": true,
+          "metric_provenance": true,
+          "truthful_metric_phases": true,
+          "profile_flow_coverage": true,
+          "cleanup": true
+        },
+        "metric_difference_percent": 0.37196554424432515,
+        "metric_tolerance": true,
+        "same_diagnosis_class": true
+      },
+      "wall_saving_percent": 24.844527751479475
+    }
+  ],
+  "negative_controls": [
+    {
+      "kind": "wrong_selection",
+      "mode": "baseline",
+      "rejected": true,
+      "result": {
+        "wall_ms": 2124.814250000003,
+        "host_load_before": [
+          2.55517578125,
+          2.6953125,
+          3.24609375
+        ],
+        "host_load_after": [
+          2.55517578125,
+          2.6953125,
+          3.24609375
+        ],
+        "verdict": {
+          "status": "no_confidence",
+          "reason": "Required performance evidence was incomplete."
+        },
+        "diagnosis": {
+          "kind": "insufficient_evidence",
+          "status": "no_confidence"
+        },
+        "executions": [
+          {
+            "phase": "measurement",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 75,
+            "workload_selected": false
+          },
+          {
+            "phase": "metrics",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 77,
+            "workload_selected": false
+          },
+          {
+            "phase": "flow",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 76,
+            "workload_selected": false
+          },
+          {
+            "phase": "coverage",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 88,
+            "workload_selected": false
+          },
+          {
+            "phase": "profile",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 86,
+            "workload_selected": false
+          },
+          {
+            "phase": "profile",
+            "index": 1,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 88,
+            "workload_selected": false
+          }
+        ],
+        "metrics": [],
+        "capture": {
+          "profile_kind": "v8_cpu",
+          "profile_files": 2,
+          "profile_bytes": 58392,
+          "profile_samples": 33,
+          "truncated": false,
+          "redaction_count": 0,
+          "temporary_artifacts_retained": false,
+          "flow_files": 1,
+          "flow_events": 0,
+          "coverage_files": 1,
+          "coverage_bytes": 619895,
+          "coverage_functions": 1
+        },
+        "execution_receipt": {
+          "schema_version": "performance-execution-receipt/v1",
+          "plan_id": "4fcf4c75533d6352cb61c9af0f090a292fe84e305ce4a5c4f8b89f4bf8c9a850",
+          "decision": "admitted",
+          "status": "completed",
+          "planned": {
+            "max_wall_time_ms": 180000,
+            "max_processes": 6,
+            "max_concurrency": 1,
+            "max_retries": 0,
+            "max_external_requests": 0,
+            "max_cost_microusd": 0
+          },
+          "observed": {
+            "wall_time_ms": 490,
+            "processes": 6,
+            "max_concurrency": 1,
+            "retries": 0,
+            "successful_external_requests": 0,
+            "blocked_external_attempts": 0,
+            "external_services": [],
+            "cost_microusd": 0
+          },
+          "enforcement": {
+            "kind": "macos_sandbox_node_preload",
+            "network_scope": "loopback_only"
+          },
+          "terminal_reason": "The admitted local workload completed within the execution policy.",
+          "limitations": [
+            "Admission applies only to the exact repository-owned workload identity."
+          ]
+        },
+        "temporary_artifacts_retained": false
+      }
+    },
+    {
+      "kind": "wrong_selection",
+      "mode": "candidate",
+      "rejected": true,
+      "result": {
+        "wall_ms": 1873.7174579999992,
+        "host_load_before": [
+          2.55517578125,
+          2.6953125,
+          3.24609375
+        ],
+        "host_load_after": [
+          2.55517578125,
+          2.6953125,
+          3.24609375
+        ],
+        "verdict": {
+          "status": "no_confidence",
+          "reason": "Required performance evidence was incomplete."
+        },
+        "diagnosis": {
+          "kind": "insufficient_evidence",
+          "status": "no_confidence"
+        },
+        "executions": [
+          {
+            "phase": "measurement",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 82,
+            "workload_selected": false
+          },
+          {
+            "phase": "flow",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 76,
+            "workload_selected": false
+          },
+          {
+            "phase": "coverage",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 85,
+            "workload_selected": false
+          },
+          {
+            "phase": "profile",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 88,
+            "workload_selected": false
+          },
+          {
+            "phase": "profile",
+            "index": 1,
+            "status": "exited",
+            "exit_code": 0,
+            "signal": null,
+            "duration_ms": 85,
+            "workload_selected": false
+          }
+        ],
+        "metrics": [],
+        "capture": {
+          "profile_kind": "v8_cpu",
+          "profile_files": 2,
+          "profile_bytes": 64718,
+          "profile_samples": 32,
+          "truncated": false,
+          "redaction_count": 0,
+          "temporary_artifacts_retained": false,
+          "flow_files": 1,
+          "flow_events": 0,
+          "coverage_files": 1,
+          "coverage_bytes": 619895,
+          "coverage_functions": 1
+        },
+        "execution_receipt": {
+          "schema_version": "performance-execution-receipt/v1",
+          "plan_id": "178e673ce75761a3eeddedcfaf98bbec45d8658985efea8fb0cc9f065a64f6d8",
+          "decision": "admitted",
+          "status": "completed",
+          "planned": {
+            "max_wall_time_ms": 150000,
+            "max_processes": 5,
+            "max_concurrency": 1,
+            "max_retries": 0,
+            "max_external_requests": 0,
+            "max_cost_microusd": 0
+          },
+          "observed": {
+            "wall_time_ms": 416,
+            "processes": 5,
+            "max_concurrency": 1,
+            "retries": 0,
+            "successful_external_requests": 0,
+            "blocked_external_attempts": 0,
+            "external_services": [],
+            "cost_microusd": 0
+          },
+          "enforcement": {
+            "kind": "macos_sandbox_node_preload",
+            "network_scope": "loopback_only"
+          },
+          "terminal_reason": "The admitted local workload completed within the execution policy.",
+          "limitations": [
+            "Admission applies only to the exact repository-owned workload identity."
+          ]
+        },
+        "temporary_artifacts_retained": false
+      }
+    },
+    {
+      "kind": "assertion_failure",
+      "mode": "baseline",
+      "rejected": true,
+      "result": {
+        "wall_ms": 655.1888749999998,
+        "host_load_before": [
+          2.55517578125,
+          2.6953125,
+          3.24609375
+        ],
+        "host_load_after": [
+          2.67041015625,
+          2.716796875,
+          3.25048828125
+        ],
+        "verdict": {
+          "status": "no_confidence",
+          "reason": "Required performance evidence was incomplete."
+        },
+        "diagnosis": {
+          "kind": "insufficient_evidence",
+          "status": "no_confidence"
+        },
+        "executions": [
+          {
+            "phase": "measurement",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 75,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.710083\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 43.233",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "metrics",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 77,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.702292\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 43.560208",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "flow",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 75,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.702583\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 43.408542",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "coverage",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 83,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.878708\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 50.32125",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "profile",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 85,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.762167\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 54.140458",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "profile",
+            "index": 1,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 86,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.735417\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 54.929",
+              "stderr": null
+            }
+          }
+        ],
+        "metrics": [
+          {
+            "kind": "console_benchmark_metrics",
+            "name": "aggregate",
+            "unit": "ms/op",
+            "samples": 1,
+            "value": 1,
+            "provenance": "unprofiled_metrics_execution_median"
+          }
+        ],
+        "capture": {
+          "profile_kind": "v8_cpu",
+          "profile_files": 2,
+          "profile_bytes": 64840,
+          "profile_samples": 34,
+          "truncated": false,
+          "redaction_count": 12,
+          "temporary_artifacts_retained": false,
+          "flow_files": 1,
+          "flow_events": 0,
+          "coverage_files": 1,
+          "coverage_bytes": 626144,
+          "coverage_functions": 0
+        },
+        "execution_receipt": {
+          "schema_version": "performance-execution-receipt/v1",
+          "plan_id": "c56b14582fecbe9ca4904c19c52d70ea3d3848ca82e95e9d59514f66899405f9",
+          "decision": "admitted",
+          "status": "failed",
+          "planned": {
+            "max_wall_time_ms": 180000,
+            "max_processes": 6,
+            "max_concurrency": 1,
+            "max_retries": 0,
+            "max_external_requests": 0,
+            "max_cost_microusd": 0
+          },
+          "observed": {
+            "wall_time_ms": 481,
+            "processes": 6,
+            "max_concurrency": 1,
+            "retries": 0,
+            "successful_external_requests": 0,
+            "blocked_external_attempts": 0,
+            "external_services": [],
+            "cost_microusd": 0
+          },
+          "enforcement": {
+            "kind": "macos_sandbox_node_preload",
+            "network_scope": "loopback_only"
+          },
+          "terminal_reason": "The admitted local workload did not complete successfully.",
+          "limitations": [
+            "Admission applies only to the exact repository-owned workload identity."
+          ]
+        },
+        "temporary_artifacts_retained": false
+      }
+    },
+    {
+      "kind": "assertion_failure",
+      "mode": "candidate",
+      "rejected": true,
+      "result": {
+        "wall_ms": 553.7445420000004,
+        "host_load_before": [
+          2.67041015625,
+          2.716796875,
+          3.25048828125
+        ],
+        "host_load_after": [
+          2.67041015625,
+          2.716796875,
+          3.25048828125
+        ],
+        "verdict": {
+          "status": "no_confidence",
+          "reason": "Required performance evidence was incomplete."
+        },
+        "diagnosis": {
+          "kind": "insufficient_evidence",
+          "status": "no_confidence"
+        },
+        "executions": [
+          {
+            "phase": "measurement",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 73,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.692583\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 42.004708",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "flow",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 75,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.703959\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 43.516834",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "coverage",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 84,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.896917\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 52.184084",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "profile",
+            "index": 0,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 86,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.760334\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 54.123958",
+              "stderr": null
+            }
+          },
+          {
+            "phase": "profile",
+            "index": 1,
+            "status": "exited",
+            "exit_code": 1,
+            "signal": null,
+            "duration_ms": 87,
+            "workload_selected": true,
+            "failure_evidence": {
+              "operational_error": null,
+              "stdout": "TAP version 13\n# [benchmark] aggregate=1ms/op (5 iterations)\n# Subtest: assertion negative\nnot ok 1 - assertion negative\n  ---\n  duration_ms: 0.748291\n  type: 'test'\n  location: '<repo>/failure.test.mjs:1:72'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    1 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 1\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (file://<repo>/failure.test.mjs:1:174)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1402:25)\n    Test.start (node:internal/test_runner/test:1262:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 0\n# fail 1\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 55.087667",
+              "stderr": null
+            }
+          }
+        ],
+        "metrics": [
+          {
+            "kind": "console_benchmark_metrics",
+            "name": "aggregate",
+            "unit": "ms/op",
+            "samples": 1,
+            "value": 1,
+            "provenance": "unprofiled_measurement_execution_median"
+          }
+        ],
+        "capture": {
+          "profile_kind": "v8_cpu",
+          "profile_files": 2,
+          "profile_bytes": 62601,
+          "profile_samples": 34,
+          "truncated": false,
+          "redaction_count": 10,
+          "temporary_artifacts_retained": false,
+          "flow_files": 1,
+          "flow_events": 0,
+          "coverage_files": 1,
+          "coverage_bytes": 626144,
+          "coverage_functions": 0
+        },
+        "execution_receipt": {
+          "schema_version": "performance-execution-receipt/v1",
+          "plan_id": "3fe1a012ac23c0dbfc7459be9edd6682240649d524c9b575e8fce84c49913d90",
+          "decision": "admitted",
+          "status": "failed",
+          "planned": {
+            "max_wall_time_ms": 150000,
+            "max_processes": 5,
+            "max_concurrency": 1,
+            "max_retries": 0,
+            "max_external_requests": 0,
+            "max_cost_microusd": 0
+          },
+          "observed": {
+            "wall_time_ms": 405,
+            "processes": 5,
+            "max_concurrency": 1,
+            "retries": 0,
+            "successful_external_requests": 0,
+            "blocked_external_attempts": 0,
+            "external_services": [],
+            "cost_microusd": 0
+          },
+          "enforcement": {
+            "kind": "macos_sandbox_node_preload",
+            "network_scope": "loopback_only"
+          },
+          "terminal_reason": "The admitted local workload did not complete successfully.",
+          "limitations": [
+            "Admission applies only to the exact repository-owned workload identity."
+          ]
+        },
+        "temporary_artifacts_retained": false
+      }
+    }
+  ],
+  "default_adoption_qualified": false,
+  "limitations": [
+    "One repository-owned Node test workload; shared owner Mac and concurrent filesystem accounting, not an isolated performance host.",
+    "Candidate is a private engine-module copy; the production module and CLI defaults are unchanged.",
+    "Candidate has no canonical paired-optimization verdict; this component study is not a product speedup or agent-benefit qualification.",
+    "Combined observations couple timings and metrics. Whole-process-tree memory, cancellation/reaping, warm reuse and Vitest reporter parity are unqualified."
+  ],
+  "owned_failure_fixture_retained": false,
+  "median_paired_wall_saving_percent": 25.11436239627099,
+  "bounded_gates_pass": true
+}
