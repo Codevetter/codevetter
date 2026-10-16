@@ -1158,6 +1158,66 @@ require(runnerName); require(`node:test`);
     }
 
     #[test]
+    fn saturated_confidence_keeps_the_more_relevant_flow_target_before_the_cap() {
+        let query = "coupon total discount shipping tax invoice";
+        let mut targets = (0..MAX_CANDIDATES)
+            .map(|index| DiscoveredTarget {
+                adapter: "node-test".into(),
+                target: format!("a{index:02}.test.mjs"),
+                name: None,
+                testing_supported: true,
+                performance_supported: true,
+                content: "coupon total discount shipping tax".into(),
+            })
+            .collect::<Vec<_>>();
+        targets.push(DiscoveredTarget {
+            adapter: "node-test".into(),
+            target: "zz-invoice.test.mjs".into(),
+            name: None,
+            testing_supported: true,
+            performance_supported: true,
+            content: query.into(),
+        });
+        let mut candidates = score_targets(EvidenceScopeKind::Flow, Some(query), &[], targets);
+        assert!(candidates
+            .iter()
+            .all(|candidate| candidate.confidence_milli == 950));
+        candidates.truncate(MAX_CANDIDATES);
+        assert_eq!(candidates[0].target, "zz-invoice.test.mjs");
+    }
+
+    #[tokio::test]
+    async fn explicit_test_path_survives_saturated_flow_candidates_for_both_consumers() {
+        let repo = fixture_repository();
+        let wanted = "scripts/runtime-failure-capsule/execution-governance.test.mjs";
+        let content = "import test from 'node:test';\n// scripts runtime failure capsule execution governance test mjs\n";
+        for path in (0..MAX_CANDIDATES)
+            .map(|index| format!("scripts/a{index:02}.test.mjs"))
+            .chain(std::iter::once(wanted.to_string()))
+        {
+            let path = repo.path().join(path);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        }
+        for consumer in [
+            EvidenceScopeConsumer::Testing,
+            EvidenceScopeConsumer::Performance,
+        ] {
+            let plan = resolve(EvidenceScopeInput {
+                repo_path: repo.path().to_string_lossy().into_owned(),
+                kind: EvidenceScopeKind::Flow,
+                value: Some(wanted.into()),
+                consumer,
+            })
+            .await
+            .unwrap();
+            assert_eq!(plan.candidates[0].target, wanted, "{consumer:?}");
+            assert_eq!(plan.candidates[0].source_paths, [wanted], "{consumer:?}");
+            assert!(plan.uncovered_paths.is_empty(), "{consumer:?}");
+        }
+    }
+
+    #[test]
     fn dedicated_benchmarks_rank_first_at_equal_confidence() {
         let repo = tempfile::tempdir().unwrap();
         let mut files = (0..13)
