@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { lstat, mkdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
@@ -25,25 +24,60 @@ const publicFiles = [
   'src/lib/spa-route.ts',
 ];
 
-export async function vitestConsumerExperiment(consumerRoot) {
-  const source = resolve(consumerRoot);
-  assert.equal(git(source, ['rev-parse', 'HEAD']), READER_BASE);
-  assert.equal(git(source, ['status', '--porcelain', '--untracked-files=no']), '');
-  const root = await mkdtemp(join(tmpdir(), 'codevetter-reader-'));
+export async function vitestConsumerExperiment(consumerRoot, { disposableCheckout = false } = {}) {
+  assert.equal(
+    disposableCheckout,
+    true,
+    'Use an explicitly disposable checkout with separately installed frozen dependencies'
+  );
+  const root = await realpath(resolve(consumerRoot));
+  assert.equal(git(root, ['rev-parse', 'HEAD']), READER_BASE);
+  assert.equal(git(root, ['status', '--porcelain']), '');
+  const original = Object.fromEntries(
+    await Promise.all(publicFiles.map(async (path) => [path, await readFile(join(root, path))]))
+  );
+  for (const path of [
+    'study',
+    'study.mjs',
+    ...Object.keys(consumerFixtures).filter((path) => !path.startsWith('study/')),
+  ])
+    await assert.rejects(lstat(join(root, path)), { code: 'ENOENT' });
+  let report;
+  let failure;
   try {
-    // Public tracked bytes only. Dependency files are hard-linked read-only inputs;
-    // all mutation controls edit archived source/config/lock copies, never packages.
-    const archive = join(root, 'public-source.tar');
-    execFileSync('git', ['archive', READER_BASE, '-o', archive], { cwd: source });
-    execFileSync('tar', ['-xf', archive, '-C', root]);
-    await rm(archive);
-    execFileSync('cp', ['-al', join(source, 'node_modules'), join(root, 'node_modules')]);
-    const report = await experiment(root);
-    assert.equal(git(source, ['status', '--porcelain', '--untracked-files=no']), '');
-    return JSON.parse(JSON.stringify(report).replaceAll(root, '<study>'));
-  } finally {
-    await rm(root, { recursive: true, force: true });
+    report = await experiment(root);
+  } catch (error) {
+    failure = error;
   }
+  try {
+    await restoreConsumerCheckout(root, original);
+    assert.equal(git(root, ['rev-parse', 'HEAD']), READER_BASE);
+    assert.equal(git(root, ['status', '--porcelain']), '');
+  } catch (error) {
+    throw new AggregateError([failure, error].filter(Boolean), 'Consumer study cleanup failed');
+  }
+  if (failure) throw failure;
+  report.checkout_restored = {
+    commit: READER_BASE,
+    clean: true,
+    refs_or_index_changed: false,
+    owned_study_fixtures_removed: true,
+  };
+  return JSON.parse(JSON.stringify(report).replaceAll(root, '<study>'));
+}
+
+async function restoreConsumerCheckout(root, original) {
+  for (const [path, bytes] of Object.entries(original)) {
+    const current = await readFile(join(root, path)).catch(() => null);
+    if (!current?.equals(bytes)) await writeFile(join(root, path), bytes);
+  }
+  for (const path of [
+    'study.mjs',
+    ...Object.keys(consumerFixtures).filter((path) => !path.startsWith('study/')),
+  ])
+    await rm(join(root, path), { force: true });
+  // This directory was required absent before the explicitly disposable study.
+  await rm(join(root, 'study'), { recursive: true, force: true });
 }
 
 function git(root, args) {
@@ -76,23 +110,12 @@ async function experiment(root) {
   );
   const worker = await readFile(new URL('./vitest-consumer-worker.mjs', import.meta.url));
   const files = { ...consumerFixtures, 'study.mjs': worker };
+  const defaultRunner = await defaultRunnerControl(root);
+  const cleanInvalidations = await invalidationControls(root);
   for (const [path, bytes] of Object.entries(files)) {
     await mkdir(dirname(join(root, path)), { recursive: true });
     await writeFile(join(root, path), bytes);
   }
-  git(root, ['init', '-q']);
-  git(root, ['add', '.']);
-  git(root, [
-    '-c',
-    'user.name=Study',
-    '-c',
-    'user.email=study@example.invalid',
-    'commit',
-    '-qm',
-    'Pinned public consumer and synthetic controls',
-  ]);
-  const defaultRunner = await defaultRunnerControl(root);
-  const cleanInvalidations = await invalidationControls(root);
   const scope = {
     repositoryRoot: root,
     adapter: 'node-script',
@@ -127,6 +150,10 @@ async function experiment(root) {
   return {
     schema_version: 'codevetter.vitest-consumer-study/v1',
     published_prerequisite: '903dfb6b9f7bf76baa9c66c4750017eea0c619ee',
+    producer: {
+      repository_revision: git(dirname(fileURLToPath(import.meta.url)), ['rev-parse', 'HEAD']),
+      dirty: git(dirname(fileURLToPath(import.meta.url)), ['status', '--porcelain']) !== '',
+    },
     consumer: {
       repository: 'Significant-Hobbies/reader',
       commit: READER_BASE,
@@ -138,8 +165,7 @@ async function experiment(root) {
       declared_pnpm: '10.33.2',
       installed_lock_matches_published: true,
       lockfile_changed: false,
-      scripts:
-        'Normal pnpm policy; prepare husky ran, undeclared dependency build scripts remained ignored.',
+      scripts: 'Existing repository policy; no dependency build-script allowlist was changed.',
     },
     runtime: {
       node: process.version,
@@ -154,6 +180,8 @@ async function experiment(root) {
       'vitest-consumer-fixtures.mjs',
       'vitest-consumer-evidence.mjs',
       'runner.mjs',
+      'node-test-reporter.mjs',
+      'node-test-selection.mjs',
       'execution-governance.mjs',
       'execution-identity.mjs',
       'supervised-inputs.mjs',
@@ -165,6 +193,7 @@ async function experiment(root) {
     ),
     execution: {
       plan_id: plan.plan_id,
+      subject: plan.subject,
       enforcement: plan.enforcement,
       status: execution.status,
       exit: execution.exitCode,
@@ -180,7 +209,7 @@ async function experiment(root) {
       'Cancellation is observed after the actual body starts; cancellation never qualifies execution.',
       'Plan identity binds raw Git-owned/nonignored input bytes including already-dirty edits; production warm reuse remains unqualified.',
       'Detached-descendant supervisor cancellation remains unqualified; the attempted POSIX guard was withdrawn after a non-reaping-parent counterexample.',
-      'Linux local study setup uses cp -al for existing installed package inputs. No product source or dependency declaration is changed.',
+      'Explicitly disposable clean checkout with its own frozen installation; no dependency/build directory is copied or shared and no Git ref or index is changed.',
     ],
   };
 }
@@ -278,9 +307,9 @@ async function invalidationControls(root) {
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   assert.ok(
     process.argv[2],
-    'Provide a clean detached Reader checkout at READER_BASE with frozen dependencies installed'
+    'Provide a clean disposable Reader checkout at READER_BASE with frozen dependencies installed'
   );
   process.stdout.write(
-    `${JSON.stringify(await vitestConsumerExperiment(process.argv[2]), null, 2)}\n`
+    `${JSON.stringify(await vitestConsumerExperiment(process.argv[2], { disposableCheckout: process.argv.includes('--disposable-checkout') }), null, 2)}\n`
   );
 }

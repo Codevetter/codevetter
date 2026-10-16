@@ -17,6 +17,7 @@ import {
   planPerformanceExecution,
 } from './execution-governance.mjs';
 import { collectV8FunctionCoverage, emptyFunctionCoverage } from './function-coverage.mjs';
+import { nodeTestSelectionExecuted } from './node-test-selection.mjs';
 import { redactText } from './redact.mjs';
 import { inspectGoProfile, runClosedAdapter } from './runner.mjs';
 import { collectNodeFlowEvents } from './flow-capture.mjs';
@@ -660,6 +661,7 @@ function summarizeExecution(entry, adapter, name) {
     signal: entry.execution.signal,
     duration_ms: entry.execution.durationMs,
     workload_selected: selectedWorkloadExecuted(entry, adapter, name),
+    ...(adapter === 'node-test' ? { selection: entry.execution.nodeTestSelection ?? null } : {}),
   };
   if (entry.execution.status === 'exited' && entry.execution.exitCode === 0) return summary;
   return {
@@ -1265,6 +1267,10 @@ export async function loadPerformanceCapsule(root, baselinePath) {
 }
 
 export function selectedWorkloadExecuted(entry, adapter, name) {
+  if (adapter === 'node-test')
+    return nodeTestSelectionExecuted((entry.execution ?? entry).nodeTestSelection, name, {
+      allowFailed: true,
+    });
   const output = `${entry.stdout}\n${entry.stderr}`;
   if (adapter === 'node-script') return true;
   if (adapter === 'vitest') return selectedVitestWorkloadExecuted(entry, name);

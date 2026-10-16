@@ -33,9 +33,11 @@ export function isOwnedSupervisionOutput(entry, directory) {
 }
 
 async function verifyParentReceipt(root, directory, runId) {
-  if (repositoryRelative(root, await realpath(resolve(root, directory))) === null)
+  const canonicalRoot = await realpath(resolve(root));
+  const ownedDirectory = await realpath(resolve(canonicalRoot, directory));
+  if (repositoryRelative(canonicalRoot, ownedDirectory) === null)
     throw new Error('owned supervisor input context escapes repository');
-  const path = resolve(root, directory, 'receipt.json');
+  const path = resolve(ownedDirectory, 'receipt.json');
   // onStarted atomically records the child's identity after spawn. Fail closed
   // if the private context cannot be bound to this diagnostic and its parent.
   for (let attempt = 0; attempt < 100; attempt++) {

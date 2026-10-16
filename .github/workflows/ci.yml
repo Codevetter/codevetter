@@ -116,7 +116,7 @@ jobs:
       - name: Portable preflight and Vitest selection contracts
         run: >-
           node --test
-          --test-name-pattern='preflight|skipped Vitest|exact passed Vitest|repeated Vitest|incomplete, unrun|normalizes Vitest|classifies a Vitest'
+          --test-name-pattern='preflight|skipped Vitest|exact passed Vitest|repeated Vitest|incomplete, unrun|normalizes Vitest|classifies a Vitest|Node selection'
           scripts/runtime-failure-capsule/prerequisite-preflight.test.mjs
           scripts/runtime-failure-capsule/runtime-failure-capsule.test.mjs
           scripts/runtime-failure-capsule/runtime-performance-capsule.test.mjs

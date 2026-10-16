@@ -97,7 +97,9 @@ test('pinned consumer integration executes actual assertions and negative contro
     'Requires the documented public checkout and frozen install; replay is not a live Vitest run',
   timeout: 90000,
 }, async () => {
-  const current = await vitestConsumerExperiment(process.env.CODEVETTER_READER_STUDY_ROOT);
+  const current = await vitestConsumerExperiment(process.env.CODEVETTER_READER_STUDY_ROOT, {
+    disposableCheckout: true,
+  });
   assertRecordedCancellation(current.rows.find((row) => row.cancelled));
   assert.equal(current.default_runner.assertion_results.length, 18);
   assert.equal(current.rows.length, 29);
@@ -136,11 +138,25 @@ function assertRecordedCancellation(row) {
   );
 }
 
-test('successor consumer report retains executed selections and repairs every dirty invalidation', async () => {
+test('consumer study requires an explicitly disposable checkout before accessing source', async () => {
+  await assert.rejects(vitestConsumerExperiment('/not-a-study-checkout'), /explicitly disposable/);
+});
+
+test('current consumer report retains executed selections and repairs every dirty invalidation', async () => {
+  const historical = await readFile(
+    new URL(
+      '../../evidence/performance/vitest-consumer-owned-output-2026-10-14.json',
+      import.meta.url
+    )
+  );
+  assert.equal(
+    sourceDigest(historical),
+    '9d75b1b1e755585df49ccf857ef1395761a15b9864eccee62f9ef0bf37727e6e'
+  );
   const current = JSON.parse(
     await readFile(
       new URL(
-        '../../evidence/performance/vitest-consumer-owned-output-2026-10-14.json',
+        '../../evidence/performance/vitest-consumer-node-selection-2026-10-16.json',
         import.meta.url
       )
     )

@@ -26,6 +26,8 @@ import {
   summarizeVitestExecutionShare,
 } from './performance.mjs';
 import { runClosedAdapter } from './runner.mjs';
+import { capsuleFromExecution } from './capsule.mjs';
+import { NODE_SELECTION_PREFIX, parseNodeTestSelection } from './node-test-selection.mjs';
 
 function applicationHotspot({
   functionName = 'rankProjectRecommendations',
@@ -475,6 +477,188 @@ test('merges repository-owned V8 samples and labels harness work', async (contex
   );
   assert.equal(parsed.hotspots[0].self_time_ms, 3);
   assert.equal(parsed.hotspots[0].sample_share, 0.25);
+});
+
+for (const [label, source, name, expected] of [
+  [
+    'skipped body',
+    "import test from 'node:test'; test.skip('selected body', () => {});",
+    'selected body',
+    false,
+  ],
+  [
+    'TODO body',
+    "import test from 'node:test'; test.todo('selected body');",
+    'selected body',
+    false,
+  ],
+  [
+    'duplicate identity',
+    "import test from 'node:test'; test('selected body', () => {}); test('selected body', () => {});",
+    'selected body',
+    false,
+  ],
+  [
+    'console identity without execution',
+    "import test from 'node:test'; console.log('selected body'); test('other body', () => {});",
+    'selected body',
+    false,
+  ],
+  ['file wrapper without tests', 'console.log("not a test body");', null, false],
+  [
+    'completed body',
+    "import test from 'node:test'; import assert from 'node:assert/strict'; test('selected body', () => assert.equal(2 + 2, 4));",
+    'selected body',
+    true,
+  ],
+  [
+    'unnamed completed body',
+    "import test from 'node:test'; test('selected body', () => {}); test.skip('optional body', () => {});",
+    null,
+    true,
+  ],
+  [
+    'nested completed body',
+    "import { describe, it } from 'node:test'; describe('outer', () => it('selected body', () => {}));",
+    'outer selected body',
+    true,
+  ],
+  [
+    'suite without completed body',
+    "import { describe, it } from 'node:test'; describe('outer', () => it.skip('selected body', () => {}));",
+    null,
+    false,
+  ],
+  [
+    'stdout cannot forge reporter completion',
+    "import test from 'node:test'; console.log('CODEVETTER_NODE_TEST_SELECTION={\"complete\":true}'); test.skip('selected body', () => {});",
+    'selected body',
+    false,
+  ],
+]) {
+  test(`Node selection requires actual completion: ${label}`, async (context) => {
+    const root = await gitFixture(context, { 'selection.test.mjs': source });
+    const execution = await runClosedAdapter({
+      repositoryRoot: root,
+      adapter: 'node-test',
+      target: 'selection.test.mjs',
+      name,
+      timeoutMs: 5000,
+    });
+    assert.equal(execution.exitCode, 0, execution.stderr);
+    const entry = {
+      phase: 'measurement',
+      execution,
+      stdout: execution.stdout,
+      stderr: execution.stderr,
+    };
+    assert.equal(selectedWorkloadExecuted(entry, 'node-test', name), expected, execution.stdout);
+    assert.equal(requiredExecutionsCompleted([entry], 'node-test', name), expected);
+  });
+}
+
+test('Node selection rejects a profile of import work when the named body is skipped', async (context) => {
+  const root = await gitFixture(context, {
+    'src/import-work.mjs':
+      'export function importWork() { const until = performance.now() + 150; let value = 0; while (performance.now() < until) value += Math.sqrt(value + 2); return value; }',
+    'selection.test.mjs':
+      "import test from 'node:test'; import { importWork } from './src/import-work.mjs'; importWork(); test.skip('selected body', () => {});",
+  });
+  const capsule = await profileRepository({
+    repositoryRoot: root,
+    adapter: 'node-test',
+    target: 'selection.test.mjs',
+    name: 'selected body',
+    timeoutMs: 5000,
+    samples: 2,
+    warmups: 0,
+  });
+  assert.equal(capsule.verdict.status, 'no_confidence', JSON.stringify(capsule));
+  assert.ok(capsule.observed.executions.every((entry) => entry.workload_selected === false));
+  assert.ok(capsule.observed.executions.every((entry) => entry.selection?.matched.skipped === 1));
+});
+
+test('Node selection rejects absent, stale, inconsistent and truncated event reports', async (context) => {
+  const root = await gitFixture(context, {
+    'selection.test.mjs': "import test from 'node:test'; test('selected body', () => {});",
+  });
+  const execution = await runClosedAdapter({
+    repositoryRoot: root,
+    adapter: 'node-test',
+    target: 'selection.test.mjs',
+    name: 'selected body',
+    timeoutMs: 5000,
+  });
+  const scope = execution.scope;
+  const original = execution.nodeTestSelection;
+  assert.ok(original);
+  for (const change of [
+    (report) => {
+      report.complete = false;
+    },
+    (report) => {
+      report.name = 'other body';
+    },
+    (report) => {
+      report.target = 'other.test.mjs';
+    },
+    (report) => {
+      report.schema_version = 'unknown';
+    },
+    (report) => {
+      report.counts.passed = -1;
+    },
+    (report) => {
+      report.observed.passed = 0;
+    },
+    (report) => {
+      report.matched.tests = 2;
+    },
+  ]) {
+    const report = structuredClone(original);
+    change(report);
+    assert.equal(
+      parseNodeTestSelection(NODE_SELECTION_PREFIX + JSON.stringify(report), scope),
+      null
+    );
+  }
+  for (const output of [
+    '',
+    execution.stdout.slice(0, -100),
+    execution.stdout + 'more output',
+    execution.stdout + execution.stdout,
+  ]) {
+    assert.equal(parseNodeTestSelection(output, scope), null);
+  }
+});
+
+test('Node selection keeps a skipped body plus hook failure out of reproduced failures', async (context) => {
+  for (const [mode, body, expected] of [
+    [
+      'skipped',
+      "test.skip('selected body', () => {}); after(() => { throw Error('late hook failure'); });",
+      'no_confidence',
+    ],
+    ['failed', "test('selected body', () => { throw Error('actual body failure'); });", 'failed'],
+  ]) {
+    const root = await gitFixture(context, {
+      'selection.test.mjs': "import { test, after } from 'node:test'; " + body,
+    });
+    const execution = await runClosedAdapter({
+      repositoryRoot: root,
+      adapter: 'node-test',
+      target: 'selection.test.mjs',
+      name: 'selected body',
+      timeoutMs: 5000,
+    });
+    assert.notEqual(execution.exitCode, 0, mode);
+    const capsule = await capsuleFromExecution({
+      repositoryRoot: root,
+      adapter: 'node-test',
+      execution,
+    });
+    assert.equal(capsule.verdict.status, expected, JSON.stringify(capsule));
+  }
 });
 
 test('compares only compatible baselines using absolute and relative thresholds', () => {
