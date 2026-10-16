@@ -123,6 +123,7 @@ jobs:
       - name: Portable transformed-source and reset experiments
         run: >-
           node --test
+          scripts/runtime-failure-capsule/execution-governance.test.mjs
           scripts/runtime-failure-capsule/source-execution.test.mjs
           scripts/runtime-failure-capsule/portable-reset.test.mjs
           scripts/runtime-failure-capsule/portable-repair.test.mjs
@@ -136,6 +137,7 @@ jobs:
       - name: Rust core, CLI, and MCP contracts
         run: |
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --lib mcp
+          cargo test --manifest-path crates/codevetter-core/Cargo.toml --lib commands::evidence_scope::tests
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --bin codevetter-mcp
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --test mcp_stdio
           cargo test --manifest-path crates/codevetter-core/Cargo.toml --features browser-agent --bin codevetter

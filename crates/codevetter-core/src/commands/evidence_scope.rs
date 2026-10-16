@@ -637,6 +637,14 @@ fn first_go_benchmark(content: &str) -> Option<String> {
 }
 
 fn matching_paths(root: &Path, files: &[String], query: &str) -> Vec<String> {
+    // A known repository file is an exact scope, not a bag of generic path words.
+    if safe_relative(query)
+        && !excluded_path(query)
+        && is_source_path(query)
+        && files.iter().any(|path| path == query)
+    {
+        return vec![query.to_string()];
+    }
     let tokens = intent_tokens(query);
     let mut remaining = MAX_CONTENT_BYTES;
     files
@@ -681,26 +689,33 @@ fn score_targets(
                 "scope-{:x}",
                 Sha256::digest(format!("{}:{}", target.adapter, target.target))
             );
-            Some(EvidenceScopeCandidate {
-                id: id[..22].to_string(),
-                adapter: target.adapter,
-                target: target.target,
-                name: target.name,
-                reason,
-                source_paths,
-                confidence_milli,
-                testing_supported: target.testing_supported,
-                performance_supported: target.performance_supported,
-            })
+            Some((
+                score,
+                EvidenceScopeCandidate {
+                    id: id[..22].to_string(),
+                    adapter: target.adapter,
+                    target: target.target,
+                    name: target.name,
+                    reason,
+                    source_paths,
+                    confidence_milli,
+                    testing_supported: target.testing_supported,
+                    performance_supported: target.performance_supported,
+                },
+            ))
         })
         .collect::<Vec<_>>();
-    candidates.sort_by(|left, right| {
+    candidates.sort_by(|(left_score, left), (right_score, right)| {
         right
             .confidence_milli
             .cmp(&left.confidence_milli)
+            .then_with(|| right_score.cmp(left_score))
             .then_with(|| left.target.cmp(&right.target))
     });
     candidates
+        .into_iter()
+        .map(|(_, candidate)| candidate)
+        .collect()
 }
 
 fn target_score(
@@ -1154,6 +1169,66 @@ require(runnerName); require(`node:test`);
                     "{path}, Playwright config: {has_playwright_config}"
                 );
             }
+        }
+    }
+
+    #[test]
+    fn saturated_confidence_keeps_the_more_relevant_flow_target_before_the_cap() {
+        let query = "coupon total discount shipping tax invoice";
+        let mut targets = (0..MAX_CANDIDATES)
+            .map(|index| DiscoveredTarget {
+                adapter: "node-test".into(),
+                target: format!("a{index:02}.test.mjs"),
+                name: None,
+                testing_supported: true,
+                performance_supported: true,
+                content: "coupon total discount shipping tax".into(),
+            })
+            .collect::<Vec<_>>();
+        targets.push(DiscoveredTarget {
+            adapter: "node-test".into(),
+            target: "zz-invoice.test.mjs".into(),
+            name: None,
+            testing_supported: true,
+            performance_supported: true,
+            content: query.into(),
+        });
+        let mut candidates = score_targets(EvidenceScopeKind::Flow, Some(query), &[], targets);
+        assert!(candidates
+            .iter()
+            .all(|candidate| candidate.confidence_milli == 950));
+        candidates.truncate(MAX_CANDIDATES);
+        assert_eq!(candidates[0].target, "zz-invoice.test.mjs");
+    }
+
+    #[tokio::test]
+    async fn explicit_test_path_survives_saturated_flow_candidates_for_both_consumers() {
+        let repo = fixture_repository();
+        let wanted = "scripts/runtime-failure-capsule/execution-governance.test.mjs";
+        let content = "import test from 'node:test';\n// scripts runtime failure capsule execution governance test mjs\n";
+        for path in (0..MAX_CANDIDATES)
+            .map(|index| format!("scripts/a{index:02}.test.mjs"))
+            .chain(std::iter::once(wanted.to_string()))
+        {
+            let path = repo.path().join(path);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        }
+        for consumer in [
+            EvidenceScopeConsumer::Testing,
+            EvidenceScopeConsumer::Performance,
+        ] {
+            let plan = resolve(EvidenceScopeInput {
+                repo_path: repo.path().to_string_lossy().into_owned(),
+                kind: EvidenceScopeKind::Flow,
+                value: Some(wanted.into()),
+                consumer,
+            })
+            .await
+            .unwrap();
+            assert_eq!(plan.candidates[0].target, wanted, "{consumer:?}");
+            assert_eq!(plan.candidates[0].source_paths, [wanted], "{consumer:?}");
+            assert!(plan.uncovered_paths.is_empty(), "{consumer:?}");
         }
     }
 
