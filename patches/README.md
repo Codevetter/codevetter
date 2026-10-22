@@ -32,5 +32,11 @@ constructor `version` option produces blank output. The js-yaml patch uses
 the explicit version action instead, preserving `--version`.
 
 The docs build runs `yaml-compatibility.test.mjs` against the installed
-frontmatter parser and CLI before rendering. Retire this patch and override
+frontmatter parser and CLI before rendering. Its scoped Knip exception permits
+inspection of Blume's transitive `gray-matter` package without adding a direct
+dependency that could mask the consumer's resolution. Retire this patch and override
 when Blume no longer depends on js-yaml 3.
+
+Install from inside `docs-site`: pnpm 10.33.2's parent-directory `--dir`
+invocation leaves this local patch unapplied on a fresh install. Both the CI
+docs step and the combined build use the docs directory for installation.
