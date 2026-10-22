@@ -38,11 +38,13 @@ separately approved safety design justify renewed investment.
 
 ## Current shipped state
 
-- **v1.16.0 is the current published desktop release.** The protected release
-  workflow published it on 2026-10-09 with the
-  [arm64 DMG, ZIP, and Sparkle appcast](https://github.com/Codevetter/codevetter/releases/tag/v1.16.0).
-  It adds bounded repository-scoped invocation receipts in CLI/MCP and the
-  native Runs inspector, the packaged performance-runtime lookup through
+- **v1.16.2 is the current published desktop release.** The protected release
+  workflow published it on 2026-10-22 with the
+  [arm64 DMG, ZIP, and Sparkle appcast](https://github.com/Codevetter/codevetter/releases/tag/v1.16.2).
+  It ships patched Rust TLS dependencies (#403) and the verification reliability
+  fixes merged since v1.16.1 (#394, #395, #396).
+- v1.16.0 introduced bounded repository-scoped invocation receipts in CLI/MCP
+  and the native Runs inspector, the packaged performance-runtime lookup through
   symlinked CLI launchers (#355), explicit Playwright/Vitest runner selection,
   inert URL fixture admission, and the recorder failure taxonomy. See
   [surface behavior](docs/product/surfaces.md).
