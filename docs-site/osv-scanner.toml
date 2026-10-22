@@ -1,4 +1,2 @@
-[[IgnoredVulns]]
-id = "CVE-2026-97058"
-ignoreUntil = 2026-11-09
-reason = "Alias of GHSA-hp3w-g68c-fv3c; sprintf-js has no published fixed release and only formats repository-owned argparse help text during the static docs build"
+# No vulnerability exceptions.
+# package.json uses argparse 2 for the legacy js-yaml CLI, removing sprintf-js.
