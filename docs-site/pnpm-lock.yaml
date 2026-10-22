@@ -15,6 +15,7 @@ overrides:
   image-size: 2.0.4
   ip-address: 10.7.1
   js-yaml@3: 3.15.2
+  js-yaml@3.15.2>argparse: 2.0.1
   nanoid@3: 3.3.18
   path-to-regexp@6.1.0: 6.3.0
   postcss: 8.5.26
@@ -41,6 +42,9 @@ patchedDependencies:
   http-cache-semantics@4.3.0:
     hash: 1bde1fe699a4c0f618ade5961734d1d414333292a27feacc6780a501009c0c74
     path: ../patches/http-cache-semantics@4.3.0.patch
+  js-yaml@3.15.2:
+    hash: 225135f076341bc970e885e4f2820fcf2ba1fd30523f5d407775ce820b59c2a7
+    path: ../patches/js-yaml@3.15.2.patch
 
 importers:
 
@@ -1794,9 +1798,6 @@ packages:
 
   anynum@1.0.1:
     resolution: {integrity: sha512-N6//FLET/tXYNM/F6ABca1oH6fWB+KlTt909Le28WMDBk8oaT4vY17DCrwg2MvmuqUKt3Ni4N5dGJ/EoBgcO6A==}
-
-  argparse@1.0.10:
-    resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
@@ -4073,9 +4074,6 @@ packages:
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
 
-  sprintf-js@1.0.3:
-    resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
-
   statuses@2.0.2:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
@@ -4967,7 +4965,7 @@ snapshots:
   '@asyncapi/converter@2.0.2':
     dependencies:
       '@asyncapi/parser': 3.6.3
-      js-yaml: 3.15.2
+      js-yaml: 3.15.2(patch_hash=225135f076341bc970e885e4f2820fcf2ba1fd30523f5d407775ce820b59c2a7)
       path: 0.12.7
     transitivePeerDependencies:
       - encoding
@@ -6478,10 +6476,6 @@ snapshots:
 
   anynum@1.0.1: {}
 
-  argparse@1.0.10:
-    dependencies:
-      sprintf-js: 1.0.3
-
   argparse@2.0.1: {}
 
   aria-query@5.3.2: {}
@@ -7740,7 +7734,7 @@ snapshots:
 
   gray-matter@4.0.3:
     dependencies:
-      js-yaml: 3.15.2
+      js-yaml: 3.15.2(patch_hash=225135f076341bc970e885e4f2820fcf2ba1fd30523f5d407775ce820b59c2a7)
       kind-of: 6.0.3
       section-matter: 1.0.0
       strip-bom-string: 1.0.0
@@ -8126,9 +8120,9 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@3.15.2:
+  js-yaml@3.15.2(patch_hash=225135f076341bc970e885e4f2820fcf2ba1fd30523f5d407775ce820b59c2a7):
     dependencies:
-      argparse: 1.0.10
+      argparse: 2.0.1
       esprima: 4.0.1
 
   js-yaml@4.3.2:
@@ -9520,8 +9514,6 @@ snapshots:
   source-map@0.7.6: {}
 
   space-separated-tokens@2.0.2: {}
-
-  sprintf-js@1.0.3: {}
 
   statuses@2.0.2: {}
 

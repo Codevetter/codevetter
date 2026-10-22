@@ -1,4 +1,6 @@
-# HTTP cache security patch
+# Dependency security patches
+
+## HTTP cache security patch
 
 Both the landing workspace and the independent docs root pin
 `http-cache-semantics` to 4.3.0 and apply the same pnpm patch.
@@ -20,3 +22,21 @@ After the docs frozen install, run the same test with
 Retain this patch until an upstream fix passes these tests without it; then
 remove the patch registration from both roots and regenerate both locks.
 There is no advisory suppression or audit exception.
+
+## Legacy YAML command-line compatibility
+
+The independent docs root overrides `js-yaml@3.15.2>argparse` to 2.0.1,
+removing the vulnerable `sprintf-js` dependency. YAML parsing stays on the
+same version. Argparse 2 preserves the old CLI aliases but its deprecated
+constructor `version` option produces blank output. The js-yaml patch uses
+the explicit version action instead, preserving `--version`.
+
+The docs build runs `yaml-compatibility.test.mjs` against the installed
+frontmatter parser and CLI before rendering. Its scoped Knip exception permits
+inspection of Blume's transitive `gray-matter` package without adding a direct
+dependency that could mask the consumer's resolution. Retire this patch and override
+when Blume no longer depends on js-yaml 3.
+
+Install from inside `docs-site`: pnpm 10.33.2's parent-directory `--dir`
+invocation leaves this local patch unapplied on a fresh install. Both the CI
+docs step and the combined build use the docs directory for installation.

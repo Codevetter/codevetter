@@ -1,0 +1,38 @@
+name: Refresh dependency graph
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "apps/landing-page-astro/package.json"
+      - "docs-site/package.json"
+      - "docs-site/pnpm-lock.yaml"
+      - ".github/workflows/dependency-graph.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: dependency-graph-main
+  cancel-in-progress: false
+
+jobs:
+  submit:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # Submit dependency snapshots for the exact main commit.
+      id-token: write # Bind the submission to the GitHub Actions identity.
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Publish both pnpm dependency graphs
+        uses: advanced-security/component-detection-dependency-submission-action@9b10cd206e0c4ee6ba213dbd3489e1a2e0e3a8e4
+        with:
+          detectorsFilter: Pnpm
+          fail-on-empty: true
+          correlator: codevetter-pnpm

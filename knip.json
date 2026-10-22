@@ -29,6 +29,7 @@
     "xcode-select"
   ],
   "ignoreIssues": {
-    "**/commands/**": ["exports", "types"]
+    "**/commands/**": ["exports", "types"],
+    "docs-site/yaml-compatibility.test.mjs": ["unlisted"]
   }
 }
