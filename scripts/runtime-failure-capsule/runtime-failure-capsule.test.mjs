@@ -173,7 +173,11 @@ test('Vitest function coverage uses an owned report directory without making it 
 test('Vitest profiling flags reach the test worker through Node execArgv', async (context) => {
   const root = await gitFixture(context, {
     'package.json': JSON.stringify({ devDependencies: { vitest: '1.0.0' } }),
-    'node_modules/vitest/vitest.mjs': 'console.log(JSON.stringify(process.execArgv));\n',
+    'node_modules/vitest/vitest.mjs': `console.log(JSON.stringify({
+      execArgv: process.execArgv,
+      nodeOptions: process.env.NODE_OPTIONS,
+      identityDirectory: process.env.CODEVETTER_PROFILE_SOURCE_DIRECTORY,
+    }));\n`,
     'source.test.js': 'export {};\n',
   });
   const profileDirectory = join(root, 'owned-profile');
@@ -186,7 +190,7 @@ test('Vitest profiling flags reach the test worker through Node execArgv', async
     timeoutMs: 5_000,
     profileDirectory,
   });
-  const execArgv = JSON.parse(execution.stdout.trim());
+  const { execArgv, nodeOptions, identityDirectory } = JSON.parse(execution.stdout.trim());
 
   assert.ok(execArgv.includes('--cpu-prof'));
   assert.ok(execArgv.includes(`--cpu-prof-dir=${profileDirectory}`));
@@ -194,7 +198,10 @@ test('Vitest profiling flags reach the test worker through Node execArgv', async
     execution.command.arguments.some((argument) => argument.includes(profileDirectory)),
     false
   );
-  assert.equal(execution.environmentValues.includes(profileDirectory), false);
+  assert.equal(identityDirectory, profileDirectory);
+  assert.match(nodeOptions, /--import=.*node-profile-source-preload\.mjs/);
+  // The owned identity directory is included in the private-value redaction set.
+  assert.equal(execution.environmentValues.includes(profileDirectory), true);
 });
 
 test('missing local runner and escaping target fail closed', async (context) => {
