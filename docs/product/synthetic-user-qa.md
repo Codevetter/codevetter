@@ -8,17 +8,18 @@ Static review asks whether a diff looks risky; runtime verification asks whether
 an affected user capability still works and preserves the evidence needed to
 trust that answer.
 
-There are two compatible paths:
+The Rust core retains legacy synthetic-QA evidence and a bridge to a
+repository-owned warm verifier. The bridge requires exactly one `verify` script
+and a supported lockfile; it does not bundle the executor. The native-only
+migration removed the earlier desktop verifier and React/MSW fixture. Current
+availability and exact bridge CLI requirements are documented in
+[Warm local verification](../WARM-VERIFICATION.md).
 
-- legacy synthetic-QA runners for built-in, repository Playwright, external, and
-  fixture workflows;
-- the warm deterministic verifier for fast changed-capability checks.
+The warm executor behavior and July measurements below are historical. They do
+not establish a currently runnable compatible consumer. Stored legacy and warm
+records remain distinct; neither is silently promoted into current evidence.
 
-Both can project evidence into Review, but warm results have a stronger exact-
-current identity contract. Legacy rows remain readable and are never rewritten
-or silently promoted into current warm evidence.
-
-## Warm deterministic path
+## Historical warm deterministic path (2026-07)
 
 The warm verifier supports one developer, one explicitly configured React web
 app, one Mac, and one Chromium. `verifyd` keeps the declared target server and
@@ -159,4 +160,4 @@ flowchart LR
   Review policy
 - `apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/PremiumTestingView.swift`
   — native operational controls and evidence
-- `docs/WARM-VERIFICATION.md` — target configuration and operator guide
+- `docs/WARM-VERIFICATION.md` — current bridge availability and historical executor contract
