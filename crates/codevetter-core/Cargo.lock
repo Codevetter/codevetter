@@ -297,7 +297,7 @@ dependencies = [
 
 [[package]]
 name = "codevetter-core"
-version = "1.16.3"
+version = "1.16.4"
 dependencies = [
  "base64",
  "chromiumoxide",
@@ -339,7 +339,7 @@ dependencies = [
 
 [[package]]
 name = "codevetter-transport"
-version = "1.16.3"
+version = "1.16.4"
 dependencies = [
  "codevetter-transport-macros",
  "tokio",
@@ -347,7 +347,7 @@ dependencies = [
 
 [[package]]
 name = "codevetter-transport-macros"
-version = "1.16.3"
+version = "1.16.4"
 
 [[package]]
 name = "colorchoice"
