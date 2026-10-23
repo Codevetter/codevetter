@@ -1,3 +1,4 @@
+import { validateSourceExecutionSnapshot } from './source-execution-contract.mjs';
 import { relative, resolve, sep } from 'node:path';
 
 export const CAPSULE_SCHEMA_VERSION = 'runtime-failure-capsule/v1';
@@ -172,6 +173,9 @@ export function validatePerformanceCapsule(capsule) {
   if (!capsule?.scope?.target) errors.push('missing scope.target');
   if (!Array.isArray(capsule?.observed?.executions))
     errors.push('observed.executions must be an array');
+  if (capsule?.observed && Object.hasOwn(capsule.observed, 'source_execution')) {
+    errors.push(...validateSourceExecutionSnapshot(capsule.observed.source_execution));
+  }
   if (!Array.isArray(capsule?.observed?.hotspots))
     errors.push('observed.hotspots must be an array');
   if (!Array.isArray(capsule?.findings)) errors.push('findings must be an array');

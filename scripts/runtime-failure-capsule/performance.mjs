@@ -1,3 +1,5 @@
+import { attachSourceExecution } from './source-execution-transport.mjs';
+import { collectSourceExecution } from './source-execution-collector.mjs';
 import { mkdir, mkdtemp, readFile, readdir, realpath, rm, stat } from 'node:fs/promises';
 import { cpus, loadavg, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -82,6 +84,7 @@ export async function profileRepository({
   const profileRuns = [];
   let flowEvidence = emptyFlowEvidence();
   let functionCoverage = emptyFunctionCoverage();
+  let sourceExecution = null;
   let cleanupFailed = false;
 
   try {
@@ -165,6 +168,13 @@ export async function profileRepository({
         }),
       });
       functionCoverage = await collectV8FunctionCoverage(coverageDirectory, root);
+      sourceExecution = await collectOptionalSourceExecution(
+        adapter,
+        coverageDirectory,
+        root,
+        executions.at(-1).execution,
+        executionPlan
+      );
     }
 
     const profileRunCount = profileRunsFor(adapter);
@@ -216,6 +226,7 @@ export async function profileRepository({
     profileRuns,
     flowEvidence,
     functionCoverage,
+    sourceExecution,
     cleanupFailed,
     baseline,
     regressionPercent,
@@ -224,6 +235,10 @@ export async function profileRepository({
     executionPlan,
     executionReceipt: createPerformanceExecutionReceipt(executionPlan, executions),
   });
+}
+
+function collectOptionalSourceExecution(adapter, directory, root, execution, plan) {
+  return adapter === 'node-test' ? collectSourceExecution(directory, root, execution, plan) : null;
 }
 
 export function createPerformanceCapsule({
@@ -240,6 +255,7 @@ export function createPerformanceCapsule({
   profileRuns = [],
   flowEvidence = emptyFlowEvidence(),
   functionCoverage = emptyFunctionCoverage(),
+  sourceExecution = null,
   cleanupFailed = false,
   baseline = null,
   regressionPercent = 20,
@@ -586,6 +602,7 @@ export function createPerformanceCapsule({
             : 'The exact workload completed with bounded performance evidence.',
     },
   };
+  attachSourceExecution(capsule, sourceExecution, LIMITS.receiptBytes);
   const errors = validatePerformanceCapsule(capsule);
   if (errors.length > 0) throw new Error(`invalid performance capsule: ${errors.join(', ')}`);
   return capsule;

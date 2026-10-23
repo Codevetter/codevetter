@@ -4,13 +4,27 @@ title: Warm local verification
 
 # Warm local verification
 
-`verify changed` is CodeVetter's deterministic browser check for one developer,
-one local React app, and one Chromium installation. A repository-owned daemon
-keeps the configured app server and Chromium warm, selects scenarios from the
-exact Git change set, creates a fresh browser context for each scenario, and
-returns evidence without model calls.
+## Current availability (2026-10-23)
 
-## Target setup
+The Rust `codevetter warm` bridge remains, but CodeVetter does not currently
+bundle the warm browser executor. It requires exactly one nonempty `verify`
+script in the target repository or a concrete workspace package, plus a
+supported lockfile. This checkout has no such executor; an isolated published
+1.16.4 CLI `current`/`status` probe fails closed with “Expected exactly one workspace
+package with a `verify` script, found 0.” No daemon is started.
+
+The native-only migration removed `apps/desktop/src/lib/warm-verification/`
+and its React/MSW fixture in
+[commit 7b1213c9](https://github.com/Codevetter/codevetter/commit/7b1213c972f8fff984bc6f50551e3c92195aa40c).
+The retained July measurements are historical evidence, not current consumer
+qualification. [Issue #348](https://github.com/Codevetter/codevetter/issues/348)
+tracks the remaining qualification; no replacement daemon is implied.
+
+The setup, scenario and lifecycle descriptions below document that historical
+executor contract. They are not instructions to an implementation bundled in
+the current release. The CLI section separately describes the retained bridge.
+
+## Historical target setup
 
 Create `.codevetter/verify.yaml` in the repository being verified. Keep local
 authentication files under `.codevetter/auth/` and ignore them in Git.
@@ -126,9 +140,11 @@ but cannot remove authoritative scenarios or create passing evidence.
 Use the narrowest explicit mapping that remains safe. If selection is incomplete
 or no fallback exists, the outcome is `no_confidence`.
 
-## CLI
+## Current bridge CLI
 
-Run through the installed or prepared `codevetter` CLI:
+These commands require a compatible repository-owned verifier. The retained
+bridge discovers and invokes it; it does not supply one. Use `current` or
+`status` to establish availability before attempting a run:
 
 ```bash
 codevetter warm --operation start --repo /path/to/repo
@@ -141,9 +157,12 @@ codevetter warm --operation stop --repo /path/to/repo
 ```
 
 `--run-id` is required for run and cancel so the native UI and CLI can own
-and correlate one exact operation. `--detailed` explicitly retains passing
-screenshots. `--timeout-ms`
-accepts 100 through 300000 milliseconds.
+and correlate one exact operation. `--detailed` requests passing screenshots from a compatible executor.
+The public `warm` parser does not accept `--timeout-ms`; internal bridge
+deadlines are not a CLI flag. Cleanup requires exactly one of `--dry-run` or
+`--apply-cleanup`. Missing setup is an operational failure, not a passing run.
+
+The historical executor result contract was:
 
 | Outcome | Exit | Meaning |
 |---|---:|---|

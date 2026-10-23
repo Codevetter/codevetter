@@ -165,14 +165,26 @@ test('current consumer report retains executed selections and repairs every dirt
     ),
     '53e434e534e8bc924db61cd4164514523370e8f85848b85e8c9ecf9fc276d4b1'
   );
+  assert.equal(
+    sourceDigest(
+      await readFile(
+        new URL(
+          '../../evidence/performance/vitest-consumer-source-identity-2026-10-23.json',
+          import.meta.url
+        )
+      )
+    ),
+    'f0f1075264ccb94a3ec43bf231f67e154c088c46f273ef66e9fed1ed774ef0d8'
+  );
   const current = JSON.parse(
     await readFile(
       new URL(
-        '../../evidence/performance/vitest-consumer-source-identity-2026-10-23.json',
+        '../../evidence/performance/vitest-consumer-source-snapshot-2026-10-23.json',
         import.meta.url
       )
     )
   );
+  assert.equal(current.producer.dirty, false);
   assert.equal(current.published_prerequisite, '903dfb6b9f7bf76baa9c66c4750017eea0c619ee');
   assert.equal(current.consumer.commit, READER_BASE);
   assert.equal(current.rows.length, 29);

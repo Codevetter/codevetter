@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { access, lstat, readdir, realpath, stat } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
@@ -116,7 +117,12 @@ export async function runClosedAdapter({
     });
   }
   const zeroEgress = executionPlan !== null;
+  const coverageContext =
+    coverageDirectory && adapter === 'node-test' && executionPlan?.plan_id
+      ? { nonce: randomUUID(), run_id: executionPlan.plan_id }
+      : null;
   const environment = minimalEnvironment({
+    coverageContext,
     nodeTestScope: adapter === 'node-test' ? { target: scope.relative, name: name ?? null } : null,
     profileDirectory:
       profileDirectory && ['node-test', 'node-script', 'vitest'].includes(adapter)
@@ -138,6 +144,7 @@ export async function runClosedAdapter({
   });
   return {
     ...execution,
+    coverageContext,
     nodeTestSelection:
       adapter === 'node-test' && !execution.truncated
         ? parseNodeTestSelection(execution.stdout, { target: scope.relative, name })
@@ -410,6 +417,7 @@ function minimalEnvironment({
   profileDirectory = null,
   flowDirectory = null,
   coverageDirectory = null,
+  coverageContext = null,
   zeroEgress = false,
 } = {}) {
   const allowed = ['PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'SYSTEMROOT', 'COMSPEC', 'PATHEXT'];
@@ -431,6 +439,12 @@ function minimalEnvironment({
     environment.CODEVETTER_FLOW_DIRECTORY = flowDirectory;
   }
   if (coverageDirectory) environment.NODE_V8_COVERAGE = coverageDirectory;
+  if (coverageDirectory && coverageContext) {
+    environment.CODEVETTER_PROFILE_SOURCE_DIRECTORY = coverageDirectory;
+    environment.CODEVETTER_COVERAGE_CONTEXT = JSON.stringify(coverageContext);
+    const preload = new URL('./node-source-execution-preload.mjs', import.meta.url);
+    nodeOptions.push(`--import=${preload.href}`);
+  }
   if (zeroEgress) {
     const preload = fileURLToPath(new URL('./node-egress-preload.mjs', import.meta.url));
     nodeOptions.push(`--import=${pathToFileURL(preload).href}`);

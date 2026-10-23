@@ -125,6 +125,11 @@ jobs:
           node --test
           scripts/runtime-failure-capsule/execution-governance.test.mjs
           scripts/runtime-failure-capsule/source-execution.test.mjs
+          scripts/runtime-failure-capsule/source-execution-compatibility.test.mjs
+          scripts/runtime-failure-capsule/source-execution-contract.test.mjs
+          scripts/runtime-failure-capsule/source-execution-integration.test.mjs
+          scripts/runtime-failure-capsule/source-execution-map.test.mjs
+          scripts/runtime-failure-capsule/source-execution-transport.test.mjs
           scripts/runtime-failure-capsule/profile-source.test.mjs
           scripts/runtime-failure-capsule/function-coverage-provenance.test.mjs
           scripts/runtime-failure-capsule/portable-reset.test.mjs
