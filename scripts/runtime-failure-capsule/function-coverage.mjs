@@ -233,8 +233,9 @@ function isHarnessPath(path) {
 
 function indexLineStarts(source) {
   const starts = [0];
-  for (let index = 0; index < source.length; index += 1) {
-    if (source.charCodeAt(index) === 10) starts.push(index + 1);
+  // ECMAScript line terminators use UTF-16 offsets; CRLF is one line break.
+  for (const match of source.matchAll(/\r\n|[\n\r\u2028\u2029]/g)) {
+    starts.push(match.index + match[0].length);
   }
   return starts;
 }
