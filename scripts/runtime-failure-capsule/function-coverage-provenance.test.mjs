@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
 
 import { collectV8FunctionCoverage } from './function-coverage.mjs';
+import { analyzeFunctionFrequency } from './flow.mjs';
 
 const source = 'export function actual() { return true; }\n';
 
@@ -98,6 +101,95 @@ test('rejects invalid V8 offsets instead of clamping them onto an original sourc
     ['actual']
   );
 });
+
+for (const [name, startLine, endLine] of [
+  ['zero', 0, 1],
+  ['negative', -1, 1],
+  ['reversed', 2, 1],
+  ['beyondSource', 1, 3],
+  ['unsafeInteger', 1, Number.MAX_SAFE_INTEGER + 1],
+]) {
+  test(`rejects ${name} runner-native lines before deriving repeated-work candidates`, async (context) => {
+    const fixture = await createFixture(context);
+    const coverage = runnerCoverage();
+    coverage.f[0] = 3;
+    coverage.fnMap[1] = {
+      name,
+      decl: { start: { line: startLine } },
+      loc: { end: { line: endLine } },
+    };
+    coverage.f[1] = 9;
+    await writeCoverage(fixture, { [fixture.sourcePath]: coverage });
+
+    const result = await collectV8FunctionCoverage(fixture.coverageDirectory, fixture.root);
+    const analysis = analyzeFunctionFrequency(
+      {
+        observed: {
+          function_coverage: result,
+          hotspots: [{ role: 'application', file: 'src/app.js', line: 1, self_time_ms: 5 }],
+        },
+      },
+      []
+    );
+    assert.equal(analysis.repeated_work_candidate.function, 'actual');
+    assert.equal(analysis.repeated_work_candidate.call_count, 3);
+    assert.deepEqual(
+      result.functions.map((entry) => entry.function),
+      ['actual']
+    );
+    assert.ok(result.limitations.some((entry) => /runner-native.*invalid.*omitted/i.test(entry)));
+  });
+}
+
+test('retains valid same-line runner-native declaration-end fallback', async (context) => {
+  const fixture = await createFixture(context);
+  const coverage = runnerCoverage();
+  coverage.fnMap[0].decl.end = { line: 1 };
+  delete coverage.fnMap[0].loc;
+  await writeCoverage(fixture, { [fixture.sourcePath]: coverage });
+
+  const result = await collectV8FunctionCoverage(fixture.coverageDirectory, fixture.root);
+  assert.equal(result.functions.length, 1);
+  assert.equal(result.functions[0].start_line, 1);
+  assert.equal(result.functions[0].end_line, 1);
+  assert.deepEqual(result.limitations, []);
+});
+
+for (const [name, terminator] of [
+  ['LF', '\n'],
+  ['CRLF', '\r\n'],
+  ['CR', '\r'],
+  ['line separator', '\u2028'],
+  ['paragraph separator', '\u2029'],
+]) {
+  test(`agrees with executed V8 and runner-native anchors for ${name} source`, async (context) => {
+    const fixture = await createFixture(context);
+    await writeFile(
+      fixture.sourcePath,
+      ['// header', 'function actual() { return true; }', 'actual();'].join(terminator)
+    );
+    // Execute valid JavaScript with the real coverage producer, rather than
+    // manufacturing offsets that merely agree with the collector's index.
+    await promisify(execFile)(process.execPath, [fixture.sourcePath], {
+      env: { ...process.env, NODE_V8_COVERAGE: fixture.coverageDirectory },
+    });
+    const executed = await collectV8FunctionCoverage(fixture.coverageDirectory, fixture.root);
+    assert.equal(executed.functions.length, 1);
+    assert.equal(executed.functions[0].start_line, 2);
+    assert.equal(executed.functions[0].end_line, 2);
+    assert.equal(executed.functions[0].call_count, 1);
+
+    const coverage = runnerCoverage();
+    coverage.fnMap[0].decl.start.line = 2;
+    await writeCoverage(fixture, { [fixture.sourcePath]: coverage });
+    const combined = await collectV8FunctionCoverage(fixture.coverageDirectory, fixture.root);
+    assert.equal(combined.functions.length, 1);
+    assert.equal(combined.functions[0].start_line, 2);
+    assert.equal(combined.functions[0].end_line, 2);
+    assert.equal(combined.functions[0].call_count, 2);
+    assert.deepEqual(combined.limitations, []);
+  });
+}
 
 function v8Function(functionName = 'actual', startOffset = 0, endOffset = source.length) {
   return { functionName, ranges: [{ startOffset, endOffset, count: 1 }] };
