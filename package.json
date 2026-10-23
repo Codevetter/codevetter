@@ -175,7 +175,8 @@
       "source-map-js": "1.2.2"
     },
     "patchedDependencies": {
-      "http-cache-semantics@4.3.0": "patches/http-cache-semantics@4.3.0.patch"
+      "http-cache-semantics@4.3.0": "patches/http-cache-semantics@4.3.0.patch",
+      "@saas-maker/templates@0.1.18": "patches/saas-maker-templates-footer-retry-0.1.18.patch"
     }
   },
   "packageManager": "pnpm@10.33.2"

@@ -51,3 +51,10 @@ const links = [
     </div>
   </div>
 </header>
+
+<style>
+  /* The shared footer modal sits inside its own stacking context. */
+  :global(body:has([data-saas-maker-feedback-mount] .smw-overlay)) header {
+    z-index: 1;
+  }
+</style>
