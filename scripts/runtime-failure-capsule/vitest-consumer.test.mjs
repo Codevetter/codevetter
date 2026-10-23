@@ -153,10 +153,22 @@ test('current consumer report retains executed selections and repairs every dirt
     sourceDigest(historical),
     '9d75b1b1e755585df49ccf857ef1395761a15b9864eccee62f9ef0bf37727e6e'
   );
+  // Keep the prior measured implementation immutable when the current runner changes.
+  assert.equal(
+    sourceDigest(
+      await readFile(
+        new URL(
+          '../../evidence/performance/vitest-consumer-node-selection-2026-10-16.json',
+          import.meta.url
+        )
+      )
+    ),
+    '53e434e534e8bc924db61cd4164514523370e8f85848b85e8c9ecf9fc276d4b1'
+  );
   const current = JSON.parse(
     await readFile(
       new URL(
-        '../../evidence/performance/vitest-consumer-node-selection-2026-10-16.json',
+        '../../evidence/performance/vitest-consumer-source-identity-2026-10-23.json',
         import.meta.url
       )
     )

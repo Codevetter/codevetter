@@ -22,6 +22,7 @@ import { redactText } from './redact.mjs';
 import { inspectGoProfile, runClosedAdapter } from './runner.mjs';
 import { collectNodeFlowEvents } from './flow-capture.mjs';
 import { inspectExistingViteArtifact } from './vite-artifact.mjs';
+import { qualifyProfileSources } from './profile-source.mjs';
 
 const APPLICATION_HOTSPOT_SHARE = 0.05;
 const STARTUP_DOMINATED_SHARE_PERCENT = 10;
@@ -313,21 +314,10 @@ export function createPerformanceCapsule({
           );
   const executionComplete = requiredExecutionsCompleted(sanitizedExecutions, adapter, name);
   const limitations = [];
-  limitations.push(...functionCoverage.limitations);
-  if (functionCoverage.truncated) {
-    limitations.push('The bounded V8 function coverage evidence was truncated.');
-  }
+  limitations.push(...(profileEvidence.limitations ?? []));
+  limitations.push(...functionCoverageLimitations(functionCoverage, sanitizedExecutions));
   if (!executionComplete)
     limitations.push('One or more required workload executions did not complete successfully.');
-  for (const entry of sanitizedExecutions.filter(
-    (candidate) =>
-      candidate.phase === 'coverage' &&
-      (candidate.execution.status !== 'exited' || candidate.execution.exitCode !== 0)
-  )) {
-    limitations.push(
-      `Optional function coverage execution failed: ${entry.operationalError || `exit ${entry.execution.exitCode ?? 'unknown'}`}.`
-    );
-  }
   for (const entry of sanitizedExecutions.filter(
     (candidate) =>
       candidate.phase !== 'coverage' &&
@@ -1098,6 +1088,7 @@ async function collectV8ProfileEvidence(directory, repositoryRoot) {
   const entries = await profileEntries(directory);
   const files = entries.filter((entry) => entry.name.endsWith('.cpuprofile'));
   const documents = [];
+  const limitations = new Set();
   let profileBytes = 0;
   let truncated = files.length > LIMITS.profileFiles;
   for (const entry of files.slice(0, LIMITS.profileFiles)) {
@@ -1107,7 +1098,15 @@ async function collectV8ProfileEvidence(directory, repositoryRoot) {
       continue;
     }
     try {
-      documents.push(JSON.parse(await readFile(join(directory, entry.name), 'utf8')));
+      const qualified = await qualifyProfileSources(
+        JSON.parse(await readFile(join(directory, entry.name), 'utf8')),
+        entry.name,
+        directory,
+        repositoryRoot
+      );
+      documents.push(qualified.document);
+      for (const limitation of qualified.limitations) limitations.add(limitation);
+      truncated ||= qualified.truncated;
     } catch {
       truncated = true;
     }
@@ -1118,6 +1117,7 @@ async function collectV8ProfileEvidence(directory, repositoryRoot) {
     profile_files: files.length,
     profile_bytes: profileBytes,
     ...parsed,
+    limitations: [...limitations],
     truncated: truncated || parsed.truncated,
   };
 }
@@ -1415,6 +1415,23 @@ function playwrightTimingObservation(adapter, measured, name) {
   );
 }
 
+function functionCoverageLimitations(coverage, executions) {
+  const limitations = [...coverage.limitations];
+  if (coverage.truncated) {
+    limitations.push('The bounded V8 function coverage evidence was truncated.');
+  }
+  for (const entry of executions.filter(
+    (candidate) =>
+      candidate.phase === 'coverage' &&
+      (candidate.execution.status !== 'exited' || candidate.execution.exitCode !== 0)
+  )) {
+    limitations.push(
+      `Optional function coverage execution failed: ${entry.operationalError || `exit ${entry.execution.exitCode ?? 'unknown'}`}.`
+    );
+  }
+  return limitations;
+}
+
 function playwrightLimitations(adapter, observation) {
   return adapter === 'playwright' && !observation.complete ? observation.limitations : [];
 }
@@ -1536,6 +1553,7 @@ function combineProfileRuns(runs, adapter) {
     redaction_count: runs.reduce((total, run) => total + run.redaction_count, 0),
     failed_kinds: [],
     repeatability: evaluateV8Repeatability(runs),
+    limitations: [...new Set(runs.flatMap((run) => run.limitations ?? []))],
   };
 }
 

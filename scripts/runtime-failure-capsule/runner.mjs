@@ -119,7 +119,9 @@ export async function runClosedAdapter({
   const environment = minimalEnvironment({
     nodeTestScope: adapter === 'node-test' ? { target: scope.relative, name: name ?? null } : null,
     profileDirectory:
-      profileDirectory && ['node-test', 'node-script'].includes(adapter) ? profileDirectory : null,
+      profileDirectory && ['node-test', 'node-script', 'vitest'].includes(adapter)
+        ? profileDirectory
+        : null,
     flowDirectory:
       flowDirectory && ['node-test', 'vitest'].includes(adapter) ? flowDirectory : null,
     coverageDirectory: coverageDirectory && adapter === 'node-test' ? coverageDirectory : null,
@@ -417,7 +419,12 @@ function minimalEnvironment({
     if (typeof process.env[name] === 'string') environment[name] = process.env[name];
   }
   const nodeOptions = [];
-  if (profileDirectory) nodeOptions.push('--cpu-prof', `--cpu-prof-dir=${profileDirectory}`);
+  if (profileDirectory) {
+    nodeOptions.push('--cpu-prof', `--cpu-prof-dir=${profileDirectory}`);
+    const preload = fileURLToPath(new URL('./node-profile-source-preload.mjs', import.meta.url));
+    nodeOptions.push(`--import=${pathToFileURL(preload).href}`);
+    environment.CODEVETTER_PROFILE_SOURCE_DIRECTORY = profileDirectory;
+  }
   if (flowDirectory) {
     const preload = fileURLToPath(new URL('./node-flow-preload.mjs', import.meta.url));
     nodeOptions.push(`--import=${pathToFileURL(preload).href}`);
