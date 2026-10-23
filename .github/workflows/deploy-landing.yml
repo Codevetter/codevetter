@@ -104,21 +104,40 @@ jobs:
             echo "Edge cache purged for codevetter.com"
             exit 0
           fi
-          echo "::warning::Edge cache purge failed (HTTP ${status}). Trying development mode (3h cache bypass)…"
-          dev_response="$(curl --silent --show-error --request PATCH \
-            --url "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/settings/development_mode" \
-            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            --header "Content-Type: application/json" \
-            --write-out '\nHTTP_STATUS:%{http_code}' \
-            --data '{"value":"on"}')"
-          dev_status="${dev_response##*HTTP_STATUS:}"
-          dev_body="${dev_response%HTTP_STATUS:*}"
-          echo "$dev_body"
-          if [ "$dev_status" != "200" ]; then
-            echo "::warning::Development mode also failed (HTTP ${dev_status}). Add Zone.Cache Purge + Zone.Settings to CLOUDFLARE_API_TOKEN, or purge manually."
-          else
-            echo "Development mode enabled for 3 hours — custom domain should serve fresh HTML."
-          fi
+          echo "::warning::Edge cache purge failed (HTTP ${status}); deployment completed without changing zone settings. Verify public content freshness before claiming the website is current."
+
+      - name: Read back deployed provider identity
+        if: steps.cloudflare.outputs.deploy_enabled == 'true'
+        working-directory: apps/landing-page-astro
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          proof="$RUNNER_TEMP/codevetter-provider-proof"
+          mkdir -p "$proof"
+          pnpm exec wrangler deployments list --config wrangler.worker.jsonc --json |
+            jq -e 'max_by(.created_on) | {id, created_on, versions}' > "$proof/deployment.json"
+          version="$(jq -er '.versions | select(length == 1 and .[0].percentage == 100) | .[0].version_id' "$proof/deployment.json")"
+          pnpm exec wrangler versions view "$version" --config wrangler.worker.jsonc --json |
+            jq -e '{id, created_on: .metadata.created_on, tag: .annotations["workers/tag"]}' > "$proof/version.json"
+          jq -e --arg sha "$GITHUB_SHA" --arg version "$version" '.id == $version and .tag == $sha' "$proof/version.json"
+          pnpm exec wrangler pages deployment list --project-name codevetter --environment production --json |
+            jq -e '.[0] | {Id, Environment, Branch, Source, Deployment, Status}' > "$proof/pages.json"
+          jq -e --arg sha "$GITHUB_SHA" '.Environment == "Production" and .Branch == "main" and .Source == $sha[0:7]' "$proof/pages.json"
+          jq -n --arg source "$GITHUB_SHA" --arg observedAt "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --slurpfile deployment "$proof/deployment.json" --slurpfile version "$proof/version.json" \
+            --slurpfile pages "$proof/pages.json" \
+            '{source: $source, observedAt: $observedAt, worker: $deployment[0], version: $version[0], pages: $pages[0]}' > "$proof/receipt.json"
+          cat "$proof/receipt.json"
+
+      - name: Preserve provider identity readback
+        if: always() && steps.cloudflare.outputs.deploy_enabled == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: landing-provider-identity-${{ github.run_id }}
+          path: ${{ runner.temp }}/codevetter-provider-proof/*.json
+          retention-days: 14
+          if-no-files-found: warn
 
       - name: Smoke production landing page
         run: curl --fail --silent --show-error --location --output /dev/null --retry 3 --retry-delay 5 --max-time 20 https://codevetter.com
