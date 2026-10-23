@@ -103,8 +103,7 @@ export async function collectV8FunctionCoverage(directory, repositoryRoot) {
           /^\(?anonymous(?:_\d+)?\)?$/.test(functionName) ||
           !Number.isInteger(count) ||
           count <= 0 ||
-          !Number.isInteger(startLine) ||
-          !Number.isInteger(endLine)
+          !validSourceLines(startLine, endLine, source.lineStarts.length, limitations)
         ) {
           continue;
         }
@@ -181,6 +180,20 @@ function validSourceRange(range, length) {
     range.endOffset > range.startOffset &&
     range.endOffset <= length
   );
+}
+
+function validSourceLines(startLine, endLine, lineCount, limitations) {
+  if (
+    Number.isSafeInteger(startLine) &&
+    Number.isSafeInteger(endLine) &&
+    startLine >= 1 &&
+    endLine >= startLine &&
+    endLine <= lineCount
+  ) {
+    return true;
+  }
+  limitations.add('Runner-native functions with invalid source line ranges were omitted.');
+  return false;
 }
 
 async function containedSource(url, { root, lexicalRoot, cache }) {
