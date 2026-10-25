@@ -1642,6 +1642,41 @@ fn check_parser_preserves_the_independent_cross_review_strategy() {
 }
 
 #[test]
+fn check_parser_skips_performance_without_accepting_conflicting_workloads() {
+    let base = vec![
+        "check".to_string(),
+        "--range".into(),
+        "main...HEAD".into(),
+        "--task".into(),
+        "Verify tenant authorization".into(),
+        "--skip-performance".into(),
+        "--agent".into(),
+        "claude".into(),
+    ];
+    let CliCommand::Check(arguments) =
+        parse_arguments(base.clone(), Path::new("/tmp/widget")).expect("review without profiling")
+    else {
+        panic!("expected check");
+    };
+    assert!(arguments.skip_performance);
+    assert!(arguments.performance_target.is_none());
+    assert_eq!(arguments.review_agent, "claude");
+    for extra in [
+        vec![
+            "--perf-adapter",
+            "node-test",
+            "--perf-target",
+            "test/perf.mjs",
+        ],
+        vec!["--baseline-repo", "/tmp/baseline"],
+    ] {
+        let mut args = base.clone();
+        args.extend(extra.into_iter().map(String::from));
+        assert!(parse_arguments(args, Path::new("/tmp/widget")).is_err());
+    }
+}
+
+#[test]
 fn check_parser_bounds_machine_readable_progress_to_executable_json_checks() {
     let cwd = Path::new("/tmp/widget");
     let CliCommand::Check(arguments) = parse_arguments(

@@ -10,6 +10,9 @@ for crucial changes, and performance measurement when relevant. It routes to
 three execution-oriented skills and one evaluation skill. Repository test runners
 remain authoritative; this is agent instruction routing, not an OS hook that
 intercepts arbitrary commands. Existing sessions may need to reload skills.
+For tests-plus-review checks, `check --skip-performance` bypasses performance
+discovery and execution; the receipt retains the skipped stage as unavailable
+performance evidence. Performance targets and baselines conflict with that flag.
 Agents use the matching skill automatically when the task fits, complete the
 relevant authorized flow, and log whether it helped before handing the task
 back. A runnable requested check should proceed beyond discovery/planning.

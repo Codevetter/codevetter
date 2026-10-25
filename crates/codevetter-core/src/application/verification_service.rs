@@ -276,6 +276,7 @@ mod tests {
                     source: "explicit:fixture".into(),
                 }),
                 performance_target: None,
+                skip_performance: false,
                 baseline_repo_path: None,
                 samples: 3,
                 warmups: 1,

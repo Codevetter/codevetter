@@ -83,13 +83,18 @@ For example, a Codex-authored Node change uses the recorder at the installed
 skill root (replace placeholders with the inspected repository and test):
 
 ```text
-python3 <skills>/codevetter-evaluate/scripts/invoke.py --skill codevetter-review --repo <repo> --task-id <uuid> --agent codex -- check --range <base..head> --task <intended-behavior> --test-adapter node-test --test-target <relative-test> --preflight --json
+python3 <skills>/codevetter-evaluate/scripts/invoke.py --skill codevetter-review --repo <repo> --task-id <uuid> --agent codex -- check --range <base..head> --task <intended-behavior> --test-adapter node-test --test-target <relative-test> --skip-performance --preflight --json
 ```
 
 Execute the same input without `--preflight`, adding `--agent claude` **after**
 `--`. The recorder's `--agent codex` identifies the author; the CLI's
 `--agent claude` selects the reviewer. Reuse the task UUID, link the follow-up
 with recorder `--parent-id <preflight-invocation-id>`, and assess both attempts.
+Use `--skip-performance` for tests-plus-review work; omit it only when a relevant
+performance workload is selected. Check installed help first. An older CLI
+without the option is a capability gap, not permission to invent a flag or run
+an unrelated discovered performance target. A skipped stage is not passing
+performance evidence; inspect correctness/review stages and retain that limit.
 
 **Reviewers do not recursively request reviewers.** When invoked as an independent
 reviewer, audit the supplied change and return findings/evidence only. This author

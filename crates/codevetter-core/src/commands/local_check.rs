@@ -128,6 +128,7 @@ pub struct LocalCheckInput {
     pub review_agent: String,
     pub test_target: Option<LocalCheckTarget>,
     pub performance_target: Option<LocalCheckTarget>,
+    pub skip_performance: bool,
     pub baseline_repo_path: Option<PathBuf>,
     pub samples: u8,
     pub warmups: u8,
@@ -215,17 +216,21 @@ where
             "skipped"
         },
     });
-    let performance = run_runtime_stage(
-        &repo_path,
-        performance_operation,
-        performance_target.clone(),
-        input.samples,
-        input.warmups,
-        input.timeout_ms,
-        baseline.as_deref(),
-        performance_plan.err().or(performance_selection_limitation),
-    )
-    .await;
+    let performance = if input.skip_performance {
+        skipped_performance_stage()
+    } else {
+        run_runtime_stage(
+            &repo_path,
+            performance_operation,
+            performance_target.clone(),
+            input.samples,
+            input.warmups,
+            input.timeout_ms,
+            baseline.as_deref(),
+            performance_plan.err().or(performance_selection_limitation),
+        )
+        .await
+    };
     on_progress(progress_for_stage("performance", &performance));
     let review_runtime_context = vec![
         runtime_stage_review_context("correctness", &correctness),
@@ -246,21 +251,25 @@ where
     )
     .await;
     on_progress(progress_for_stage("review", &review));
-    let optimization = optimization_stage(
-        &repo_path,
-        &source.base_sha,
-        &input.task,
-        &input.review_agent,
-        correctness_target.as_ref(),
-        performance_target,
-        baseline.as_deref(),
-        &performance,
-        input.samples,
-        input.warmups,
-        input.timeout_ms,
-        &input.spec_paths,
-        &input.selected_requirement_ids,
-    );
+    let optimization = if input.skip_performance {
+        skipped_performance_stage()
+    } else {
+        optimization_stage(
+            &repo_path,
+            &source.base_sha,
+            &input.task,
+            &input.review_agent,
+            correctness_target.as_ref(),
+            performance_target,
+            baseline.as_deref(),
+            &performance,
+            input.samples,
+            input.warmups,
+            input.timeout_ms,
+            &input.spec_paths,
+            &input.selected_requirement_ids,
+        )
+    };
     let stages = LocalCheckStages {
         review,
         correctness,
@@ -535,12 +544,16 @@ async fn prepare_local_check(input: &LocalCheckInput) -> Result<PreparedLocalChe
     let spec_packet = load_spec_packet(&repo_path, &input.spec_paths)?;
     validate_selected_requirements(spec_packet.as_ref(), &input.selected_requirement_ids)?;
     let test_plan = discover_plan(&repo_text, &input.change, EvidenceScopeConsumer::Testing).await;
-    let performance_plan = discover_plan(
-        &repo_text,
-        &input.change,
-        EvidenceScopeConsumer::Performance,
-    )
-    .await;
+    let performance_plan = if input.skip_performance {
+        Err("Performance deliberately skipped; no performance result is claimed".into())
+    } else {
+        discover_plan(
+            &repo_text,
+            &input.change,
+            EvidenceScopeConsumer::Performance,
+        )
+        .await
+    };
     let correctness_target = select_target(input.test_target.clone(), test_plan.as_ref().ok());
     let (performance_target, performance_selection_limitation) = select_performance_target(
         input.performance_target.clone(),
@@ -585,6 +598,11 @@ fn apply_spec_confidence(
 }
 
 fn validate_input(input: &LocalCheckInput) -> Result<(), String> {
+    if input.skip_performance
+        && (input.performance_target.is_some() || input.baseline_repo_path.is_some())
+    {
+        return Err("Skipped performance cannot include a performance target or baseline".into());
+    }
     if input.task.trim().is_empty() || input.task.len() > 2_000 {
         return Err("Task must contain between 1 and 2,000 characters".into());
     }
@@ -1476,6 +1494,23 @@ fn aggregate_verdict(stages: &LocalCheckStages) -> LocalCheckVerdict {
     }
 }
 
+fn skipped_performance_stage() -> LocalCheckStage {
+    LocalCheckStage {
+        status: LocalCheckStatus::Completed,
+        duration_ms: 0,
+        target: None,
+        evidence: serde_json::json!({
+            "schema_version": "codevetter.skipped-check-stage/v1",
+            "status": "skipped",
+            "reason": "explicit_skip_performance",
+        }),
+        limitations: vec![
+            "Performance deliberately skipped; no performance or optimization result is claimed"
+                .into(),
+        ],
+    }
+}
+
 fn collect_limitations(stages: &LocalCheckStages) -> Vec<String> {
     [
         &stages.review,
@@ -1566,6 +1601,28 @@ mod tests {
             optimization: stage(LocalCheckStatus::Ready),
         };
         assert_eq!(aggregate_verdict(&stages), LocalCheckVerdict::Failed);
+    }
+
+    #[test]
+    fn explicit_skip_is_not_performance_proof_and_preserves_required_checks() {
+        let mut stages = LocalCheckStages {
+            review: stage(LocalCheckStatus::Completed),
+            correctness: stage(LocalCheckStatus::Passed),
+            performance: skipped_performance_stage(),
+            optimization: skipped_performance_stage(),
+        };
+        assert_eq!(stages.performance.evidence["status"], "skipped");
+        assert_ne!(stages.performance.status, LocalCheckStatus::Passed);
+        assert!(stages.performance.target.is_none());
+        assert_eq!(
+            aggregate_verdict(&stages),
+            LocalCheckVerdict::PassedWithLimits
+        );
+        stages.correctness.status = LocalCheckStatus::Failed;
+        assert_eq!(aggregate_verdict(&stages), LocalCheckVerdict::Failed);
+        stages.correctness.status = LocalCheckStatus::Passed;
+        stages.review.status = LocalCheckStatus::NoConfidence;
+        assert_eq!(aggregate_verdict(&stages), LocalCheckVerdict::NoConfidence);
     }
 
     #[test]

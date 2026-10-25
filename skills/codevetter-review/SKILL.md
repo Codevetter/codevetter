@@ -24,6 +24,8 @@ scope --consumer testing --change <base..head> --json
 
 Preflight validates source and targets without model or project execution. Bind a relevant existing test with `--test-adapter <adapter> --test-target <relative-path>` and, where useful, `--test-name <exact-name>`. Add `--spec <relative-markdown>` and `--requirement <id>` only when acceptance requirements exist. Preserve uncovered requirements explicitly.
 
+For tests-plus-review work, use `--skip-performance` when listed in installed help. It bypasses performance discovery/execution while preserving an explicit no-performance-evidence limitation. Omit it for a deliberately selected relevant performance workload; never combine it with performance targets or a baseline. Older CLI versions without this option retain a capability gap rather than silently profiling unrelated tests.
+
 ## Execute and assess
 
 For crucial implementation changes, use [engineering](../codevetter-engineering/SKILL.md)'s automatic independent-executor policy: Codex author → Claude review; Claude author → Codex review. The owner's standing authorization covers the already configured local CLIs. Do not ask again or stop at preflight when that path can run. A worker already acting as the independent reviewer must return its own findings without recursively invoking CodeVetter or another model review.
