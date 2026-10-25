@@ -5,7 +5,11 @@ description: Selective CodeVetter review, testing and performance skills, local 
 
 # Agent workflow skills
 
-CodeVetter provides three execution-oriented skills and one evaluation skill.
+CodeVetter's engineering skill selects focused verification, independent review
+for crucial changes, and performance measurement when relevant. It routes to
+three execution-oriented skills and one evaluation skill. Repository test runners
+remain authoritative; this is agent instruction routing, not an OS hook that
+intercepts arbitrary commands. Existing sessions may need to reload skills.
 Agents use the matching skill automatically when the task fits, complete the
 relevant authorized flow, and log whether it helped before handing the task
 back. A runnable requested check should proceed beyond discovery/planning.
@@ -13,6 +17,7 @@ Selection does not authorize every execution mode in the skill.
 
 | Skill | Use it for |
 | --- | --- |
+| [codevetter-engineering](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-engineering/SKILL.md) | Default coding workflow: small changes get focused checks; crucial changes get an independent Claude review for Codex authors, or Codex for Claude authors. Performance checks follow actual risk and budgets. |
 | [codevetter-review](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-review/SKILL.md) | Exact agent change, acceptance binding, preflight and qualified review evidence. |
 | [codevetter-testing](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-testing/SKILL.md) | Failure reproduction and changed browser/API behavior with explicit coverage. |
 | [codevetter-performance](https://github.com/Codevetter/codevetter/blob/main/skills/codevetter-performance/SKILL.md) | Workload planning, bounded diagnosis and paired optimization verification. |

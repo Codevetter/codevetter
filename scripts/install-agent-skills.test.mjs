@@ -24,7 +24,7 @@ function fixture(t) {
 
 test('skill installation links canonical sources and repeats without changes', (t) => {
   const options = fixture(t);
-  assert.equal(installAgentSkills(options).length, 4);
+  assert.equal(installAgentSkills(options).length, 5);
   for (const name of skillNames) {
     assert.equal(
       realpathSync(join(options.destination, name)),

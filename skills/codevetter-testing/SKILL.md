@@ -13,7 +13,7 @@ Load this skill when the coding-agent task calls for runtime verification, failu
 
 ## Select the smallest relevant check
 
-Read repository instructions and existing test/config files. Inspect `codevetter --version` and `codevetter --help` once. Discover targets without execution through the shared [recorder](../codevetter-evaluate/scripts/invoke.py): `--skill codevetter-testing --repo <repo> --` followed by:
+Read repository instructions and existing test/config files. Inspect `codevetter --version` and `codevetter --help` once. When an inspected existing test already covers the task, select it directly. Otherwise discover targets without execution through the shared [recorder](../codevetter-evaluate/scripts/invoke.py): `--skill codevetter-testing --repo <repo> --` followed by:
 
 ```text
 scope --consumer testing --change <base..head> --json
@@ -22,6 +22,8 @@ qa --operation inspect --json
 ```
 
 Use either change or flow discovery as appropriate, not both by default. Discovery is candidate coverage, not passing evidence. Name the exact test, acceptance criterion, source revision and expected result. Preserve missing coverage.
+
+For implementation work, [engineering](../codevetter-engineering/SKILL.md) selects the small-change or crucial-workflow path. Choose assertions that distinguish a plausible faulty implementation from the intended behavior. Cover relevant ordering, persistence, permission, retry and partial-failure boundaries without mocking the boundary being verified. Use bounded mutation testing for a critical weak oracle when justified, not as a universal coverage target.
 
 Inspect the selected file and verify that it exercises the requested behavior before execution. Reject generated/dependency targets (`.build/checkouts`, `node_modules`, vendored snapshots and build outputs), unrelated high-confidence matches, and stale legacy preview presets. Discovery confidence is a heuristic, not relevance proof; obtain the current preview from the user or repository evidence.
 

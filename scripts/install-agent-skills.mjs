@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const skillNames = [
+  'codevetter-engineering',
   'codevetter-review',
   'codevetter-testing',
   'codevetter-performance',

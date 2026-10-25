@@ -26,6 +26,8 @@ Preflight validates source and targets without model or project execution. Bind 
 
 ## Execute and assess
 
+For crucial implementation changes, use [engineering](../codevetter-engineering/SKILL.md)'s automatic independent-executor policy: Codex author → Claude review; Claude author → Codex review. The owner's standing authorization covers the already configured local CLIs. Do not ask again or stop at preflight when that path can run. A worker already acting as the independent reviewer must return its own findings without recursively invoking CodeVetter or another model review.
+
 When the requested review authorizes the selected configured provider and project checks, run the same `check` input without `--preflight` and with an explicit `--agent claude|codex|gemini`. Keep `cross` opt-in: the repository's prior synthetic comparison found substantial latency and finding burden for one additional low-severity label. Do not switch executors silently or interpret implicit skill selection as provider approval.
 
 Read each runtime stage, source qualification, manifest coverage, finding identity and limitation. A source-qualified review finding is a lead; a passing review does not prove correctness. Do not turn failed or absent checks into a pass. Return the exact change identity, unique actionable findings, executable evidence, missing coverage, receipt reference and next check. Do not execute an isolated fix, publish X-Ray, or post a GitHub status as part of ordinary review.

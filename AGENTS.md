@@ -95,6 +95,12 @@ node scripts/check-docs.mjs   # Validate docs (links, frontmatter, structure)
 
 ## Agent workflow skills
 
+For implementation and bug fixes, start with
+`skills/codevetter-engineering/SKILL.md`: focused checks for small changes,
+independent Claude review for crucial Codex-authored changes (Codex for Claude),
+and measured performance checks when relevant. Review workers return findings
+without recursively requesting another reviewer.
+
 For a requested agent-change review, runtime verification, or performance
 investigation, load the matching repo-owned skill before reconstructing the
 CLI workflow:
