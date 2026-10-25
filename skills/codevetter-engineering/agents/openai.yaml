@@ -1,0 +1,6 @@
+interface:
+  display_name: "CodeVetter Engineering"
+  short_description: "Risk-based checks and independent agent review"
+  default_prompt: "Use $codevetter-engineering to implement and verify this change with checks proportionate to its consequences."
+policy:
+  allow_implicit_invocation: true

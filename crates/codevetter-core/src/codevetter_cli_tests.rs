@@ -1642,6 +1642,41 @@ fn check_parser_preserves_the_independent_cross_review_strategy() {
 }
 
 #[test]
+fn check_parser_skips_performance_without_accepting_conflicting_workloads() {
+    let base = vec![
+        "check".to_string(),
+        "--range".into(),
+        "main...HEAD".into(),
+        "--task".into(),
+        "Verify tenant authorization".into(),
+        "--skip-performance".into(),
+        "--agent".into(),
+        "claude".into(),
+    ];
+    let CliCommand::Check(arguments) =
+        parse_arguments(base.clone(), Path::new("/tmp/widget")).expect("review without profiling")
+    else {
+        panic!("expected check");
+    };
+    assert!(arguments.skip_performance);
+    assert!(arguments.performance_target.is_none());
+    assert_eq!(arguments.review_agent, "claude");
+    for extra in [
+        vec![
+            "--perf-adapter",
+            "node-test",
+            "--perf-target",
+            "test/perf.mjs",
+        ],
+        vec!["--baseline-repo", "/tmp/baseline"],
+    ] {
+        let mut args = base.clone();
+        args.extend(extra.into_iter().map(String::from));
+        assert!(parse_arguments(args, Path::new("/tmp/widget")).is_err());
+    }
+}
+
+#[test]
 fn check_parser_bounds_machine_readable_progress_to_executable_json_checks() {
     let cwd = Path::new("/tmp/widget");
     let CliCommand::Check(arguments) = parse_arguments(
@@ -1849,6 +1884,17 @@ fn local_check_output_and_exit_codes_preserve_stage_meaning() {
     assert_eq!(payload["schema_version"], "codevetter.local-check/v1");
     assert_eq!(payload["stages"]["correctness"]["status"], "passed");
     assert!(payload.get("spec_coverage").is_none());
+
+    let mut skipped = passed.clone();
+    skipped.stages.performance.status = LocalCheckStatus::Skipped;
+    skipped.stages.optimization.status = LocalCheckStatus::Skipped;
+    let skipped_output = render_human_check(&skipped);
+    assert!(skipped_output.contains("performance: skipped"));
+    assert!(skipped_output.contains("optimization: skipped"));
+    assert_eq!(
+        serde_json::to_value(&skipped).unwrap()["stages"]["performance"]["status"],
+        "skipped"
+    );
 
     let mut spec_passed = passed.clone();
     spec_passed.spec_coverage = Some(

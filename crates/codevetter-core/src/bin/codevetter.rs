@@ -152,6 +152,7 @@ Options:
   --perf-adapter <adapter>  Explicit performance adapter
   --perf-target <path>      Explicit performance target
   --perf-name <name>        Optional exact performance workload name
+  --skip-performance       Run correctness and review without performance discovery or execution
   --baseline-repo <path>    Clean pre-optimization checkout for paired verification
   --samples <n>             Performance samples, 2-10 (default: 3)
   --warmups <n>             Performance warmups, 0-5 (default: 1)
@@ -247,6 +248,7 @@ struct CheckArguments {
     review_agent: String,
     test_target: Option<LocalCheckTarget>,
     performance_target: Option<LocalCheckTarget>,
+    skip_performance: bool,
     baseline_repo_path: Option<PathBuf>,
     samples: u8,
     warmups: u8,
@@ -2113,6 +2115,7 @@ async fn run_collect(arguments: CollectArguments) -> Result<i32, String> {
 }
 
 async fn run_check(arguments: CheckArguments) -> Result<i32, String> {
+    codevetter_core::commands::review::ensure_review_author()?;
     let output = arguments.output;
     let preflight = arguments.preflight;
     let progress_json = arguments.progress_json;
@@ -2133,6 +2136,7 @@ async fn run_check(arguments: CheckArguments) -> Result<i32, String> {
         review_agent: arguments.review_agent,
         test_target: arguments.test_target,
         performance_target: arguments.performance_target,
+        skip_performance: arguments.skip_performance,
         baseline_repo_path: arguments.baseline_repo_path,
         samples: arguments.samples,
         warmups: arguments.warmups,
@@ -3939,6 +3943,7 @@ fn parse_check(
     let mut performance_adapter = None;
     let mut performance_target = None;
     let mut performance_name = None;
+    let mut skip_performance = false;
     let mut baseline_repo_path = None;
     let mut samples = 3;
     let mut warmups = 1;
@@ -3954,6 +3959,7 @@ fn parse_check(
             "--range" => range = Some(required_value(&mut arguments, "--range")?),
             "--task" => task = Some(required_value(&mut arguments, "--task")?),
             "--preflight" => preflight = true,
+            "--skip-performance" => skip_performance = true,
             "--progress-json" => progress_json = true,
             "--spec" => spec_paths.push(PathBuf::from(required_value(&mut arguments, "--spec")?)),
             "--requirement" => {
@@ -4004,6 +4010,11 @@ fn parse_check(
     if spec_paths.is_empty() && !selected_requirement_ids.is_empty() {
         return Err("--requirement requires at least one --spec".into());
     }
+    if skip_performance && (performance_target.is_some() || baseline_repo_path.is_some()) {
+        return Err(
+            "--skip-performance cannot be combined with a performance target or baseline".into(),
+        );
+    }
     if progress_json && output != OutputMode::Json {
         return Err("--progress-json requires --json".into());
     }
@@ -4019,6 +4030,7 @@ fn parse_check(
         review_agent,
         test_target,
         performance_target,
+        skip_performance,
         baseline_repo_path,
         samples,
         warmups,
