@@ -1885,6 +1885,17 @@ fn local_check_output_and_exit_codes_preserve_stage_meaning() {
     assert_eq!(payload["stages"]["correctness"]["status"], "passed");
     assert!(payload.get("spec_coverage").is_none());
 
+    let mut skipped = passed.clone();
+    skipped.stages.performance.status = LocalCheckStatus::Skipped;
+    skipped.stages.optimization.status = LocalCheckStatus::Skipped;
+    let skipped_output = render_human_check(&skipped);
+    assert!(skipped_output.contains("performance: skipped"));
+    assert!(skipped_output.contains("optimization: skipped"));
+    assert_eq!(
+        serde_json::to_value(&skipped).unwrap()["stages"]["performance"]["status"],
+        "skipped"
+    );
+
     let mut spec_passed = passed.clone();
     spec_passed.spec_coverage = Some(
             serde_json::from_value(serde_json::json!({

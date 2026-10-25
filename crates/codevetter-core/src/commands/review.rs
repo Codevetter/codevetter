@@ -16,6 +16,16 @@ use tauri::{Emitter, Manager, State};
 use tokio::io::{AsyncRead, AsyncReadExt};
 use tokio::process::Command as TokioCommand;
 
+pub const REVIEW_WORKER_ENV: &str = "CODEVETTER_REVIEWER";
+const REVIEW_WORKER_GUIDANCE: &str = "You are an independent review-only worker (CODEVETTER_REVIEWER is set). Return findings and evidence; do not modify source, invoke codevetter check, or launch another reviewer. Inspect changed tracked source first. Use git grep or bounded rg searches; exclude target, node_modules, .build and artifacts instead of recursively grepping build trees.";
+
+pub fn ensure_review_author() -> Result<(), String> {
+    if std::env::var_os(REVIEW_WORKER_ENV).is_some() {
+        return Err("Independent review workers cannot launch nested CodeVetter reviews; return findings to the author".into());
+    }
+    Ok(())
+}
+
 static ACTIVE_REVIEW_CANCELLATIONS: OnceLock<
     Mutex<std::collections::HashMap<String, Arc<AtomicBool>>>,
 > = OnceLock::new();
@@ -1225,6 +1235,8 @@ fn build_review_prompt(
     format!(
         r#"You are a senior code reviewer for an experienced engineer. Find *real* issues — security holes, correctness bugs, regression risk, broken contracts. Skip style nitpicks and speculative concerns.
 
+{REVIEW_WORKER_GUIDANCE}
+
 Project: {project_description}
 Change: {change_description}
 Exact target range: {diff_range}
@@ -1336,6 +1348,7 @@ async fn run_agent_json_with_limits(
     let mut command = TokioCommand::new(&cli_path);
     command
         .args(review_executor_arguments(cli_cmd, &prompt))
+        .env(REVIEW_WORKER_ENV, "1")
         .current_dir(&repo_path)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
@@ -1699,6 +1712,8 @@ fn build_coordinator_prompt(
     format!(
         r#"You are the coordinator and final system-integrity reviewer for a CodeVetter specialist review. Deduplicate and rank findings, then inspect the repository for cross-file defects the file-level passes may have missed. Keep only real, verified issues. Drop duplicates, style-only comments, and findings that lack a concrete file/symbol/line basis.
 
+{REVIEW_WORKER_GUIDANCE}
+
 Assumption integrity is mandatory: before keeping any finding, confirm the premise it depends on. Preserve findings where the implementation contradicts its stated intent, a comment/docs claim is false, an implicit invariant is relied on but unenforced, or prior agent claims would steer follow-up work incorrectly. Drop findings that are themselves based on an unconfirmed assumption.
 
 Project: {project_description}
@@ -1909,6 +1924,7 @@ pub async fn run_cli_review_core(
     qa_runs: Option<Vec<Value>>,
     standards_pack: Option<String>,
 ) -> Result<Value, String> {
+    ensure_review_author()?;
     let agent = agent.unwrap_or_else(|| "claude".to_string());
     if !matches!(agent.as_str(), "claude" | "gemini" | "codex") {
         return Err(format!(

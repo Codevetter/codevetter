@@ -250,6 +250,11 @@ mod tests {
         std::fs::create_dir_all(repo.path().join("test")).expect("test directory");
         std::fs::write(repo.path().join("source.js"), "export const value = 1;\n").expect("source");
         std::fs::write(repo.path().join("test/source.test.js"), "// fixture\n").expect("test");
+        std::fs::write(
+            repo.path().join("test/source.performance.test.mjs"),
+            "throw new Error('Performance must not run in focused review');\n",
+        )
+        .expect("performance trap");
         git(repo.path(), &["add", "."]);
         git(repo.path(), &["commit", "-m", "base"]);
         std::fs::write(repo.path().join("source.js"), "export const value = 2;\n")
@@ -309,6 +314,34 @@ mod tests {
             .await
             .expect_err("missing performance target")
             .contains("absent-benchmark.mjs"));
+
+        let mut focused = command.clone();
+        focused.input.skip_performance = true;
+        let VerificationResult::Preflight(skipped) =
+            run_verification_command(focused.clone(), |_| {})
+                .await
+                .expect("focused preflight")
+        else {
+            panic!("expected preflight");
+        };
+        assert_eq!(skipped.status, LocalCheckStatus::Ready);
+        assert!(skipped.performance_target.is_none());
+        assert!(skipped
+            .limitations
+            .iter()
+            .any(|value| value.contains("deliberately skipped")));
+        for baseline in [false, true] {
+            let mut conflict = focused.clone();
+            if baseline {
+                conflict.input.baseline_repo_path = Some(repo.path().to_path_buf());
+            } else {
+                conflict.input.performance_target = command.input.test_target.clone();
+            }
+            assert!(run_verification_command(conflict, |_| {})
+                .await
+                .expect_err("engine rejects conflicting skip input")
+                .contains("Skipped performance"));
+        }
 
         let mut progress = Vec::new();
         let result = run_verification_command(command, |event| progress.push(event))

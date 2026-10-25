@@ -100,6 +100,8 @@ performance evidence; inspect correctness/review stages and retain that limit.
 reviewer, audit the supplied change and return findings/evidence only. This author
 workflow does not apply to the review task itself. Do not edit the author's source,
 launch another `codevetter check`, or delegate another model review.
+CodeVetter sets `CODEVETTER_REVIEWER` on its review workers and refuses nested
+checks/reviews while that marker is present. Do not clear it to bypass the guard.
 
 ## Performance when relevant
 

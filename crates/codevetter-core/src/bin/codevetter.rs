@@ -2115,6 +2115,7 @@ async fn run_collect(arguments: CollectArguments) -> Result<i32, String> {
 }
 
 async fn run_check(arguments: CheckArguments) -> Result<i32, String> {
+    codevetter_core::commands::review::ensure_review_author()?;
     let output = arguments.output;
     let preflight = arguments.preflight;
     let progress_json = arguments.progress_json;

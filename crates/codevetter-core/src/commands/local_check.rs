@@ -34,6 +34,7 @@ const RUNTIME_DEADLINE: Duration = Duration::from_secs(10 * 60);
 pub enum LocalCheckStatus {
     Passed,
     Completed,
+    Skipped,
     Ready,
     NeedsAttention,
     Failed,
@@ -231,7 +232,9 @@ where
         )
         .await
     };
-    on_progress(progress_for_stage("performance", &performance));
+    if !input.skip_performance {
+        on_progress(progress_for_stage("performance", &performance));
+    }
     let review_runtime_context = vec![
         runtime_stage_review_context("correctness", &correctness),
         runtime_stage_review_context("performance", &performance),
@@ -981,6 +984,7 @@ fn runtime_stage_review_context(kind: &str, stage: &LocalCheckStage) -> Value {
         LocalCheckStatus::Passed => "pass",
         LocalCheckStatus::Failed => "fail",
         LocalCheckStatus::Completed => "completed",
+        LocalCheckStatus::Skipped => "skipped",
         LocalCheckStatus::Ready => "ready",
         LocalCheckStatus::NeedsAttention => "needs_attention",
         LocalCheckStatus::NoConfidence => "no_confidence",
@@ -1460,6 +1464,7 @@ fn status_name(status: LocalCheckStatus) -> &'static str {
     match status {
         LocalCheckStatus::Passed => "passed",
         LocalCheckStatus::Completed => "completed",
+        LocalCheckStatus::Skipped => "skipped",
         LocalCheckStatus::Ready => "ready",
         LocalCheckStatus::NeedsAttention => "needs_attention",
         LocalCheckStatus::Failed => "failed",
@@ -1487,7 +1492,10 @@ fn aggregate_verdict(stages: &LocalCheckStages) -> LocalCheckVerdict {
         LocalCheckVerdict::Failed
     } else if statuses.contains(&LocalCheckStatus::NeedsAttention) {
         LocalCheckVerdict::NeedsAttention
-    } else if statuses.contains(&LocalCheckStatus::NoConfidence) {
+    } else if statuses.contains(&LocalCheckStatus::NoConfidence)
+        || stages.review.status == LocalCheckStatus::Skipped
+        || stages.correctness.status == LocalCheckStatus::Skipped
+    {
         LocalCheckVerdict::NoConfidence
     } else {
         LocalCheckVerdict::PassedWithLimits
@@ -1496,7 +1504,7 @@ fn aggregate_verdict(stages: &LocalCheckStages) -> LocalCheckVerdict {
 
 fn skipped_performance_stage() -> LocalCheckStage {
     LocalCheckStage {
-        status: LocalCheckStatus::Completed,
+        status: LocalCheckStatus::Skipped,
         duration_ms: 0,
         target: None,
         evidence: serde_json::json!({
@@ -1612,7 +1620,15 @@ mod tests {
             optimization: skipped_performance_stage(),
         };
         assert_eq!(stages.performance.evidence["status"], "skipped");
-        assert_ne!(stages.performance.status, LocalCheckStatus::Passed);
+        assert_eq!(stages.performance.status, LocalCheckStatus::Skipped);
+        assert_eq!(
+            serde_json::to_value(&stages.performance).unwrap()["status"],
+            "skipped"
+        );
+        assert_eq!(
+            runtime_stage_review_context("performance", &stages.performance)["evidence_status"],
+            "skipped"
+        );
         assert!(stages.performance.target.is_none());
         assert_eq!(
             aggregate_verdict(&stages),
@@ -1622,6 +1638,8 @@ mod tests {
         assert_eq!(aggregate_verdict(&stages), LocalCheckVerdict::Failed);
         stages.correctness.status = LocalCheckStatus::Passed;
         stages.review.status = LocalCheckStatus::NoConfidence;
+        assert_eq!(aggregate_verdict(&stages), LocalCheckVerdict::NoConfidence);
+        stages.review.status = LocalCheckStatus::Skipped;
         assert_eq!(aggregate_verdict(&stages), LocalCheckVerdict::NoConfidence);
     }
 
