@@ -14,6 +14,8 @@ fn git(repo: &Path, args: &[&str]) {
 
 fn preflight(repo: &Path) -> serde_json::Value {
     let output = Command::new(env!("CARGO_BIN_EXE_codevetter"))
+        // This inert preflight fixture never launches a reviewer or project code.
+        .env_remove("CODEVETTER_REVIEWER")
         .args([
             "check",
             "--preflight",

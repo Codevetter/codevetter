@@ -151,6 +151,7 @@ pub async fn execute_fix_attempt(
     app_data_dir: PathBuf,
     input: FixAttemptInput,
 ) -> Result<FixAttemptReceipt, String> {
+    super::review::ensure_review_author()?;
     validate_execute_input(&input)?;
     let connection = db::init_db(app_data_dir.clone())
         .map_err(|error| format!("Open CodeVetter database: {error}"))?;

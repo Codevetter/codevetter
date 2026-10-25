@@ -60,7 +60,10 @@ printf '%s\n' '{"findings":[],"score":100,"summary":"Fixture review complete","t
     .unwrap();
     let command = || {
         let mut cmd = Command::new(env!("CARGO_BIN_EXE_codevetter"));
+        // This isolated author fixture uses only the fake executor above. The
+        // blocked cases explicitly restore the worker marker below.
         cmd.current_dir(&repo)
+            .env_remove("CODEVETTER_REVIEWER")
             .env("PATH", &path)
             .env("CODEVETTER_APP_DATA_DIR", root.path().join("data"))
             .env("CODEVETTER_TEST_CALLS", &calls)
@@ -101,5 +104,35 @@ printf '%s\n' '{"findings":[],"score":100,"summary":"Fixture review complete","t
     let blocked = command().env("CODEVETTER_REVIEWER", "1").output().unwrap();
     assert!(!blocked.status.success());
     assert!(String::from_utf8_lossy(&blocked.stderr).contains("cannot launch nested"));
+    assert_eq!(std::fs::read(&calls).unwrap(), prior_calls);
+
+    let fix_data = root.path().join("blocked-fix-data");
+    let blocked_fix = Command::new(env!("CARGO_BIN_EXE_codevetter"))
+        .current_dir(&repo)
+        .env("PATH", &path)
+        .env("CODEVETTER_APP_DATA_DIR", &fix_data)
+        .env("CODEVETTER_TEST_CALLS", &calls)
+        .env("CODEVETTER_REVIEWER", "1")
+        .args([
+            "fix",
+            "--operation",
+            "execute",
+            "--run-id",
+            "fixture-run",
+            "--finding",
+            "fixture-finding",
+            "--agent",
+            "claude",
+            "--confirm-run",
+            "--json",
+        ])
+        .output()
+        .unwrap();
+    assert!(!blocked_fix.status.success());
+    assert!(String::from_utf8_lossy(&blocked_fix.stderr).contains("cannot launch nested"));
+    assert!(
+        !fix_data.exists(),
+        "guard must precede database/worktree creation"
+    );
     assert_eq!(std::fs::read(&calls).unwrap(), prior_calls);
 }

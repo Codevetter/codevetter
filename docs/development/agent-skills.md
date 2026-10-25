@@ -15,8 +15,10 @@ discovery and execution; the receipt retains the skipped stage as unavailable
 performance evidence. Performance targets and baselines conflict with that flag.
 Skipped stages serialize as `skipped` across JSON, CLI/progress and the native
 viewer's string-based decoder. They cannot count as completed measurements.
-Review subprocesses inherit `CODEVETTER_REVIEWER`; nested checks/reviews are
-rejected before project execution or another provider launch.
+Review subprocesses inherit `CODEVETTER_REVIEWER`; nested `check`, `review` and
+`fix execute` operations are rejected before project execution or another provider
+launch. Isolated tests with fake executors or inert preflights clear the inherited
+marker for their author fixture and explicitly set it for worker rejection cases.
 Agents use the matching skill automatically when the task fits, complete the
 relevant authorized flow, and log whether it helped before handing the task
 back. A runnable requested check should proceed beyond discovery/planning.
