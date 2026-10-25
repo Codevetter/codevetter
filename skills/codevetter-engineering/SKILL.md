@@ -10,6 +10,33 @@ verification, testing, review and performance policy; repository runners remain
 the execution tools. Load only the specialist skill needed for the current task.
 Read this once per task, then revisit when its scope or risk changes.
 
+## Compose with existing skills
+
+Keep one task and verification plan. Discover and load only the installed skills
+whose expertise the task needs; the examples below are optional capabilities,
+not dependencies to install or a checklist to run on every change.
+
+| Existing skill | Its responsibility and handoff |
+| --- | --- |
+| `pstack` | Structures substantial investigation and implementation. Its verification/review steps use this same plan; the required CodeVetter opposite-agent review satisfies the shared review step. Same-model advice does not satisfy that independence requirement. |
+| `test-quality` | Selects valuable test gaps, assertions, flaky-suite fixes and replayable workloads when those need attention. Ordinary focused tests do not require a suite audit. Keep its native test evidence. |
+| `code-cleanup` | Owns dependency/Knip analysis, guarded upgrades and its selected lint/typecheck/test commands. Reuse those reports; do not run a full cleanup pass for every code edit. |
+| `web-perf`, `animation-performance`, platform profilers | Own browser/device traces, frame analysis and domain diagnosis. CodeVetter adds supported workload comparison; retain native evidence and disclose unsupported adapters rather than substituting an unrelated benchmark. |
+| `design-workflow` and UI specialists | Own visual direction, craft and rendered review. Keep PRESERVE/OVERHAUL routing; CodeVetter does not add design rounds, scores or receipts. A copy/style edit remains small unless its behavior changes a crucial boundary. |
+| `call-teammate`, agent orchestrators | Own requested delegation and worker management. Route the required engineering review through CodeVetter once, rather than also launching a standalone teammate for the same review. Explicitly requested extra opinions remain separate. |
+| Platform and release skills | Keep their native tools, environment checks and release criteria. CodeVetter evidence informs those workflows; existing owner release authority still applies. |
+
+Reuse evidence only when it matches the final source, target, runtime and workload.
+Do not repeat a check merely because another skill was loaded. An integrated
+`codevetter check` executes its bound test itself: plan that execution as the
+check, or state why a rerun is needed (changed source, stale runtime, paired
+baseline/candidate, or required CI). Do not invent a native-result import option.
+Retain native reports and log each actual CodeVetter invocation once.
+
+When `CODEVETTER_REVIEWER` is set, the reviewer role also constrains PStack and
+delegation playbooks: inspect and return findings without spawning review agents
+or entering an author/fix workflow. Skills do not expand the owner's task scope.
+
 ## Choose by consequences
 
 Read the repository instructions, intended behavior, actual callers and relevant
