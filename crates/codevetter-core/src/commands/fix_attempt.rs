@@ -1181,6 +1181,7 @@ fn status_name(status: LocalCheckStatus) -> &'static str {
     match status {
         LocalCheckStatus::Passed => "passed",
         LocalCheckStatus::Completed => "completed",
+        LocalCheckStatus::Skipped => "skipped",
         LocalCheckStatus::Ready => "ready",
         LocalCheckStatus::NeedsAttention => "needs_attention",
         LocalCheckStatus::Failed => "failed",
