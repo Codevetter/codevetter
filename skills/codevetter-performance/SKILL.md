@@ -32,6 +32,10 @@ Use installed browser, animation or platform skills for domain diagnosis and
 native traces. If no supported adapter exercises the real boundary, retain the
 native comparison and report the CodeVetter capability gap. Do not invent an
 adapter or label native evidence as a CodeVetter paired-verification verdict.
+A native comparison may support an improvement claim when correctness and a
+representative budget hold and baseline/candidate measurements use matching
+workloads and conditions. Report that claim as native evidence with the gap
+disclosed, retaining measurement uncertainty.
 
 Inspect the selected file and verify that it exercises the requested behavior before execution. Reject generated/dependency targets (`.build/checkouts`, `node_modules`, vendored snapshots and build outputs), unrelated high-confidence matches, and stale legacy preview presets. Discovery confidence is a heuristic, not relevance proof; obtain the current preview from the user or repository evidence.
 
