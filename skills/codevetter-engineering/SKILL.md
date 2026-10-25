@@ -79,6 +79,18 @@ a concise evidence-based reason. Missing executors or failed/blocked reviews sta
 explicit; continue independent work, but do not call crucial verification complete.
 Bound retries; stop repeating the same operational failure without new evidence.
 
+For example, a Codex-authored Node change uses the recorder at the installed
+skill root (replace placeholders with the inspected repository and test):
+
+```text
+python3 <skills>/codevetter-evaluate/scripts/invoke.py --skill codevetter-review --repo <repo> --task-id <uuid> --agent codex -- check --range <base..head> --task <intended-behavior> --test-adapter node-test --test-target <relative-test> --preflight --json
+```
+
+Execute the same input without `--preflight`, adding `--agent claude` **after**
+`--`. The recorder's `--agent codex` identifies the author; the CLI's
+`--agent claude` selects the reviewer. Reuse the task UUID, link the follow-up
+with recorder `--parent-id <preflight-invocation-id>`, and assess both attempts.
+
 **Reviewers do not recursively request reviewers.** When invoked as an independent
 reviewer, audit the supplied change and return findings/evidence only. This author
 workflow does not apply to the review task itself. Do not edit the author's source,
