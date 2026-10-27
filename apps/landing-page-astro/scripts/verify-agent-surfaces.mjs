@@ -83,7 +83,7 @@ for (const [assetPath, provenancePath] of [
 }
 const builtLandingHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
 const builtJsonLdScripts = [
-  ...builtLandingHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi),
+  ...builtLandingHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\b[^>]*>/gi),
 ].filter((match) => /\btype\s*=\s*(["'])application\/ld\+json\1/i.test(match[1]));
 if (builtJsonLdScripts.length !== 1) {
   failures.push(
