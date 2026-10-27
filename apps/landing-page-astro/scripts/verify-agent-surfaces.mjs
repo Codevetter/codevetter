@@ -82,6 +82,21 @@ for (const [assetPath, provenancePath] of [
   }
 }
 const builtLandingHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+const builtJsonLdScripts = [
+  ...builtLandingHtml.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi),
+].filter((match) => /\btype\s*=\s*(["'])application\/ld\+json\1/i.test(match[1]));
+if (builtJsonLdScripts.length !== 1) {
+  failures.push(
+    `Built landing page must contain exactly one complete JSON-LD script; found ${builtJsonLdScripts.length}`
+  );
+} else {
+  try {
+    JSON.parse(builtJsonLdScripts[0][2]);
+    console.log('PASS built landing page contains one parseable JSON-LD script');
+  } catch {
+    failures.push('Built landing page JSON-LD script does not contain valid JSON');
+  }
+}
 for (const required of ['data-fleet-footer="studio"', 'data-catalog-id="codevetter"']) {
   if (!builtLandingHtml.includes(required))
     failures.push(`Built landing page is missing ${required}`);
