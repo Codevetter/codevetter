@@ -7,7 +7,7 @@
   "description": "Static Astro port of the codevetter.com landing page. Deploys to Cloudflare Pages.",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node ../../scripts/finalize-landing-markdown.mjs",
     "test": "node --test test/*.test.mjs",
     "preview": "astro preview",
     "astro": "astro"
