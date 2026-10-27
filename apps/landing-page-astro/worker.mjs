@@ -1,3 +1,14 @@
+import {
+  createStaticAssetHandler,
+  advertiseMarkdown,
+} from './src/lib/agent-surfaces/adapters/static-assets.mjs';
+import {
+  wantsMarkdown,
+  markdownPathFor,
+  markdownResponse,
+} from './src/lib/agent-surfaces/http.mjs';
+
+const handleMarkdown = createStaticAssetHandler({ preserveMarkdownPaths: ['/pricing.md'] });
 /**
  * Serves the static landing from Worker assets on codevetter.com routes.
  * Handles agent SEO surfaces: /api/ai, Accept: text/markdown negotiation,
@@ -8,31 +19,6 @@ const AGENT_REWRITES = {
   '/api/ai': '/api/ai', // physical file without extension
   '/api-ai.json': '/api/ai',
 };
-
-// Paths that have a corresponding .md alternate in the static assets.
-// Built from `ls dist/*.md` at build time. The Worker falls back to a
-// HEAD probe for any path not listed here so new pages work without edits.
-const KNOWN_MD_PAGES = new Set([
-  '/',
-  '/about',
-  '/ai-code-review-vs-verification',
-  '/benchmark',
-  '/changelog',
-  '/codevetter-vs-coderabbit',
-  '/codevetter-vs-greptile',
-  '/coding-agent-verification',
-  '/compare',
-  '/contact',
-  '/docs',
-  '/download',
-  '/faq',
-  '/optimize',
-  '/privacy',
-  '/terms',
-  '/verification-evidence-bundle',
-  '/verify-ai-generated-code',
-  '/xray',
-]);
 
 const ERROR_RESPONSE = {
   description: 'Error response',
@@ -187,22 +173,10 @@ const OPENAPI_SPEC = {
   },
 };
 
-function wantsMarkdown(request) {
-  const accept = (request.headers.get('accept') || '').toLowerCase();
-  if (!accept.includes('text/markdown')) return false;
-  if (!accept.includes('text/html')) return true;
-  return accept.indexOf('text/markdown') < accept.indexOf('text/html');
-}
-
 function normalizePath(pathname) {
   if (!pathname || pathname === '/') return '/';
   const withSlash = pathname.startsWith('/') ? pathname : `/${pathname}`;
   return withSlash.replace(/\/{2,}/g, '/').replace(/\/+$/, '') || '/';
-}
-
-function markdownPathFor(pathname) {
-  const path = normalizePath(pathname);
-  return path === '/' ? '/index.md' : `${path}.md`;
 }
 
 const RATE_LIMIT_HEADERS = {
@@ -228,7 +202,7 @@ function jsonError(status, code, message, path) {
   );
 }
 
-function markdown404(pathname) {
+function markdown404(pathname, request) {
   const path = normalizePath(pathname);
   const body = `# 404 — Not Found
 
@@ -243,14 +217,11 @@ function markdown404(pathname) {
 - [Agent catalog (JSON)](https://codevetter.com/api/ai)
 - [Documentation](https://codevetter.com/docs)
 `;
-  return new Response(body, {
-    status: 404,
-    headers: {
-      'content-type': 'text/markdown; charset=utf-8',
-      'cache-control': 'no-store',
-      'x-content-type-options': 'nosniff',
-    },
+  const response = markdownResponse(body, request, {
+    'Cache-Control': 'no-store',
+    'Content-Location': `https://codevetter.com${path}`,
   });
+  return new Response(response.body, { status: 404, headers: response.headers });
 }
 
 function serveOpenApiSpec() {
@@ -264,39 +235,6 @@ function serveOpenApiSpec() {
   });
 }
 
-function isStaticAssetPath(pathname) {
-  return (
-    pathname.endsWith('.md') ||
-    pathname.endsWith('.json') ||
-    pathname.endsWith('.xml') ||
-    pathname.startsWith('/api/') ||
-    pathname.includes('.')
-  );
-}
-
-async function tryMarkdownNegotiation(request, url, pathname, env) {
-  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
-  if (isStaticAssetPath(pathname)) return null;
-  if (!wantsMarkdown(request)) return null;
-  if (!KNOWN_MD_PAGES.has(normalizePath(pathname))) return null;
-
-  const mdPath = markdownPathFor(pathname);
-  const mdUrl = new URL(url);
-  mdUrl.pathname = mdPath;
-  const mdResponse = await env.ASSETS.fetch(new Request(mdUrl.toString(), request));
-  if (mdResponse.status !== 200) return null;
-
-  const headers = new Headers(mdResponse.headers);
-  headers.set('content-type', 'text/markdown; charset=utf-8');
-  headers.set('vary', 'Accept, Accept-Encoding');
-  headers.set('x-content-type-options', 'nosniff');
-  headers.set('x-edge-cache', 'WORKER-ASSETS');
-  return new Response(request.method === 'HEAD' ? null : mdResponse.body, {
-    status: 200,
-    headers,
-  });
-}
-
 async function tryAgentMode(request, url, pathname, env) {
   if (request.method !== 'GET' && request.method !== 'HEAD') return null;
   if (pathname !== '/' || url.searchParams.get('mode') !== 'agent') return null;
@@ -304,19 +242,12 @@ async function tryAgentMode(request, url, pathname, env) {
   const mdUrl = new URL(url);
   mdUrl.pathname = '/index.md';
   mdUrl.search = '';
-  const mdResponse = await env.ASSETS.fetch(new Request(mdUrl.toString(), request));
-  if (mdResponse.status !== 200) return null;
-
-  const headers = new Headers(mdResponse.headers);
-  headers.set('content-type', 'text/markdown; charset=utf-8');
-  headers.set('cache-control', 'public, max-age=300, s-maxage=300');
-  headers.set('vary', 'Accept, Accept-Encoding');
-  headers.set('x-content-type-options', 'nosniff');
-  headers.set('x-edge-cache', 'WORKER-ASSETS');
-  return new Response(request.method === 'HEAD' ? null : mdResponse.body, {
-    status: 200,
-    headers,
-  });
+  const response = await handleMarkdown(new Request(mdUrl, { method: request.method }), env.ASSETS);
+  if (response) {
+    response.headers.set('CDN-Cache-Control', 'no-store');
+    response.headers.set('Cloudflare-CDN-Cache-Control', 'no-store');
+  }
+  return response;
 }
 
 async function fetchWithApiFallback(url, request, pathname, env) {
@@ -331,7 +262,7 @@ async function fetchWithApiFallback(url, request, pathname, env) {
 
 async function handleAgentFriendly404(response, request, pathname, env) {
   if (response.status !== 404 || pathname.startsWith('/api/')) return null;
-  if (wantsMarkdown(request)) return markdown404(pathname);
+  if (wantsMarkdown(request)) return markdown404(pathname, request);
   // Asset bindings return an empty 404 for unknown paths even when the
   // directory contains a custom 404.html. Fetch its canonical extensionless
   // route explicitly; HTML handling maps /404 to /404.html without the
@@ -416,6 +347,9 @@ export default {
       return serveOpenApiSpec();
     }
 
+    const markdownResponse = await handleMarkdown(request, env.ASSETS);
+    if (markdownResponse) return markdownResponse;
+
     const agentModeResponse = await tryAgentMode(request, url, pathname, env);
     if (agentModeResponse) return agentModeResponse;
 
@@ -433,10 +367,6 @@ export default {
       assetRequest = new Request(rewritten.toString(), request);
     }
 
-    // Accept: text/markdown negotiation for HTML pages that have a .md alternate.
-    const mdResponse = await tryMarkdownNegotiation(request, url, pathname, env);
-    if (mdResponse) return mdResponse;
-
     const response = await fetchWithApiFallback(url, assetRequest, pathname, env);
 
     // Agent-friendly 404: return a markdown recovery body for unknown paths
@@ -444,6 +374,6 @@ export default {
     const notFoundResponse = await handleAgentFriendly404(response, request, pathname, env);
     if (notFoundResponse) return notFoundResponse;
 
-    return applyResponseHeaders(response, pathname);
+    return advertiseMarkdown(applyResponseHeaders(response, pathname), 'https://codevetter.com');
   },
 };

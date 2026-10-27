@@ -263,7 +263,7 @@ if (!fs.existsSync(privacyMarkdownFile) || !fs.existsSync(privacyHtmlFile)) {
   // Compare only the policy body: drop the `# title` / `> Canonical page:`
   // preamble and the shared "Public product links" footer that page() appends.
   const body = privacyMarkdown
-    .replace(/^[\s\S]*?^> Canonical page:.*$/m, '')
+    .replace(/^[\s\S]*?^(?:> Canonical page:|Canonical:).*$/m, '')
     .split('\n## Public product links')[0];
 
   const claims = body
@@ -413,3 +413,5 @@ console.log(
   `PASS ${skillsIndex.skills.length} published skill digest and ${aiCatalog.entries.length} AI Catalog entries`
 );
 console.log(`PASS /privacy and /privacy.md state the same claims, date, and provider list`);
+
+await import('./check-markdown-runtime.mjs');

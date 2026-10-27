@@ -54,7 +54,15 @@ test('HEAD misses retain the branded 404 status without a response body', async 
 
 test('markdown clients retain the machine-readable 404 response', async () => {
   const assets = {
-    async fetch() {
+    async fetch(request) {
+      const path = new URL(request.url).pathname;
+      if (path === '/api/md/_identity')
+        return Response.json({
+          name: 'CodeVetter',
+          url: 'https://codevetter.com',
+          summary: 'Public verification pages.',
+        });
+      if (path === '/api/md/_catalog') return Response.json([]);
       return new Response(null, { status: 404 });
     },
   };

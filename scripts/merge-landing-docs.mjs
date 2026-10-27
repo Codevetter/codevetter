@@ -1,3 +1,4 @@
+import { finalizeLandingMarkdown } from './finalize-landing-markdown.mjs';
 import { cpSync, existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { posix, relative, resolve, sep } from 'node:path';
 
@@ -255,3 +256,5 @@ assertInternalDocsLinks(publicDocs);
 console.log(
   `[codevetter] merged docs, normalized ${normalization.replacements} document URLs, removed ${normalization.duplicateTitles} duplicate page titles, indexed the docs sitemap, and verified internal links`
 );
+
+await finalizeLandingMarkdown(landingOutput);
