@@ -8,6 +8,7 @@ import { WorkbenchPage } from '@saas-maker/templates/workbench-page';
 import { baseProps } from '@saas-maker/templates/page';
 import { workbenchContent } from '@saas-maker/templates/schema';
 import json from '../content/codevetter.json';
+import { serializeSiteSchema } from '../data/site-schema';
 import headlineItalic from '@saas-maker/ui/fonts/instrument-serif-latin-italic.woff2?url';
 
 const content = workbenchContent.parse(json);
@@ -40,7 +41,7 @@ function between(start: string, end: string): string {
   if (from < 0 || to < 0) throw new Error(`Layout.astro is missing head markers: ${start} / ${end}`);
   return layout.slice(from, to + end.length).replaceAll('is:inline', '');
 }
-const jsonLd = between('<!-- fleet-jsonld:start', '<!-- fleet-jsonld:end -->');
+const jsonLd = `<script type="application/ld+json">${serializeSiteSchema()}</script>`;
 const analytics = between(
   '<script is:inline>\n      !function',
   '<script is:inline src="/app-health-log.js" defer></script>'
