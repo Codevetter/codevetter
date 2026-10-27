@@ -17,10 +17,9 @@ test('source formatter resolves prose links, preserves code, and is idempotent',
 });
 
 test('build catalog excludes noindex pages and fails for an unregistered public route', async () => {
-  const { mkdtempSync, mkdirSync, writeFileSync, readFileSync } = await import('node:fs');
+  const { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } = await import('node:fs');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');
-  const { spawnSync } = await import('node:child_process');
   const { finalizeLandingMarkdown } = await import(
     '../../../scripts/finalize-landing-markdown.mjs'
   );
@@ -74,6 +73,6 @@ test('build catalog excludes noindex pages and fails for an unregistered public 
     );
     await assert.rejects(finalizeLandingMarkdown(root), /Missing public Markdown renderer/);
   } finally {
-    assert.equal(spawnSync('/usr/bin/trash', [root]).status, 0);
+    rmSync(root, { recursive: true, force: true });
   }
 });

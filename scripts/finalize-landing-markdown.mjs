@@ -84,7 +84,12 @@ export async function finalizeLandingMarkdown(
     let sourceFile;
     if (url.pathname.startsWith('/docs/')) {
       sourceFile = [...sourceRoutes].find(([, destination]) => destination === url.href)?.[0];
-      route = { path: url.pathname, url: url.href, md: `${origin}${key}.md` };
+      route = {
+        path: url.pathname,
+        url: url.href,
+        md: `${origin}${key}.md`,
+        ...(key === '/docs' ? { aliases: ['/docs/index.md'] } : {}),
+      };
     }
     if (!route) throw new Error(`Missing public Markdown renderer: ${url.pathname}`);
     const mdPath = new URL(route.md).pathname;
@@ -163,15 +168,34 @@ export async function finalizeLandingMarkdown(
       if (existsSync(file)) pages[route.path] = readFileSync(file, 'utf8');
     }
   }
-  const core = ['/', '/about', '/download', '/faq', '/compare', '/benchmark', '/docs/'];
+  const core = [
+    '/',
+    '/about',
+    '/download',
+    '/faq',
+    '/compare',
+    '/benchmark',
+    '/docs/',
+    '/changelog',
+    '/privacy',
+    '/terms',
+    '/coding-agent-verification',
+    '/verify-ai-generated-code',
+    '/ai-code-review-vs-verification',
+    '/verification-evidence-bundle',
+    '/codevetter-vs-greptile',
+    '/codevetter-vs-coderabbit',
+    '/articles',
+    '/inspiration',
+  ];
   const rank = (path) =>
     core.includes(path)
       ? core.indexOf(path)
-      : ['/privacy', '/terms'].includes(path)
-        ? 100
+      : path.startsWith('/articles/')
+        ? 30
         : path.startsWith('/docs/')
-          ? 10
-          : 20;
+          ? 100
+          : 50;
   const routes = [...registry.values()].sort((a, b) => rank(a.path) - rank(b.path));
   writeFileSync(catalogFile, JSON.stringify(routes));
   const manifest = createAgentSurfaceManifest({

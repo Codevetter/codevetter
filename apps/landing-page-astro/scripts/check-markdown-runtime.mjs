@@ -104,6 +104,26 @@ const policy = await (await request('/ai.txt')).text();
 assert.match(policy, /training: allowed on public pages only/);
 const full = await (await request('/llms-full.txt')).text();
 assert.ok(full.length < 500000);
+const index = await (await request('/llms.txt')).text();
+for (const path of [
+  '/.well-known/ai-catalog.json',
+  '/.well-known/agent-skills/index.json',
+  '/.well-known/agent-skills/codevetter-local-verification/SKILL.md',
+  '/openapi.json',
+  '/pricing.md',
+  '/verify-ai-generated-code.md',
+  '/changelog.md',
+  '/privacy.md',
+]) {
+  assert.ok(index.includes(`https://codevetter.com${path}`), path);
+}
+assert.match(index, /no separately published codevetter npm package/);
+assert.ok(full.includes('<!-- source: https://codevetter.com/verify-ai-generated-code -->'));
+if (catalog.some((route) => route.path === '/docs/')) {
+  const alias = await request('/docs/index.md');
+  assert.equal(alias.status, 200);
+  assert.equal(await alias.text(), await (await request('/docs.md')).text());
+}
 console.log(
   JSON.stringify(
     {
