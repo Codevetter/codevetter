@@ -7,10 +7,14 @@ import { createAgentSurfaceHandler } from '../apps/landing-page-astro/src/lib/ag
 
 const repo = resolve(import.meta.dirname, '..');
 const origin = 'https://codevetter.com';
+const routeKey = (path) => path.replace(/\/$/, '') || '/';
 const escape = (value) =>
   value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const decode = (value) =>
-  value.replaceAll('&amp;', '&').replaceAll('&quot;', '"').replaceAll('&#39;', "'");
+  value.replace(
+    /&(?:amp|quot|#39);/g,
+    (entity) => ({ '&amp;': '&', '&quot;': '"', '&#39;': "'" })[entity]
+  );
 function walk(directory, extension) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const file = resolve(directory, entry.name);
@@ -42,17 +46,7 @@ export function formatMarkdown(source, { title, description, canonical, resolveL
   return `# ${title}\n\n> ${description || title}\n\nCanonical: ${canonical}\n\n${body}\n`;
 }
 
-export async function finalizeLandingMarkdown(
-  dist = resolve(repo, 'apps/landing-page-astro/dist')
-) {
-  const catalogFile = resolve(dist, 'api/md/_catalog');
-  const identity = JSON.parse(readFileSync(resolve(dist, 'api/md/_identity'), 'utf8'));
-  const existing = JSON.parse(readFileSync(catalogFile, 'utf8'));
-  const candidates = new Map(
-    existing.map((route) => [route.path.replace(/\/$/, '') || '/', route])
-  );
-  const registry = new Map();
-  const pages = {};
+function collectPublicPages(dist) {
   const htmlPages = walk(dist, '.html');
   const publicPages = [];
   for (const file of htmlPages) {
@@ -65,6 +59,10 @@ export async function finalizeLandingMarkdown(
     if (url.origin !== origin) throw new Error(`External canonical: ${url.href}`);
     publicPages.push({ file, html, metadata, url });
   }
+  return publicPages;
+}
+
+function collectSourceRoutes(dist, publicPages) {
   const sourceRoutes = new Map();
   for (const { file, url } of publicPages) {
     if (!url.pathname.startsWith('/docs/')) continue;
@@ -78,8 +76,99 @@ export async function finalizeLandingMarkdown(
       throw new Error(`No authored source for published docs: ${url.pathname}`);
     sourceRoutes.set(source, url.href);
   }
+  return sourceRoutes;
+}
+
+function resolvePublicLink(target, { url, sourceFile, sourceRoutes, candidates }) {
+  if (
+    (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('//')) &&
+    new URL(target, url).origin !== origin
+  )
+    return new URL(target, url).href;
+  if (sourceFile && !target.startsWith('/') && !target.startsWith('#')) {
+    const [pathname, fragment] = target.split('#');
+    const local = resolve(dirname(sourceFile), pathname);
+    const canonical = sourceRoutes.get(local);
+    if (canonical) return canonical + (fragment ? `#${fragment}` : '');
+    if (existsSync(local))
+      return `https://github.com/Codevetter/codevetter/blob/main/${relative(repo, local).replaceAll('\\', '/')}${fragment ? `#${fragment}` : ''}`;
+  }
+  const destination = new URL(target, url);
+  if (destination.origin === origin && destination.pathname.endsWith('.md')) {
+    const candidate = destination.pathname.slice(0, -3);
+    if (candidates.has(candidate)) destination.pathname = candidate;
+  }
+  return destination.href;
+}
+
+function enrichHtml({ file, html, metadata, title, route }) {
+  // Metadata additions only; the human-visible body remains byte-for-byte intact.
+  let enriched = html;
+  if (!/<meta\b[^>]*name=["']ai-summary["']/i.test(html))
+    enriched = enriched.replace(
+      '</head>',
+      `<meta name="ai-summary" content="${escape(metadata.description || title)}"></head>`
+    );
+  const alternate = `<link rel="alternate" type="text/markdown" href="${route.md}">`;
+  if (/<link\b[^>]*type=["']text\/markdown["'][^>]*>/i.test(enriched)) {
+    enriched = enriched.replace(/<link\b[^>]*type=["']text\/markdown["'][^>]*>/gi, alternate);
+  } else {
+    enriched = enriched.replace('</head>', `${alternate}</head>`);
+  }
+  if (enriched !== html) writeFileSync(file, enriched);
+}
+
+const core = [
+  '/',
+  '/about',
+  '/download',
+  '/faq',
+  '/compare',
+  '/benchmark',
+  '/docs/',
+  '/changelog',
+  '/privacy',
+  '/terms',
+  '/coding-agent-verification',
+  '/verify-ai-generated-code',
+  '/ai-code-review-vs-verification',
+  '/verification-evidence-bundle',
+  '/codevetter-vs-greptile',
+  '/codevetter-vs-coderabbit',
+  '/articles',
+  '/inspiration',
+];
+const rank = (path) =>
+  core.includes(path)
+    ? core.indexOf(path)
+    : path.startsWith('/articles/')
+      ? 30
+      : path.startsWith('/docs/')
+        ? 100
+        : 50;
+
+function markdownTitle(source, route, url) {
+  const title =
+    source.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1].match(/^title:\s*["']?(.+?)["']?\s*$/m)?.[1] ||
+    source.match(/^#\s+(.+)$/m)?.[1] ||
+    route.title;
+  if (!title) throw new Error(`Markdown lacks title: ${url.pathname}`);
+  return title;
+}
+
+export async function finalizeLandingMarkdown(
+  dist = resolve(repo, 'apps/landing-page-astro/dist')
+) {
+  const catalogFile = resolve(dist, 'api/md/_catalog');
+  const identity = JSON.parse(readFileSync(resolve(dist, 'api/md/_identity'), 'utf8'));
+  const existing = JSON.parse(readFileSync(catalogFile, 'utf8'));
+  const candidates = new Map(existing.map((route) => [routeKey(route.path), route]));
+  const registry = new Map();
+  const pages = {};
+  const publicPages = collectPublicPages(dist);
+  const sourceRoutes = collectSourceRoutes(dist, publicPages);
   for (const { file, html, metadata, url } of publicPages) {
-    const key = url.pathname.replace(/\/$/, '') || '/';
+    const key = routeKey(url.pathname);
     let route = candidates.get(key);
     let sourceFile;
     if (url.pathname.startsWith('/docs/')) {
@@ -94,34 +183,9 @@ export async function finalizeLandingMarkdown(
     if (!route) throw new Error(`Missing public Markdown renderer: ${url.pathname}`);
     const mdPath = new URL(route.md).pathname;
     const source = readFileSync(sourceFile || resolve(dist, mdPath.slice(1)), 'utf8');
-    const title =
-      source
-        .match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1]
-        .match(/^title:\s*["']?(.+?)["']?\s*$/m)?.[1] ||
-      source.match(/^#\s+(.+)$/m)?.[1] ||
-      route.title;
-    if (!title) throw new Error(`Markdown lacks title: ${url.pathname}`);
-    const resolveLink = (target) => {
-      if (
-        (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('//')) &&
-        new URL(target, url).origin !== origin
-      )
-        return new URL(target, url).href;
-      if (sourceFile && !target.startsWith('/') && !target.startsWith('#')) {
-        const [pathname, fragment] = target.split('#');
-        const local = resolve(dirname(sourceFile), pathname);
-        const canonical = sourceRoutes.get(local);
-        if (canonical) return canonical + (fragment ? `#${fragment}` : '');
-        if (existsSync(local))
-          return `https://github.com/Codevetter/codevetter/blob/main/${relative(repo, local).replaceAll('\\', '/')}${fragment ? `#${fragment}` : ''}`;
-      }
-      const destination = new URL(target, url);
-      if (destination.origin === origin && destination.pathname.endsWith('.md')) {
-        const candidate = destination.pathname.slice(0, -3);
-        if (candidates.has(candidate)) destination.pathname = candidate;
-      }
-      return destination.href;
-    };
+    const title = markdownTitle(source, route, url);
+    const resolveLink = (target) =>
+      resolvePublicLink(target, { url, sourceFile, sourceRoutes, candidates });
     const markdown = formatMarkdown(source, {
       title,
       description: metadata.description,
@@ -143,20 +207,7 @@ export async function finalizeLandingMarkdown(
     };
     registry.set(key, entry);
     pages[url.pathname] = markdown;
-    // Metadata additions only; the human-visible body remains byte-for-byte intact.
-    let enriched = html;
-    if (!/<meta\b[^>]*name=["']ai-summary["']/i.test(html))
-      enriched = enriched.replace(
-        '</head>',
-        `<meta name="ai-summary" content="${escape(metadata.description || title)}"></head>`
-      );
-    const alternate = `<link rel="alternate" type="text/markdown" href="${route.md}">`;
-    if (/<link\b[^>]*type=["']text\/markdown["'][^>]*>/i.test(enriched)) {
-      enriched = enriched.replace(/<link\b[^>]*type=["']text\/markdown["'][^>]*>/gi, alternate);
-    } else {
-      enriched = enriched.replace('</head>', `${alternate}</head>`);
-    }
-    if (enriched !== html) writeFileSync(file, enriched);
+    enrichHtml({ file, html, metadata, title, route });
   }
   // The landing build precedes the separate docs build; retain only its known index.
   if (!existsSync(resolve(dist, 'docs/index.html')) && candidates.has('/docs')) {
@@ -168,34 +219,6 @@ export async function finalizeLandingMarkdown(
       if (existsSync(file)) pages[route.path] = readFileSync(file, 'utf8');
     }
   }
-  const core = [
-    '/',
-    '/about',
-    '/download',
-    '/faq',
-    '/compare',
-    '/benchmark',
-    '/docs/',
-    '/changelog',
-    '/privacy',
-    '/terms',
-    '/coding-agent-verification',
-    '/verify-ai-generated-code',
-    '/ai-code-review-vs-verification',
-    '/verification-evidence-bundle',
-    '/codevetter-vs-greptile',
-    '/codevetter-vs-coderabbit',
-    '/articles',
-    '/inspiration',
-  ];
-  const rank = (path) =>
-    core.includes(path)
-      ? core.indexOf(path)
-      : path.startsWith('/articles/')
-        ? 30
-        : path.startsWith('/docs/')
-          ? 100
-          : 50;
   const routes = [...registry.values()].sort((a, b) => rank(a.path) - rank(b.path));
   writeFileSync(catalogFile, JSON.stringify(routes));
   const manifest = createAgentSurfaceManifest({

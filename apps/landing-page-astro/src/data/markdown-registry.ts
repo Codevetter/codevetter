@@ -7,7 +7,7 @@ import { listMarkdownRoutes } from '../lib/agent-surfaces/documents.mjs';
 import homeMarkdown from '../../public/index.md?raw';
 const pages: Record<string, string> = { '/': homeMarkdown };
 for (const [path, body] of Object.entries(agentMarkdownPages)) pages[`/${path}`] = body;
-export const markdownManifest = createAgentSurfaceManifest({
+const markdownManifest = createAgentSurfaceManifest({
   ...siteIdentity,
   pages,
   sitemap: `${siteIdentity.url}/sitemap-index.xml`,

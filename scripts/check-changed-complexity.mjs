@@ -29,6 +29,8 @@ if (changed.status !== 0 || untracked.status !== 0) {
 const files = [...changed.stdout.split('\n'), ...untracked.stdout.split('\n')]
   .map((file) => file.trim())
   .filter((file) => sourceExtension.test(file) && existsSync(path.join(repositoryRoot, file)))
+  // Generated shared library: complexity policy belongs to its canonical upstream source.
+  .filter((file) => !file.startsWith('apps/landing-page-astro/src/lib/agent-surfaces/'))
   .filter((file, index, values) => values.indexOf(file) === index)
   .toSorted();
 
