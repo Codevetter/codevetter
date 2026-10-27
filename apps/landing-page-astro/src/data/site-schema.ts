@@ -1,6 +1,6 @@
 import { siteIdentity } from './site-identity';
 
-export const siteSchema = {
+const siteSchema = {
   '@context': 'https://schema.org',
   '@graph': [
     {
