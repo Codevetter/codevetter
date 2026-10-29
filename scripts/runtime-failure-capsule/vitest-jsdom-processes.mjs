@@ -37,6 +37,7 @@ export async function observeNativeChild(rootPid) {
   const samples = [];
   let rootBirth;
   let pending = Promise.resolve();
+  let polling = false;
   let failure = null;
   let latest = [];
   const sample = async () => {
@@ -50,9 +51,15 @@ export async function observeNativeChild(rootPid) {
   };
   await sample();
   const timer = setInterval(() => {
-    pending = pending.then(sample).catch((error) => {
-      failure ??= error.message;
-    });
+    if (polling) return;
+    polling = true;
+    pending = sample()
+      .catch((error) => {
+        failure ??= error.message;
+      })
+      .finally(() => {
+        polling = false;
+      });
   }, 20);
   timer.unref();
   return {
