@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { lstat, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import { planPerformanceExecution } from './execution-governance.mjs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
+import {
+  assertPerformanceExecutionPlanCurrent,
+  planPerformanceExecution,
+} from './execution-governance.mjs';
 import { runClosedAdapter } from './runner.mjs';
-import { qualifyJsdomSelection } from './vitest-jsdom-evidence.mjs';
+import { qualifyJsdomSelection, qualifyLifecycleStudy } from './vitest-jsdom-evidence.mjs';
 
 export const LIVE_BASE = 'b9fdac4715bf337d629a09d6ec4458a1406b62d5';
 const digest = (value) => createHash('sha256').update(value).digest('hex');
@@ -105,19 +109,30 @@ function validateControls(report) {
   assert.ok(find('cancelled-after-entry').body_started);
 }
 
-export async function vitestJsdomExperiment(consumerRoot, { controlsOnly = false } = {}) {
+export async function vitestJsdomExperiment(
+  consumerRoot,
+  { controlsOnly = false, lifecycle = false } = {}
+) {
   const root = resolve(consumerRoot);
   assert.equal(git(root, ['rev-parse', 'HEAD']), LIVE_BASE);
   assert.equal(git(root, ['status', '--porcelain']), '', 'consumer must start clean');
   const files = await identities(root);
   const tools = await installation(root, files);
   const study = join(root, 'study-348');
-  const retained = join(root, '.fleet-local/codevetter-jsdom-study-20261023');
+  const retained = join(
+    root,
+    lifecycle
+      ? '.fleet-local/codevetter-lifecycle-study-20261029'
+      : '.fleet-local/codevetter-jsdom-study-20261023'
+  );
   await assert.rejects(lstat(study), { code: 'ENOENT' });
   await assert.rejects(lstat(retained), { code: 'ENOENT' });
   git(root, ['check-ignore', '.fleet-local/proof.json']);
   await mkdir(study);
   const code = {};
+  code['vitest-jsdom-experiment.mjs'] = digest(
+    await readFile(new URL('./vitest-jsdom-experiment.mjs', import.meta.url))
+  );
   try {
     for (const [name, text] of Object.entries(fixtures)) await writeFile(join(study, name), text);
     for (const [source, target] of [
@@ -130,7 +145,10 @@ export async function vitestJsdomExperiment(consumerRoot, { controlsOnly = false
     }
     const sourceIdentity = digest(JSON.stringify({ commit: LIVE_BASE, files, tools }));
     await writeFile(join(study, 'identity.json'), JSON.stringify(sourceIdentity));
-    await writeFile(join(study, 'mode.json'), JSON.stringify({ controls_only: controlsOnly }));
+    await writeFile(
+      join(study, 'mode.json'),
+      JSON.stringify({ controls_only: controlsOnly, lifecycle })
+    );
     const scope = {
       repositoryRoot: root,
       adapter: 'node-script',
@@ -139,6 +157,7 @@ export async function vitestJsdomExperiment(consumerRoot, { controlsOnly = false
     };
     const plan = await planPerformanceExecution(scope);
     assert.equal(plan.decision.status, 'admitted', JSON.stringify(plan.decision));
+    const invalidations = lifecycle ? await preparationInvalidations(root, scope, plan) : null;
     const execution = await runClosedAdapter({ ...scope, executionPlan: plan });
     await writeFile(join(study, 'execution.json'), JSON.stringify(execution, null, 2));
     assert.equal(execution.exitCode, 0, execution.stderr);
@@ -151,11 +170,39 @@ export async function vitestJsdomExperiment(consumerRoot, { controlsOnly = false
     assert.equal(digest(bytes), marker.slice('CODEVETTER_JSDOM_STUDY='.length));
     const report = JSON.parse(bytes);
     validateControls(report);
+    if (lifecycle) {
+      assert.equal(
+        qualifyLifecycleStudy(report, sourceIdentity),
+        true,
+        'every arm must execute the complete frozen acceptance'
+      );
+      const { stdout } = await promisify(execFile)('/bin/ps', ['-axo', 'pid='], {
+        timeout: 2000,
+        maxBuffer: 1048576,
+      });
+      assert.ok(
+        !stdout.trim().split(/\s+/).map(Number).includes(report.lifecycle.controller_pid),
+        'closed adapter process must be reaped'
+      );
+      report.lifecycle.controller_reaped = true;
+      report.lifecycle.preparation_invalidations = invalidations;
+    }
     assert.deepEqual(await identities(root), files);
     return {
       schema_version: 'codevetter.vitest-jsdom-study/v1',
       consumer: { repository: 'Significant-Hobbies/live', commit: LIVE_BASE, files },
       tools,
+      producer: {
+        commit: git(fileURLToPath(new URL('../../', import.meta.url)), ['rev-parse', 'HEAD']),
+        dirty:
+          git(fileURLToPath(new URL('../../', import.meta.url)), ['status', '--porcelain']) !== '',
+      },
+      runtime_identity: {
+        node: process.version,
+        binary_sha256: digest(await readFile(process.execPath)),
+        platform: process.platform,
+        arch: process.arch,
+      },
       implementation_sha256: code,
       source_identity: sourceIdentity,
       execution: {
@@ -169,9 +216,19 @@ export async function vitestJsdomExperiment(consumerRoot, { controlsOnly = false
       limitations: [
         'Pinned public pure-logic consumer and controlled negative fixtures, not all jsdom tests or product-wide acceptance.',
         'Reporter and environment rows are component/context elapsed times. Initial module import and warm-context setup are recorded separately; no process-start or whole-CLI acceleration claim.',
-        'RSS observations are controller/worker snapshots, not whole-tree or peak-memory qualification. No memory improvement is claimed.',
+        lifecycle
+          ? 'RSS observations include the sampled owned tree with the limits below; no peak-memory or memory-improvement claim.'
+          : 'RSS observations are controller/worker snapshots, not whole-tree or peak-memory qualification. No memory improvement is claimed.',
         'The source target has conditional assertions: retain fresh run identity and the complete identical assertion vector rather than invent assertions for unexecuted branches.',
         'Cancellation and invalidation are bounded Vitest observations, not detached-tree reaping or a production warm-cache lifecycle guarantee.',
+        ...(lifecycle
+          ? [
+              'Three interleaved process-cold versus persistent-context pairs compare an experimental real-consumer adapter, not the installed CodeVetter warm CLI or a production cache.',
+              'Warm total includes module import, context setup, baseline acceptance, all three selected runs and close; cold total includes process launch, import, setup, one selected run and close for every pair. Controls and process sampling are separate recorded overhead.',
+              'Process-tree RSS is sampled every 100ms and can miss short-lived descendants and peaks. Cleanup proves recorded PID/birth identities are gone after close, not portable ownership of arbitrary detached descendants.',
+              'Source/configuration/lock byte changes are rejected by the preparation identity before execution and restored; this does not qualify a changed dependency graph without a frozen reinstall.',
+            ]
+          : []),
         'Shared host and existing filesystem caches; no machine-cache flush, provider, browser foreground, paid call or installed-app replacement.',
       ],
       default_adoption_qualified: false,
@@ -188,9 +245,40 @@ export async function vitestJsdomExperiment(consumerRoot, { controlsOnly = false
   }
 }
 
+async function preparationInvalidations(root, scope, plan) {
+  const results = [];
+  for (const path of ['src/lib/bucket-list-insights.ts', 'vitest.config.ts', 'pnpm-lock.yaml']) {
+    const absolute = join(root, path);
+    const original = await readFile(absolute);
+    try {
+      await writeFile(
+        absolute,
+        Buffer.concat([
+          original,
+          Buffer.from(
+            path.endsWith('.yaml')
+              ? '\n# owned invalidation control\n'
+              : '\n// owned invalidation control\n'
+          ),
+        ])
+      );
+      await assert.rejects(
+        () => assertPerformanceExecutionPlanCurrent({ ...scope, plan }),
+        /stale/
+      );
+      results.push({ path, stale_rejected: true });
+    } finally {
+      await writeFile(absolute, original);
+    }
+    await assertPerformanceExecutionPlanCurrent({ ...scope, plan });
+  }
+  return results;
+}
+
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const report = await vitestJsdomExperiment(process.argv[2], {
     controlsOnly: process.argv[3] === 'controls-only',
+    lifecycle: process.argv[3] === 'lifecycle',
   });
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 }

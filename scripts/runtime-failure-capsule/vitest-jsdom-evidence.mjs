@@ -56,3 +56,67 @@ export function assertionVector(row) {
     .map((test) => [test.name, test.assertions])
     .sort(([left], [right]) => left.localeCompare(right));
 }
+
+export function qualifyLifecycleStudy(report, sourceIdentity) {
+  const lifecycle = report.lifecycle;
+  if (
+    !lifecycle ||
+    lifecycle.pairs?.length !== 3 ||
+    lifecycle.orphaned?.length !== 0 ||
+    lifecycle.default_adoption_qualified !== false
+  )
+    return false;
+  if (
+    report.expected_names?.length !== 23 ||
+    report.assertion_vector?.reduce((sum, [, count]) => sum + count, 0) !== 82
+  )
+    return false;
+  const expected = {
+    names: report.expected_names,
+    source_identity: sourceIdentity,
+    environment: 'node',
+  };
+  const runs = new Set();
+  for (const [index, pair] of lifecycle.pairs.entries()) {
+    if (
+      pair.pair !== index ||
+      JSON.stringify(pair.order) !== JSON.stringify(index % 2 ? ['warm', 'cold'] : ['cold', 'warm'])
+    )
+      return false;
+    for (const arm of ['cold', 'warm']) {
+      const row = pair[arm];
+      if (!qualifyLifecycleArm(row, expected, report.assertion_vector, `${arm}:${index}`, runs))
+        return false;
+      runs.add(row.run_id);
+    }
+    if (pair.cold.orphaned?.length !== 0) return false;
+  }
+  const warmTotal =
+    lifecycle.setup_ms +
+    lifecycle.close_ms +
+    lifecycle.pairs.reduce((sum, pair) => sum + pair.warm.process_total_ms, 0);
+  const coldTotal = lifecycle.pairs.reduce((sum, pair) => sum + pair.cold.process_total_ms, 0);
+  return (
+    [
+      lifecycle.setup_ms,
+      lifecycle.close_ms,
+      lifecycle.warm_total_ms,
+      lifecycle.cold_total_ms,
+    ].every((value) => Number.isFinite(value) && value > 0) &&
+    Math.abs(warmTotal - lifecycle.warm_total_ms) < 0.000001 &&
+    Math.abs(coldTotal - lifecycle.cold_total_ms) < 0.000001
+  );
+}
+
+function qualifyLifecycleArm(row, expected, vector, label, runs) {
+  if (!row || !qualifyJsdomSelection(row, expected)) return false;
+  if (JSON.stringify(assertionVector(row)) !== JSON.stringify(vector)) return false;
+  if (row.label !== label || runs.has(row.run_id)) return false;
+  return (
+    row.process_total_ms > 0 &&
+    Number.isFinite(row.process_total_ms) &&
+    row.memory?.samples >= 2 &&
+    row.memory?.maximum_sampled_tree_rss_bytes > 0 &&
+    row.memory?.processes?.length > 0
+  );
+}
