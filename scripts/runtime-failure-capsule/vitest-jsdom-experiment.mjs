@@ -140,6 +140,9 @@ export async function vitestJsdomExperiment(
   code['vitest-jsdom-experiment.mjs'] = digest(
     await readFile(new URL('./vitest-jsdom-experiment.mjs', import.meta.url))
   );
+  code['vitest-jsdom-processes.mjs'] = digest(
+    await readFile(new URL('./vitest-jsdom-processes.mjs', import.meta.url))
+  );
   try {
     for (const [name, text] of Object.entries(fixtures)) await writeFile(join(study, name), text);
     for (const [source, target] of [
