@@ -59,4 +59,13 @@ test('native supervisor bounds timeout and distinguishes output overflow', {
   assert.equal(Buffer.byteLength(overflow.stdout), 32);
   assert.equal(overflow.output_bytes, 1000);
   assert.deepEqual(overflow.process_observation.surviving_processes, []);
+  const stubborn = await runObservedNative(
+    process.execPath,
+    ['-e', "process.on('SIGTERM',()=>{});console.log('ready');setTimeout(()=>{},4000)"],
+    { timeoutMs: 100, env: { PATH: process.env.PATH } }
+  );
+  assert.equal(stubborn.status, 'timeout');
+  assert.equal(stubborn.signal, 'SIGKILL');
+  assert.match(stubborn.stdout, /ready/);
+  assert.deepEqual(stubborn.process_observation.surviving_processes, []);
 });
