@@ -180,32 +180,57 @@ async function cancellation(ctx) {
   );
 }
 
-await inventory();
-if (!controlsOnly) {
-  for (let pair = 0; pair < 5; pair++) {
-    for (const environment of pair % 2 ? ['node', 'jsdom'] : ['jsdom', 'node'])
-      await fresh(environment, 'default', `environment:${pair}:${environment}`);
-  }
-  for (let pair = 0; pair < 5; pair++) {
-    for (const reporter of pair % 2 ? ['minimal', 'default'] : ['default', 'minimal'])
-      await fresh('jsdom', reporter, `reporter:${pair}:${reporter}`);
-  }
-}
-const warmContexts = controlsOnly ? [] : [await warm('jsdom'), await warm('node')];
-await controls();
-await domBoundary();
-const report = JSON.stringify({
-  runtime: process.version,
-  import_ms: importMs,
-  total_ms: performance.now() - started,
-  expected_names: expectedNames,
-  controls_only: controlsOnly,
-  assertion_vector: expectedAssertions,
-  warm_contexts: warmContexts,
+export const study = {
+  context,
+  capture,
+  passed,
+  inventory,
+  fresh,
+  controls,
+  domBoundary,
   rows,
-});
-await writeFile('study-348/report.json', report);
-process.stdout.write(
-  `CODEVETTER_JSDOM_STUDY=${createHash('sha256').update(report).digest('hex')}\n`
-);
-process.exitCode = 0;
+  started,
+  importMs,
+  get expectedNames() {
+    return expectedNames;
+  },
+  get expectedAssertions() {
+    return expectedAssertions;
+  },
+  setExpected(names, assertions) {
+    expectedNames = names;
+    expectedAssertions = assertions;
+  },
+};
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  await inventory();
+  if (!controlsOnly) {
+    for (let pair = 0; pair < 5; pair++) {
+      for (const environment of pair % 2 ? ['node', 'jsdom'] : ['jsdom', 'node'])
+        await fresh(environment, 'default', `environment:${pair}:${environment}`);
+    }
+    for (let pair = 0; pair < 5; pair++) {
+      for (const reporter of pair % 2 ? ['minimal', 'default'] : ['default', 'minimal'])
+        await fresh('jsdom', reporter, `reporter:${pair}:${reporter}`);
+    }
+  }
+  const warmContexts = controlsOnly ? [] : [await warm('jsdom'), await warm('node')];
+  await controls();
+  await domBoundary();
+  const report = JSON.stringify({
+    runtime: process.version,
+    import_ms: importMs,
+    total_ms: performance.now() - started,
+    expected_names: expectedNames,
+    controls_only: controlsOnly,
+    assertion_vector: expectedAssertions,
+    warm_contexts: warmContexts,
+    rows,
+  });
+  await writeFile('study-348/report.json', report);
+  process.stdout.write(
+    `CODEVETTER_JSDOM_STUDY=${createHash('sha256').update(report).digest('hex')}\n`
+  );
+  process.exitCode = 0;
+}

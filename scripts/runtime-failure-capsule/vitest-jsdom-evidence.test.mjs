@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { planPerformanceExecution } from './execution-governance.mjs';
+import { ownedSubtree, armProcessEvidence } from './vitest-jsdom-processes.mjs';
 import {
   assertionVector,
   qualifyJsdomSelection,
+  qualifyLifecycleStudy,
   studyRuntimeErrors,
   studyTestReceipt,
 } from './vitest-jsdom-evidence.mjs';
@@ -12,6 +16,75 @@ const expected = {
   source_identity: 'frozen',
   environment: 'node',
 };
+
+test('default study stays admitted while subprocess lifecycle requires a separate native lane', async () => {
+  const scope = {
+    repositoryRoot: fileURLToPath(new URL('../../', import.meta.url)),
+    adapter: 'node-script',
+    timeoutMs: 5000,
+  };
+  const original = await planPerformanceExecution({
+    ...scope,
+    target: 'scripts/runtime-failure-capsule/vitest-jsdom-worker.mjs',
+  });
+  assert.equal(original.decision.status, 'admitted');
+  const lifecycle = await planPerformanceExecution({
+    ...scope,
+    target: 'scripts/runtime-failure-capsule/vitest-jsdom-lifecycle.mjs',
+  });
+  assert.equal(lifecycle.decision.status, 'blocked');
+  assert.ok(lifecycle.decision.blockers.some((reason) => reason.includes('subprocess')));
+});
+
+test('native observation assigns only the selected process subtree and wall window', () => {
+  const process = (pid, parent, rss) => ({ pid, parent, rss_bytes: rss, birth: 'same-run' });
+  const table = [
+    process(10, 1, 100),
+    process(11, 10, 20),
+    process(12, 11, 30),
+    process(13, 10, 500),
+    process(99, 1, 900),
+  ];
+  assert.deepEqual(
+    ownedSubtree(table, 11).map((row) => row.pid),
+    [11, 12]
+  );
+  const observation = {
+    interval_ms: 20,
+    samples: [
+      { started_at_ms: 80, finished_at_ms: 100, processes: [process(11, 10, 9999)] },
+      { started_at_ms: 95, finished_at_ms: 100, processes: table },
+      { started_at_ms: 115, finished_at_ms: 120, processes: table },
+    ],
+  };
+  const memory = armProcessEvidence(observation, {
+    controller_pid: 11,
+    started_at_ms: 90,
+    finished_at_ms: 130,
+  });
+  assert.equal(memory.samples, 2);
+  assert.equal(memory.maximum_sampled_tree_rss_bytes, 50);
+  assert.equal(memory.descendants_observed, 1);
+  assert.deepEqual(
+    memory.processes.map((row) => row.pid),
+    [11, 12]
+  );
+  const warm = armProcessEvidence(
+    observation,
+    { controller_pid: 10, started_at_ms: 90, finished_at_ms: 130 },
+    [11]
+  );
+  assert.equal(warm.maximum_sampled_tree_rss_bytes, 600);
+  assert.deepEqual(
+    warm.processes.map((row) => row.pid),
+    [10, 13]
+  );
+  assert.equal(
+    armProcessEvidence(observation, { controller_pid: 42, started_at_ms: 90, finished_at_ms: 130 })
+      .descendants_observed,
+    0
+  );
+});
 function completed() {
   return {
     run_id: 'current',
@@ -40,6 +113,154 @@ test('fresh body receipts retain a real conditional zero and a nonzero assertion
   assert.equal(qualifyJsdomSelection(row, expected), false);
 });
 
+function lifecycleReport() {
+  const names = Array.from(
+    { length: 23 },
+    (_, index) => `contract${String(index).padStart(2, '0')}`
+  );
+  const assertions = names.map((name, index) => [name, index === 22 ? 38 : 2]);
+  const arm = (kind, index) => ({
+    ...completed(),
+    label: `${kind}:${index}`,
+    run_id: `${kind}-${index}`,
+    tests: assertions.map(([name, count]) => ({
+      name,
+      assertions: count,
+      state: 'passed',
+      run_id: `${kind}-${index}`,
+      worker_pid: 43,
+      errors: [],
+    })),
+    process_total_ms: kind === 'cold' ? 20 : 10,
+    memory: {
+      samples: 2,
+      maximum_sampled_tree_rss_bytes: 100,
+      controller_pid: 42,
+      descendants_observed: 1,
+      processes: [
+        { pid: 42, birth: 'observed' },
+        { pid: 43, birth: 'worker' },
+      ],
+    },
+    ...(kind === 'cold' ? { orphaned: [] } : {}),
+  });
+  return {
+    expected_names: names,
+    assertion_vector: assertions,
+    lifecycle: {
+      pairs: Array.from({ length: 5 }, (_, index) => ({
+        pair: index,
+        order: index % 2 ? ['warm', 'cold'] : ['cold', 'warm'],
+        cold: arm('cold', index),
+        warm: arm('warm', index),
+      })),
+      orphaned: [],
+      default_adoption_qualified: false,
+      setup_ms: 5,
+      close_ms: 1,
+      warm_total_ms: 56,
+      cold_total_ms: 100,
+      warm_preparation_invalidations: [
+        'src/lib/bucket-list-insights.ts',
+        'vitest.config.ts',
+        'pnpm-lock.yaml',
+      ].map((path) => ({ path, stale_rejected: true, capture_run_identity_unchanged: true })),
+    },
+  };
+}
+
+test('lifecycle acceptance requires all ten fresh full-contract executions and reconciled totals', () => {
+  const report = lifecycleReport();
+  assert.equal(qualifyLifecycleStudy(report, 'frozen'), true);
+  for (const mutate of [
+    (value) => {
+      value.lifecycle.pairs.pop();
+    },
+    (value) => {
+      value.lifecycle.pairs[1].warm.tests.pop();
+    },
+    (value) => {
+      value.lifecycle.pairs[0].cold.tests[0].assertions = 0;
+    },
+    (value) => {
+      value.lifecycle.cold_total_ms = 1;
+    },
+    (value) => {
+      value.lifecycle.pairs[1].order.reverse();
+    },
+    (value) => {
+      value.lifecycle.pairs[1].cold.run_id = 'cold-0';
+    },
+  ]) {
+    const changed = structuredClone(report);
+    mutate(changed);
+    assert.equal(qualifyLifecycleStudy(changed, 'frozen'), false);
+  }
+});
+
+test('lifecycle worker attribution ignores non-executed skipped siblings', () => {
+  const report = lifecycleReport();
+  report.lifecycle.pairs[0].warm.tests.push({
+    name: 'skipped sibling',
+    state: 'skipped',
+    worker_pid: null,
+    assertions: null,
+    errors: [],
+  });
+  assert.equal(qualifyLifecycleStudy(report, 'frozen'), true);
+});
+
+test('lifecycle acceptance rejects missing memory, surviving children and promoted default claims', () => {
+  const report = lifecycleReport();
+  for (const mutate of [
+    (value) => {
+      delete value.lifecycle.pairs[0].warm.memory;
+    },
+    (value) => {
+      value.lifecycle.pairs[0].cold.memory.samples = 0;
+    },
+    (value) => {
+      value.lifecycle.pairs[0].warm.memory.processes = [];
+    },
+    (value) => {
+      value.lifecycle.pairs[0].warm.memory.processes = [{ pid: 42, birth: 'controller only' }];
+    },
+    (value) => {
+      value.lifecycle.warm_preparation_invalidations.pop();
+    },
+    (value) => {
+      value.lifecycle.warm_preparation_invalidations[0].capture_run_identity_unchanged = false;
+    },
+    (value) => {
+      value.lifecycle.pairs[0].cold.orphaned = [{ pid: 42 }];
+    },
+    (value) => {
+      value.lifecycle.orphaned = [{ pid: 42 }];
+    },
+    (value) => {
+      value.lifecycle.default_adoption_qualified = true;
+    },
+    (value) => {
+      value.lifecycle.pairs[0].warm.cancelled = true;
+    },
+    (value) => {
+      value.lifecycle.pairs[0].warm.source_identity = 'edited';
+    },
+    (value) => {
+      value.lifecycle.pairs[0].warm.tests[0].worker_pid = null;
+    },
+    (value) => {
+      value.lifecycle.pairs[0].warm.tests.forEach((row) => {
+        row.worker_pid = 99;
+      });
+    },
+  ]) {
+    const changed = structuredClone(report);
+    mutate(changed);
+    assert.equal(qualifyLifecycleStudy(changed, 'frozen'), false);
+  }
+});
+
 test('collection projection leaves missing body evidence unknown and retains runtime errors', () => {
   const testCase = {
     fullName: 'not executed',
@@ -52,6 +273,7 @@ test('collection projection leaves missing body evidence unknown and retains run
     assertions: null,
     run_id: null,
     worker_rss_bytes: null,
+    worker_pid: null,
     errors: ['body error'],
   });
   assert.deepEqual(
