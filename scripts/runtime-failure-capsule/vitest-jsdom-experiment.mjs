@@ -11,6 +11,7 @@ import {
 } from './execution-governance.mjs';
 import { runClosedAdapter } from './runner.mjs';
 import { qualifyJsdomSelection, qualifyLifecycleStudy } from './vitest-jsdom-evidence.mjs';
+import { runObservedNative, attachProcessEvidence } from './vitest-jsdom-processes.mjs';
 
 export const LIVE_BASE = 'b9fdac4715bf337d629a09d6ec4458a1406b62d5';
 const digest = (value) => createHash('sha256').update(value).digest('hex');
@@ -118,6 +119,12 @@ export async function vitestJsdomExperiment(
   assert.equal(git(root, ['status', '--porcelain']), '', 'consumer must start clean');
   const files = await identities(root);
   const tools = await installation(root, files);
+  const preparation = await Promise.all(
+    ['src/lib/bucket-list-insights.ts', 'vitest.config.ts', 'pnpm-lock.yaml'].map(async (path) => [
+      path,
+      await readFile(join(root, path)),
+    ])
+  );
   const study = join(root, 'study-348');
   const retained = join(
     root,
@@ -173,6 +180,7 @@ export async function vitestJsdomExperiment(
     assert.ok(bytes.length < 1048576, 'bounded raw comparison report');
     assert.equal(digest(bytes), marker.slice('CODEVETTER_JSDOM_STUDY='.length));
     const report = JSON.parse(bytes);
+    if (nativeLifecycle) attachProcessEvidence(report, execution.process_observation);
     validateControls(report);
     if (lifecycle) {
       assert.equal(
@@ -219,32 +227,14 @@ export async function vitestJsdomExperiment(
         exit_code: execution.exitCode,
       },
       ...report,
-      limitations: [
-        'Pinned public pure-logic consumer and controlled negative fixtures, not all jsdom tests or product-wide acceptance.',
-        'Reporter and environment rows are component/context elapsed times. Initial module import and warm-context setup are recorded separately; no process-start or whole-CLI acceleration claim.',
-        lifecycle
-          ? 'RSS observations include the sampled owned tree with the limits below; no peak-memory or memory-improvement claim.'
-          : 'RSS observations are controller/worker snapshots, not whole-tree or peak-memory qualification. No memory improvement is claimed.',
-        'The source target has conditional assertions: retain fresh run identity and the complete identical assertion vector rather than invent assertions for unexecuted branches.',
-        'Cancellation and invalidation are bounded Vitest observations, not detached-tree reaping or a production warm-cache lifecycle guarantee.',
-        ...(lifecycle
-          ? [
-              'Five interleaved process-cold versus persistent-context pairs compare an experimental real-consumer adapter, not the installed CodeVetter warm CLI or a production cache.',
-              ...(nativeLifecycle
-                ? [
-                    'CodeVetter admission rejected subprocess launch. The explicitly selected native lane uses macOS network sandboxing and the Node egress preload; this is native measurement, not a CodeVetter admitted execution or paired-verification verdict.',
-                  ]
-                : []),
-              'Warm total includes module import, priming inventory, context setup, baseline acceptance, all five selected runs and close; cold total includes process launch, import, setup, one selected run and close for every pair. Both totals include process inventory and sampling costs. Warm additionally includes preparation hashing; cold additionally includes per-process cleanup inventory. Negative controls are outside these compared totals.',
-              'Process-tree RSS is sampled every 100ms and can miss short-lived descendants and peaks. Cleanup proves recorded PID/birth identities are gone after close, not portable ownership of arbitrary detached descendants.',
-              'Source/configuration/lock byte changes are rejected by the preparation identity before execution and restored; this does not qualify a changed dependency graph without a frozen reinstall.',
-            ]
-          : []),
-        'Shared host and existing filesystem caches; no machine-cache flush, provider, browser foreground, paid call or installed-app replacement.',
-      ],
+      limitations: studyLimitations(lifecycle, nativeLifecycle),
       default_adoption_qualified: false,
     };
   } finally {
+    for (const [path, original] of preparation) {
+      const current = await readFile(join(root, path)).catch(() => null);
+      if (!current?.equals(original)) await writeFile(join(root, path), original);
+    }
     assert.deepEqual(await identities(root), files, 'published source must remain byte-identical');
     await mkdir(join(root, '.fleet-local'), { recursive: true });
     await rename(study, retained);
@@ -256,11 +246,45 @@ export async function vitestJsdomExperiment(
   }
 }
 
+function studyLimitations(lifecycle, nativeLifecycle) {
+  return [
+    'Pinned public pure-logic consumer and controlled negative fixtures, not all jsdom tests or product-wide acceptance.',
+    'Reporter and environment rows are component/context elapsed times. Initial module import and warm-context setup are recorded separately; no process-start or whole-CLI acceleration claim.',
+    lifecycle
+      ? 'RSS observations include the sampled owned tree with the limits below; no peak-memory or memory-improvement claim.'
+      : 'RSS observations are controller/worker snapshots, not whole-tree or peak-memory qualification. No memory improvement is claimed.',
+    'The source target has conditional assertions: retain fresh run identity and the complete identical assertion vector rather than invent assertions for unexecuted branches.',
+    'Cancellation and invalidation are bounded Vitest observations, not detached-tree reaping or a production warm-cache lifecycle guarantee.',
+    ...(lifecycle
+      ? [
+          'Five interleaved process-cold versus persistent-context pairs compare an experimental real-consumer adapter, not the installed CodeVetter warm CLI or a production cache.',
+          ...(nativeLifecycle
+            ? [
+                'CodeVetter admission rejected subprocess launch. The explicitly selected native lane uses macOS network sandboxing and the Node egress preload; this is native measurement, not a CodeVetter admitted execution or paired-verification verdict.',
+              ]
+            : []),
+          'Warm total includes module import, priming inventory, context setup, baseline acceptance, all five selected runs and close; cold total includes process launch, import, setup, one selected run and close for every pair. Warm also includes preparation hashing. A separate native observer samples both arms throughout execution and can perturb host timing; negative controls are outside the compared totals.',
+          'The native parent samples owned process-tree RSS every20ms, outside the workload sandbox. Short-lived descendants and peaks may be missed. Cleanup proves recorded PID/birth identities are gone after close, not portable ownership of arbitrary detached descendants.',
+          'Source/configuration/lock byte changes are rejected by the preparation identity before execution and restored; this does not qualify a changed dependency graph without a frozen reinstall.',
+        ]
+      : []),
+    'Shared host and existing filesystem caches; no machine-cache flush, provider, browser foreground, paid call or installed-app replacement.',
+  ];
+}
+
 function assertStudyAdmission(plan, nativeLifecycle, lifecycle) {
   if (nativeLifecycle) {
     assert.ok(
       lifecycle && process.platform === 'darwin',
       'native lifecycle requires the explicit macOS lane'
+    );
+    assert.equal(plan.decision.status, 'blocked');
+    assert.ok(
+      plan.decision.blockers.length === 1 &&
+        /^The workload can launch a subprocess outside the portable Node zero-egress guard \(.+\)\.$/.test(
+          plan.decision.blockers[0]
+        ),
+      'native lifecycle only supports the known subprocess admission gap'
     );
     return;
   }
@@ -278,28 +302,16 @@ async function runNativeLifecycle(root, target) {
   environment.CODEVETTER_NETWORK_POLICY = 'loopback-only';
   const policy =
     '(version 1)(allow default)(deny network*)(allow network-inbound (local ip "*:*"))(allow network-outbound (remote ip "localhost:*"))';
-  try {
-    const output = await promisify(execFile)(
-      '/usr/bin/sandbox-exec',
-      ['-p', policy, process.execPath, target],
-      { cwd: root, env: environment, timeout: 120000, maxBuffer: 1048576 }
-    );
-    return {
-      ...output,
-      status: 'exited',
-      exitCode: 0,
-      durationMs: performance.now() - started,
-      enforcement: { kind: 'native_macos_sandbox_node_preload', network_scope: 'loopback_only' },
-    };
-  } catch (error) {
-    return {
-      stdout: error.stdout ?? '',
-      stderr: error.stderr ?? error.message,
-      status: error.killed ? 'timeout' : 'failed',
-      exitCode: typeof error.code === 'number' ? error.code : null,
-      durationMs: performance.now() - started,
-    };
-  }
+  const result = await runObservedNative(
+    '/usr/bin/sandbox-exec',
+    ['-p', policy, process.execPath, target],
+    { cwd: root, env: environment }
+  );
+  return {
+    ...result,
+    durationMs: performance.now() - started,
+    enforcement: { kind: 'native_macos_sandbox_node_preload', network_scope: 'loopback_only' },
+  };
 }
 
 async function preparationInvalidations(root, scope, plan) {

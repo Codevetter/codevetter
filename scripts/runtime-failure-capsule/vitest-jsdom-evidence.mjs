@@ -121,8 +121,7 @@ function qualifyLifecycleArm(row, expected, vector, label, runs) {
     Number.isFinite(row.process_total_ms) &&
     row.memory?.samples >= 2 &&
     row.memory?.maximum_sampled_tree_rss_bytes > 0 &&
-    descendants > 0 &&
-    descendants === memory.descendants_observed
+    descendants > 0
   );
 }
 

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { planPerformanceExecution } from './execution-governance.mjs';
+import { ownedSubtree, armProcessEvidence } from './vitest-jsdom-processes.mjs';
 import {
   assertionVector,
   qualifyJsdomSelection,
@@ -33,6 +34,46 @@ test('default study stays admitted while subprocess lifecycle requires a separat
   });
   assert.equal(lifecycle.decision.status, 'blocked');
   assert.ok(lifecycle.decision.blockers.some((reason) => reason.includes('subprocess')));
+});
+
+test('native observation assigns only the selected process subtree and wall window', () => {
+  const process = (pid, parent, rss) => ({ pid, parent, rss_bytes: rss, birth: 'same-run' });
+  const table = [
+    process(10, 1, 100),
+    process(11, 10, 20),
+    process(12, 11, 30),
+    process(13, 10, 500),
+    process(99, 1, 900),
+  ];
+  assert.deepEqual(
+    ownedSubtree(table, 11).map((row) => row.pid),
+    [11, 12]
+  );
+  const observation = {
+    interval_ms: 20,
+    samples: [
+      { at_ms: 1, processes: [process(11, 10, 9999)] },
+      { at_ms: 100, processes: table },
+      { at_ms: 120, processes: table },
+    ],
+  };
+  const memory = armProcessEvidence(observation, {
+    controller_pid: 11,
+    started_at_ms: 90,
+    finished_at_ms: 130,
+  });
+  assert.equal(memory.samples, 2);
+  assert.equal(memory.maximum_sampled_tree_rss_bytes, 50);
+  assert.equal(memory.descendants_observed, 1);
+  assert.deepEqual(
+    memory.processes.map((row) => row.pid),
+    [11, 12]
+  );
+  assert.equal(
+    armProcessEvidence(observation, { controller_pid: 42, started_at_ms: 90, finished_at_ms: 130 })
+      .descendants_observed,
+    0
+  );
 });
 function completed() {
   return {
