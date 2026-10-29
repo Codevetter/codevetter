@@ -52,9 +52,9 @@ test('native observation assigns only the selected process subtree and wall wind
   const observation = {
     interval_ms: 20,
     samples: [
-      { at_ms: 1, processes: [process(11, 10, 9999)] },
-      { at_ms: 100, processes: table },
-      { at_ms: 120, processes: table },
+      { started_at_ms: 80, finished_at_ms: 100, processes: [process(11, 10, 9999)] },
+      { started_at_ms: 95, finished_at_ms: 100, processes: table },
+      { started_at_ms: 115, finished_at_ms: 120, processes: table },
     ],
   };
   const memory = armProcessEvidence(observation, {
@@ -68,6 +68,16 @@ test('native observation assigns only the selected process subtree and wall wind
   assert.deepEqual(
     memory.processes.map((row) => row.pid),
     [11, 12]
+  );
+  const warm = armProcessEvidence(
+    observation,
+    { controller_pid: 10, started_at_ms: 90, finished_at_ms: 130 },
+    [11]
+  );
+  assert.equal(warm.maximum_sampled_tree_rss_bytes, 600);
+  assert.deepEqual(
+    warm.processes.map((row) => row.pid),
+    [10, 13]
   );
   assert.equal(
     armProcessEvidence(observation, { controller_pid: 42, started_at_ms: 90, finished_at_ms: 130 })
@@ -118,6 +128,7 @@ function lifecycleReport() {
       assertions: count,
       state: 'passed',
       run_id: `${kind}-${index}`,
+      worker_pid: 43,
       errors: [],
     })),
     process_total_ms: kind === 'cold' ? 20 : 10,
@@ -223,6 +234,11 @@ test('lifecycle acceptance rejects missing memory, surviving children and promot
     (value) => {
       value.lifecycle.pairs[0].warm.source_identity = 'edited';
     },
+    (value) => {
+      value.lifecycle.pairs[0].warm.tests.forEach((row) => {
+        row.worker_pid = 99;
+      });
+    },
   ]) {
     const changed = structuredClone(report);
     mutate(changed);
@@ -242,6 +258,7 @@ test('collection projection leaves missing body evidence unknown and retains run
     assertions: null,
     run_id: null,
     worker_rss_bytes: null,
+    worker_pid: null,
     errors: ['body error'],
   });
   assert.deepEqual(

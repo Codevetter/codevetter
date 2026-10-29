@@ -5,13 +5,15 @@ import { lstat, mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
-import {
-  assertPerformanceExecutionPlanCurrent,
-  planPerformanceExecution,
-} from './execution-governance.mjs';
+import { planPerformanceExecution } from './execution-governance.mjs';
 import { runClosedAdapter } from './runner.mjs';
 import { qualifyJsdomSelection, qualifyLifecycleStudy } from './vitest-jsdom-evidence.mjs';
-import { runObservedNative, attachProcessEvidence } from './vitest-jsdom-processes.mjs';
+import {
+  runObservedNative,
+  attachProcessEvidence,
+  withStudyCancellation,
+  NATIVE_NETWORK_POLICY,
+} from './vitest-jsdom-processes.mjs';
 
 export const LIVE_BASE = 'b9fdac4715bf337d629a09d6ec4458a1406b62d5';
 const digest = (value) => createHash('sha256').update(value).digest('hex');
@@ -23,6 +25,7 @@ afterEach(({ task }) => {
  task.meta.studyAssertions = expect.getState().assertionCalls;
  task.meta.studyRunId = JSON.parse(readFileSync('study-348/run.json', 'utf8')).runId;
  task.meta.studyRss = process.memoryUsage().rss;
+ task.meta.studyPid = process.pid;
 });`,
   'failure.test.ts': `import { it, expect } from 'vitest';
 import { getBucketListSuggestions } from '../src/lib/bucket-list-insights';
@@ -110,9 +113,9 @@ function validateControls(report) {
   assert.ok(find('cancelled-after-entry').body_started);
 }
 
-export async function vitestJsdomExperiment(
+async function executeJsdomStudy(
   consumerRoot,
-  { controlsOnly = false, lifecycle = false, nativeLifecycle = false } = {}
+  { controlsOnly = false, lifecycle = false, nativeLifecycle = false, signal } = {}
 ) {
   const root = resolve(consumerRoot);
   assert.equal(git(root, ['rev-parse', 'HEAD']), LIVE_BASE);
@@ -168,9 +171,8 @@ export async function vitestJsdomExperiment(
     };
     const plan = await planPerformanceExecution(scope);
     assertStudyAdmission(plan, nativeLifecycle, lifecycle);
-    const invalidations = lifecycle ? await preparationInvalidations(root, scope, plan) : null;
     const execution = nativeLifecycle
-      ? await runNativeLifecycle(root, scope.target)
+      ? await runNativeLifecycle(root, scope.target, signal)
       : await runClosedAdapter({ ...scope, executionPlan: plan });
     await writeFile(join(study, 'execution-plan.json'), JSON.stringify(plan, null, 2));
     await writeFile(join(study, 'execution.json'), JSON.stringify(execution, null, 2));
@@ -201,7 +203,6 @@ export async function vitestJsdomExperiment(
         'closed adapter process must be reaped'
       );
       report.lifecycle.controller_reaped = true;
-      report.lifecycle.preparation_invalidations = invalidations;
     }
     assert.deepEqual(await identities(root), files);
     return {
@@ -235,10 +236,7 @@ export async function vitestJsdomExperiment(
       default_adoption_qualified: false,
     };
   } finally {
-    for (const [path, original] of preparation) {
-      const current = await readFile(join(root, path)).catch(() => null);
-      if (!current?.equals(original)) await writeFile(join(root, path), original);
-    }
+    await restorePreparationFiles(root, preparation);
     assert.deepEqual(await identities(root), files, 'published source must remain byte-identical');
     await mkdir(join(root, '.fleet-local'), { recursive: true });
     await rename(study, retained);
@@ -295,7 +293,7 @@ function assertStudyAdmission(plan, nativeLifecycle, lifecycle) {
   assert.equal(plan.decision.status, 'admitted', JSON.stringify(plan.decision));
 }
 
-async function runNativeLifecycle(root, target) {
+async function runNativeLifecycle(root, target, signal) {
   const started = performance.now();
   const environment = Object.fromEntries(
     ['PATH', 'TMPDIR', 'TMP', 'TEMP', 'NO_COLOR']
@@ -304,54 +302,43 @@ async function runNativeLifecycle(root, target) {
   );
   environment.NODE_OPTIONS = `--import=${new URL('./node-egress-preload.mjs', import.meta.url).href}`;
   environment.CODEVETTER_NETWORK_POLICY = 'loopback-only';
-  const policy =
-    '(version 1)(allow default)(deny network*)(allow network-inbound (local ip "*:*"))(allow network-outbound (remote ip "localhost:*"))';
+  const policy = NATIVE_NETWORK_POLICY;
   const result = await runObservedNative(
     '/usr/bin/sandbox-exec',
     ['-p', policy, process.execPath, target],
-    { cwd: root, env: environment }
+    { cwd: root, env: environment, signal }
   );
   return {
     ...result,
     durationMs: performance.now() - started,
-    enforcement: { kind: 'native_macos_sandbox_node_preload', network_scope: 'loopback_only' },
+    enforcement: {
+      kind: 'native_macos_sandbox_node_preload',
+      network_scope: 'outbound_loopback_only',
+    },
   };
 }
 
-async function preparationInvalidations(root, scope, plan) {
-  const results = [];
-  for (const path of ['src/lib/bucket-list-insights.ts', 'vitest.config.ts', 'pnpm-lock.yaml']) {
-    const absolute = join(root, path);
-    const original = await readFile(absolute);
-    try {
-      await writeFile(
-        absolute,
-        Buffer.concat([
-          original,
-          Buffer.from(
-            path.endsWith('.yaml')
-              ? '\n# owned invalidation control\n'
-              : '\n// owned invalidation control\n'
-          ),
-        ])
-      );
-      await assert.rejects(
-        () => assertPerformanceExecutionPlanCurrent({ ...scope, plan }),
-        /stale/
-      );
-      results.push({ path, stale_rejected: true });
-    } finally {
-      await writeFile(absolute, original);
-    }
-    await assertPerformanceExecutionPlanCurrent({ ...scope, plan });
+export async function restorePreparationFiles(root, preparation) {
+  for (const [path, original] of preparation) {
+    const current = await readFile(join(root, path)).catch(() => null);
+    if (!current?.equals(original)) await writeFile(join(root, path), original);
   }
-  return results;
+}
+
+export async function vitestJsdomExperiment(consumerRoot, options = {}) {
+  if (options.nativeLifecycle)
+    return withStudyCancellation((signal) =>
+      executeJsdomStudy(consumerRoot, { ...options, signal })
+    );
+  return executeJsdomStudy(consumerRoot, options);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  if (process.argv[3] === 'lifecycle')
+    throw new Error('Use native-lifecycle on macOS; the portable subprocess lane is unsupported.');
   const report = await vitestJsdomExperiment(process.argv[2], {
     controlsOnly: process.argv[3] === 'controls-only',
-    lifecycle: ['lifecycle', 'native-lifecycle'].includes(process.argv[3]),
+    lifecycle: process.argv[3] === 'native-lifecycle',
     nativeLifecycle: process.argv[3] === 'native-lifecycle',
   });
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);

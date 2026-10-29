@@ -15,6 +15,7 @@ export function studyTestReceipt(test) {
     assertions: meta.studyAssertions ?? null,
     run_id: meta.studyRunId ?? null,
     worker_rss_bytes: meta.studyRss ?? null,
+    worker_pid: meta.studyPid ?? null,
     errors: (result.errors ?? []).map((error) => error.message),
   };
 }
@@ -116,6 +117,14 @@ function qualifyLifecycleArm(row, expected, vector, label, runs) {
   const memory = row.memory;
   if (!memory?.processes?.some((item) => item.pid === memory.controller_pid)) return false;
   const descendants = memory.processes.filter((item) => item.pid !== memory.controller_pid).length;
+  if (
+    !row.tests.some((test) =>
+      memory.processes.some(
+        (item) => item.pid === test.worker_pid && item.pid !== memory.controller_pid
+      )
+    )
+  )
+    return false;
   return (
     row.process_total_ms > 0 &&
     Number.isFinite(row.process_total_ms) &&

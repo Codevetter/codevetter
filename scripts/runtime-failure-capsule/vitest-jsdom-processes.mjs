@@ -5,19 +5,32 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { promisify } from 'node:util';
 
 const key = (row) => `${row.pid}:${row.birth}`;
+export const NATIVE_NETWORK_POLICY =
+  '(version 1)(allow default)(deny network*)(allow network-inbound (local ip "localhost:*"))(allow network-outbound (remote ip "localhost:*"))';
 
 async function processTable() {
-  const { stdout } = await promisify(execFile)('/bin/ps', ['-axo', 'pid=,ppid=,rss=,lstart='], {
-    timeout: 2000,
-    maxBuffer: 1048576,
-  });
+  const { stdout } = await promisify(execFile)(
+    '/bin/ps',
+    ['-axo', 'pid=,ppid=,pgid=,rss=,lstart='],
+    {
+      timeout: 2000,
+      maxBuffer: 1048576,
+    }
+  );
   return stdout
     .trim()
     .split('\n')
     .map((line) => {
-      const [, pid, parent, rss, birth] = line.match(/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(.+)$/) ?? [];
+      const [, pid, parent, group, rss, birth] =
+        line.match(/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(.+)$/) ?? [];
       assert.ok(birth, 'process inventory must be complete');
-      return { pid: Number(pid), parent: Number(parent), rss_bytes: Number(rss) * 1024, birth };
+      return {
+        pid: Number(pid),
+        parent: Number(parent),
+        group: Number(group),
+        rss_bytes: Number(rss) * 1024,
+        birth,
+      };
     });
 }
 
@@ -40,14 +53,20 @@ export async function observeNativeChild(rootPid) {
   let polling = false;
   let failure = null;
   let latest = [];
+  let uncertain = [];
   const sample = async () => {
+    const startedAt = Date.now();
     const table = await processTable();
     const root = table.find((row) => row.pid === rootPid);
     rootBirth ??= root?.birth;
     const descendants = root?.birth === rootBirth ? ownedSubtree(table, rootPid) : [];
     for (const row of descendants) observed.set(key(row), row);
+    if (table.some((row) => row.group === rootPid && observed.has(key(row)))) {
+      for (const row of table.filter((item) => item.group === rootPid)) observed.set(key(row), row);
+    }
     latest = table.filter((row) => observed.has(key(row)));
-    samples.push({ at_ms: Date.now(), processes: latest });
+    uncertain = table.filter((row) => row.group === rootPid && !observed.has(key(row)));
+    samples.push({ started_at_ms: startedAt, finished_at_ms: Date.now(), processes: latest });
   };
   await sample();
   const timer = setInterval(() => {
@@ -65,6 +84,13 @@ export async function observeNativeChild(rootPid) {
   return {
     async terminate(signal = 'SIGTERM') {
       const table = await processTable();
+      if (table.some((row) => row.group === rootPid && observed.has(key(row)))) {
+        try {
+          process.kill(-rootPid, signal);
+        } catch (error) {
+          if (error.code !== 'ESRCH') throw error;
+        }
+      }
       for (const row of table.filter((item) => observed.has(key(item)))) {
         try {
           process.kill(row.pid, signal);
@@ -72,6 +98,16 @@ export async function observeNativeChild(rootPid) {
           if (error.code !== 'ESRCH') throw error;
         }
       }
+    },
+    async refresh() {
+      await pending;
+      polling = true;
+      try {
+        await sample();
+      } finally {
+        polling = false;
+      }
+      return { surviving_processes: latest, unverified_group_processes: uncertain };
     },
     async stop() {
       clearInterval(timer);
@@ -91,20 +127,28 @@ export async function observeNativeChild(rootPid) {
         samples,
         observed_processes: [...observed.values()],
         surviving_processes: latest,
+        unverified_group_processes: uncertain,
         failure,
       };
     },
   };
 }
 
-export function armProcessEvidence(observation, arm) {
+export function armProcessEvidence(observation, arm, excludedRoots = []) {
   const selected = observation.samples.filter(
-    (sample) => sample.at_ms >= arm.started_at_ms && sample.at_ms <= arm.finished_at_ms
+    (sample) =>
+      sample.started_at_ms >= arm.started_at_ms && sample.finished_at_ms <= arm.finished_at_ms
   );
   const processes = new Map();
   let maximum = 0;
   for (const sample of selected) {
-    const tree = ownedSubtree(sample.processes, arm.controller_pid);
+    const excluded = new Set(
+      excludedRoots.flatMap((root) => ownedSubtree(sample.processes, root)).map(key)
+    );
+    const tree = ownedSubtree(
+      sample.processes.filter((row) => !excluded.has(key(row))),
+      arm.controller_pid
+    );
     for (const row of tree) processes.set(key(row), row);
     maximum = Math.max(
       maximum,
@@ -124,12 +168,18 @@ export function armProcessEvidence(observation, arm) {
 
 export function attachProcessEvidence(report, observation) {
   assert.equal(observation.failure, null, 'process observation must complete');
+  assert.deepEqual(
+    observation.unverified_group_processes,
+    [],
+    'unknown process-group membership cannot qualify'
+  );
   report.lifecycle.orphaned = observation.surviving_processes;
   report.lifecycle.observed_processes = observation.observed_processes;
+  const coldRoots = report.lifecycle.pairs.map((pair) => pair.cold.controller_pid);
   for (const pair of report.lifecycle.pairs)
     for (const arm of ['cold', 'warm']) {
       const row = pair[arm];
-      row.memory = armProcessEvidence(observation, row);
+      row.memory = armProcessEvidence(observation, row, arm === 'warm' ? coldRoots : []);
       if (arm === 'cold') {
         const observed = new Set(row.memory.processes.map(key));
         row.orphaned = observation.surviving_processes.filter((item) => observed.has(key(item)));
@@ -140,8 +190,9 @@ export function attachProcessEvidence(report, observation) {
 export async function runObservedNative(
   program,
   args,
-  { cwd, env, timeoutMs = 120000, outputBytes = 1048576 }
+  { cwd, env, signal: cancellation, timeoutMs = 120000, outputBytes = 1048576 }
 ) {
+  cancellation?.throwIfAborted();
   const started = performance.now();
   const child = spawn(program, args, {
     cwd,
@@ -190,6 +241,9 @@ export async function runObservedNative(
     });
     child.once('close', (exitCode, signal) => resolvePromise({ exitCode, signal }));
   });
+  const exited = new Promise((resolvePromise) =>
+    child.once('exit', (exitCode, signal) => resolvePromise({ exitCode, signal }))
+  );
   if (!child.pid)
     return {
       ...(await closed),
@@ -209,15 +263,36 @@ export async function runObservedNative(
     status = 'cancelled';
     terminate();
   };
-  process.once('SIGTERM', cancel);
-  process.once('SIGINT', cancel);
+  cancellation?.addEventListener('abort', cancel);
+  if (cancellation?.aborted) cancel();
   const deadline = setTimeout(() => {
     status = 'timeout';
     terminate();
   }, timeoutMs);
   deadline.unref();
+  let forceDeadline;
+  const forced = new Promise((resolvePromise) => {
+    forceDeadline = setTimeout(() => {
+      status = 'timeout';
+      terminate('SIGKILL');
+      child.stdout.destroy();
+      child.stderr.destroy();
+      resolvePromise({ exitCode: child.exitCode, signal: child.signalCode, forced_return: true });
+    }, timeoutMs + 1500);
+    forceDeadline.unref();
+  });
   try {
-    const outcome = await closed;
+    await Promise.race([exited, forced]);
+    await delay(50);
+    const beforeCleanup = await observer.refresh();
+    if (beforeCleanup.surviving_processes.length) {
+      terminate();
+      await delay(100);
+      if ((await observer.refresh()).surviving_processes.length) terminate('SIGKILL');
+      if (status === 'exited') status = 'cleanup_required';
+    }
+    if (beforeCleanup.unverified_group_processes.length) status = 'cleanup_unqualified';
+    const outcome = await Promise.race([closed, forced]);
     const observation = await observer.stop();
     return {
       ...outcome,
@@ -228,10 +303,25 @@ export async function runObservedNative(
       output_bytes: bytes,
       durationMs: performance.now() - started,
       process_observation: observation,
+      orphaned_before_cleanup: beforeCleanup.surviving_processes,
+      unverified_before_cleanup: beforeCleanup.unverified_group_processes,
     };
   } finally {
     clearTimeout(deadline);
     clearTimeout(escalation);
+    clearTimeout(forceDeadline);
+    cancellation?.removeEventListener('abort', cancel);
+  }
+}
+
+export async function withStudyCancellation(operation) {
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  process.on('SIGTERM', cancel);
+  process.on('SIGINT', cancel);
+  try {
+    return await operation(controller.signal);
+  } finally {
     process.removeListener('SIGTERM', cancel);
     process.removeListener('SIGINT', cancel);
   }
