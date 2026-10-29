@@ -198,6 +198,18 @@ test('lifecycle acceptance requires all ten fresh full-contract executions and r
   }
 });
 
+test('lifecycle worker attribution ignores non-executed skipped siblings', () => {
+  const report = lifecycleReport();
+  report.lifecycle.pairs[0].warm.tests.push({
+    name: 'skipped sibling',
+    state: 'skipped',
+    worker_pid: null,
+    assertions: null,
+    errors: [],
+  });
+  assert.equal(qualifyLifecycleStudy(report, 'frozen'), true);
+});
+
 test('lifecycle acceptance rejects missing memory, surviving children and promoted default claims', () => {
   const report = lifecycleReport();
   for (const mutate of [

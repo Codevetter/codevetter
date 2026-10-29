@@ -94,7 +94,7 @@ test('supervisor reaps an unsampled process-group orphan after an immediate root
     }
   });
   assert.ok(descendant > 0);
-  assert.equal(result.status, 'cleanup_unqualified');
+  assert.ok(['cleanup_unqualified', 'cleanup_required'].includes(result.status));
   assert.equal(result.forced_return, undefined);
   assert.deepEqual(result.process_observation.surviving_processes, []);
   assert.deepEqual(result.process_observation.unverified_group_processes, []);

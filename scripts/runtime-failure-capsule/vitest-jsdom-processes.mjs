@@ -54,10 +54,17 @@ export async function observeNativeChild(rootPid) {
   let failure = null;
   let latest = [];
   let uncertain = [];
+  let groupEmptied = false;
+  const currentGroup = (table) => {
+    const members = table.filter((row) => row.group === rootPid);
+    if (!members.length) groupEmptied = true;
+    return groupEmptied ? [] : members;
+  };
   const sample = async () => {
     const startedAt = Date.now();
     const table = await processTable();
     const root = table.find((row) => row.pid === rootPid);
+    currentGroup(table);
     rootBirth ??= root?.birth;
     const descendants = root?.birth === rootBirth ? ownedSubtree(table, rootPid) : [];
     for (const row of descendants) observed.set(key(row), row);
@@ -85,7 +92,7 @@ export async function observeNativeChild(rootPid) {
     async terminate(signal = 'SIGTERM') {
       const table = await processTable();
       // The detached child's group remains owned even when its root exits before sampling.
-      if (table.some((row) => row.group === rootPid)) {
+      if (currentGroup(table).length) {
         try {
           process.kill(-rootPid, signal);
         } catch (error) {
@@ -216,14 +223,14 @@ export async function runObservedNative(
       escalation = setTimeout(() => terminate('SIGKILL'), 500);
       escalation.unref();
     }
-    if (child.pid) {
+    if (child.exitCode === null && child.signalCode === null && child.pid) {
       try {
         process.kill(-child.pid, signal);
       } catch (error) {
         if (error.code !== 'ESRCH') operationalError ??= error.message;
       }
     }
-    observer?.terminate(signal).catch((error) => {
+    return observer?.terminate(signal).catch((error) => {
       operationalError ??= error.message;
     });
   };
@@ -292,9 +299,9 @@ export async function runObservedNative(
     const needsCleanup = (value) =>
       value.surviving_processes.length || value.unverified_group_processes.length;
     if (needsCleanup(beforeCleanup)) {
-      terminate();
+      await terminate();
       await delay(100);
-      if (needsCleanup(await observer.refresh())) terminate('SIGKILL');
+      if (needsCleanup(await observer.refresh())) await terminate('SIGKILL');
       if (status === 'exited')
         status = beforeCleanup.unverified_group_processes.length
           ? 'cleanup_unqualified'
@@ -316,7 +323,7 @@ export async function runObservedNative(
     };
   } finally {
     if (!observation) {
-      terminate('SIGKILL');
+      await terminate('SIGKILL');
       await observer.stop().catch((error) => {
         operationalError ??= error.message;
       });
