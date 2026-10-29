@@ -61,11 +61,12 @@ export function qualifyLifecycleStudy(report, sourceIdentity) {
   const lifecycle = report.lifecycle;
   if (
     !lifecycle ||
-    lifecycle.pairs?.length !== 3 ||
+    lifecycle.pairs?.length !== 5 ||
     lifecycle.orphaned?.length !== 0 ||
     lifecycle.default_adoption_qualified !== false
   )
     return false;
+  if (!qualifyPreparationInvalidations(lifecycle.warm_preparation_invalidations)) return false;
   if (
     report.expected_names?.length !== 23 ||
     report.assertion_vector?.reduce((sum, [, count]) => sum + count, 0) !== 82
@@ -112,11 +113,30 @@ function qualifyLifecycleArm(row, expected, vector, label, runs) {
   if (!row || !qualifyJsdomSelection(row, expected)) return false;
   if (JSON.stringify(assertionVector(row)) !== JSON.stringify(vector)) return false;
   if (row.label !== label || runs.has(row.run_id)) return false;
+  const memory = row.memory;
+  if (!memory?.processes?.some((item) => item.pid === memory.controller_pid)) return false;
+  const descendants = memory.processes.filter((item) => item.pid !== memory.controller_pid).length;
   return (
     row.process_total_ms > 0 &&
     Number.isFinite(row.process_total_ms) &&
     row.memory?.samples >= 2 &&
     row.memory?.maximum_sampled_tree_rss_bytes > 0 &&
-    row.memory?.processes?.length > 0
+    descendants > 0 &&
+    descendants === memory.descendants_observed
+  );
+}
+
+function qualifyPreparationInvalidations(rows) {
+  const paths = ['src/lib/bucket-list-insights.ts', 'vitest.config.ts', 'pnpm-lock.yaml'];
+  return (
+    Array.isArray(rows) &&
+    rows.length === 3 &&
+    new Set(rows.map((row) => row.path)).size === 3 &&
+    rows.every(
+      (row) =>
+        paths.includes(row.path) &&
+        row.stale_rejected === true &&
+        row.capture_run_identity_unchanged === true
+    )
   );
 }

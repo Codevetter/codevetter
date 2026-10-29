@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import { planPerformanceExecution } from './execution-governance.mjs';
 import {
   assertionVector,
   qualifyJsdomSelection,
@@ -13,6 +15,25 @@ const expected = {
   source_identity: 'frozen',
   environment: 'node',
 };
+
+test('default study stays admitted while subprocess lifecycle requires a separate native lane', async () => {
+  const scope = {
+    repositoryRoot: fileURLToPath(new URL('../../', import.meta.url)),
+    adapter: 'node-script',
+    timeoutMs: 5000,
+  };
+  const original = await planPerformanceExecution({
+    ...scope,
+    target: 'scripts/runtime-failure-capsule/vitest-jsdom-worker.mjs',
+  });
+  assert.equal(original.decision.status, 'admitted');
+  const lifecycle = await planPerformanceExecution({
+    ...scope,
+    target: 'scripts/runtime-failure-capsule/vitest-jsdom-lifecycle.mjs',
+  });
+  assert.equal(lifecycle.decision.status, 'blocked');
+  assert.ok(lifecycle.decision.blockers.some((reason) => reason.includes('subprocess')));
+});
 function completed() {
   return {
     run_id: 'current',
@@ -62,7 +83,12 @@ function lifecycleReport() {
     memory: {
       samples: 2,
       maximum_sampled_tree_rss_bytes: 100,
-      processes: [{ pid: 42, birth: 'observed' }],
+      controller_pid: 42,
+      descendants_observed: 1,
+      processes: [
+        { pid: 42, birth: 'observed' },
+        { pid: 43, birth: 'worker' },
+      ],
     },
     ...(kind === 'cold' ? { orphaned: [] } : {}),
   });
@@ -70,7 +96,7 @@ function lifecycleReport() {
     expected_names: names,
     assertion_vector: assertions,
     lifecycle: {
-      pairs: Array.from({ length: 3 }, (_, index) => ({
+      pairs: Array.from({ length: 5 }, (_, index) => ({
         pair: index,
         order: index % 2 ? ['warm', 'cold'] : ['cold', 'warm'],
         cold: arm('cold', index),
@@ -80,13 +106,18 @@ function lifecycleReport() {
       default_adoption_qualified: false,
       setup_ms: 5,
       close_ms: 1,
-      warm_total_ms: 36,
-      cold_total_ms: 60,
+      warm_total_ms: 56,
+      cold_total_ms: 100,
+      warm_preparation_invalidations: [
+        'src/lib/bucket-list-insights.ts',
+        'vitest.config.ts',
+        'pnpm-lock.yaml',
+      ].map((path) => ({ path, stale_rejected: true, capture_run_identity_unchanged: true })),
     },
   };
 }
 
-test('lifecycle acceptance requires all six fresh full-contract executions and reconciled totals', () => {
+test('lifecycle acceptance requires all ten fresh full-contract executions and reconciled totals', () => {
   const report = lifecycleReport();
   assert.equal(qualifyLifecycleStudy(report, 'frozen'), true);
   for (const mutate of [
@@ -126,6 +157,15 @@ test('lifecycle acceptance rejects missing memory, surviving children and promot
     },
     (value) => {
       value.lifecycle.pairs[0].warm.memory.processes = [];
+    },
+    (value) => {
+      value.lifecycle.pairs[0].warm.memory.processes = [{ pid: 42, birth: 'controller only' }];
+    },
+    (value) => {
+      value.lifecycle.warm_preparation_invalidations.pop();
+    },
+    (value) => {
+      value.lifecycle.warm_preparation_invalidations[0].capture_run_identity_unchanged = false;
     },
     (value) => {
       value.lifecycle.pairs[0].cold.orphaned = [{ pid: 42 }];

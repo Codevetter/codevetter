@@ -111,7 +111,7 @@ function validateControls(report) {
 
 export async function vitestJsdomExperiment(
   consumerRoot,
-  { controlsOnly = false, lifecycle = false } = {}
+  { controlsOnly = false, lifecycle = false, nativeLifecycle = false } = {}
 ) {
   const root = resolve(consumerRoot);
   assert.equal(git(root, ['rev-parse', 'HEAD']), LIVE_BASE);
@@ -136,8 +136,9 @@ export async function vitestJsdomExperiment(
   try {
     for (const [name, text] of Object.entries(fixtures)) await writeFile(join(study, name), text);
     for (const [source, target] of [
-      ['vitest-jsdom-worker.mjs', 'worker.mjs'],
+      ['vitest-jsdom-worker.mjs', lifecycle ? 'vitest-jsdom-worker.mjs' : 'worker.mjs'],
       ['vitest-jsdom-evidence.mjs', 'vitest-jsdom-evidence.mjs'],
+      ...(lifecycle ? [['vitest-jsdom-lifecycle.mjs', 'lifecycle.mjs']] : []),
     ]) {
       const bytes = await readFile(new URL(source, import.meta.url));
       code[source] = digest(bytes);
@@ -152,13 +153,16 @@ export async function vitestJsdomExperiment(
     const scope = {
       repositoryRoot: root,
       adapter: 'node-script',
-      target: 'study-348/worker.mjs',
+      target: lifecycle ? 'study-348/lifecycle.mjs' : 'study-348/worker.mjs',
       timeoutMs: 120000,
     };
     const plan = await planPerformanceExecution(scope);
-    assert.equal(plan.decision.status, 'admitted', JSON.stringify(plan.decision));
+    await writeFile(join(study, 'execution-plan.json'), JSON.stringify(plan, null, 2));
+    assertStudyAdmission(plan, nativeLifecycle, lifecycle);
     const invalidations = lifecycle ? await preparationInvalidations(root, scope, plan) : null;
-    const execution = await runClosedAdapter({ ...scope, executionPlan: plan });
+    const execution = nativeLifecycle
+      ? await runNativeLifecycle(root, scope.target)
+      : await runClosedAdapter({ ...scope, executionPlan: plan });
     await writeFile(join(study, 'execution.json'), JSON.stringify(execution, null, 2));
     assert.equal(execution.exitCode, 0, execution.stderr);
     const marker = execution.stdout
@@ -206,8 +210,10 @@ export async function vitestJsdomExperiment(
       implementation_sha256: code,
       source_identity: sourceIdentity,
       execution: {
-        plan_id: plan.plan_id,
-        enforcement: plan.enforcement,
+        kind: nativeLifecycle ? 'native_macos_lifecycle' : 'codevetter_closed_adapter',
+        plan_id: nativeLifecycle ? null : plan.plan_id,
+        admission: nativeLifecycle ? plan : null,
+        enforcement: execution.enforcement ?? plan.enforcement,
         duration_ms: execution.durationMs,
         status: execution.status,
         exit_code: execution.exitCode,
@@ -223,8 +229,13 @@ export async function vitestJsdomExperiment(
         'Cancellation and invalidation are bounded Vitest observations, not detached-tree reaping or a production warm-cache lifecycle guarantee.',
         ...(lifecycle
           ? [
-              'Three interleaved process-cold versus persistent-context pairs compare an experimental real-consumer adapter, not the installed CodeVetter warm CLI or a production cache.',
-              'Warm total includes module import, context setup, baseline acceptance, all three selected runs and close; cold total includes process launch, import, setup, one selected run and close for every pair. Controls and process sampling are separate recorded overhead.',
+              'Five interleaved process-cold versus persistent-context pairs compare an experimental real-consumer adapter, not the installed CodeVetter warm CLI or a production cache.',
+              ...(nativeLifecycle
+                ? [
+                    'CodeVetter admission rejected subprocess launch. The explicitly selected native lane uses macOS network sandboxing and the Node egress preload; this is native measurement, not a CodeVetter admitted execution or paired-verification verdict.',
+                  ]
+                : []),
+              'Warm total includes module import, priming inventory, context setup, baseline acceptance, all five selected runs and close; cold total includes process launch, import, setup, one selected run and close for every pair. Both totals include process inventory and sampling costs. Warm additionally includes preparation hashing; cold additionally includes per-process cleanup inventory. Negative controls are outside these compared totals.',
               'Process-tree RSS is sampled every 100ms and can miss short-lived descendants and peaks. Cleanup proves recorded PID/birth identities are gone after close, not portable ownership of arbitrary detached descendants.',
               'Source/configuration/lock byte changes are rejected by the preparation identity before execution and restored; this does not qualify a changed dependency graph without a frozen reinstall.',
             ]
@@ -242,6 +253,52 @@ export async function vitestJsdomExperiment(
       '',
       'all owned study fixtures retained privately'
     );
+  }
+}
+
+function assertStudyAdmission(plan, nativeLifecycle, lifecycle) {
+  if (nativeLifecycle) {
+    assert.ok(
+      lifecycle && process.platform === 'darwin',
+      'native lifecycle requires the explicit macOS lane'
+    );
+    return;
+  }
+  assert.equal(plan.decision.status, 'admitted', JSON.stringify(plan.decision));
+}
+
+async function runNativeLifecycle(root, target) {
+  const started = performance.now();
+  const environment = Object.fromEntries(
+    ['PATH', 'TMPDIR', 'TMP', 'TEMP', 'NO_COLOR']
+      .filter((name) => process.env[name])
+      .map((name) => [name, process.env[name]])
+  );
+  environment.NODE_OPTIONS = `--import=${new URL('./node-egress-preload.mjs', import.meta.url).href}`;
+  environment.CODEVETTER_NETWORK_POLICY = 'loopback-only';
+  const policy =
+    '(version 1)(allow default)(deny network*)(allow network-inbound (local ip "*:*"))(allow network-outbound (remote ip "localhost:*"))';
+  try {
+    const output = await promisify(execFile)(
+      '/usr/bin/sandbox-exec',
+      ['-p', policy, process.execPath, target],
+      { cwd: root, env: environment, timeout: 120000, maxBuffer: 1048576 }
+    );
+    return {
+      ...output,
+      status: 'exited',
+      exitCode: 0,
+      durationMs: performance.now() - started,
+      enforcement: { kind: 'native_macos_sandbox_node_preload', network_scope: 'loopback_only' },
+    };
+  } catch (error) {
+    return {
+      stdout: error.stdout ?? '',
+      stderr: error.stderr ?? error.message,
+      status: error.killed ? 'timeout' : 'failed',
+      exitCode: typeof error.code === 'number' ? error.code : null,
+      durationMs: performance.now() - started,
+    };
   }
 }
 
@@ -278,7 +335,8 @@ async function preparationInvalidations(root, scope, plan) {
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const report = await vitestJsdomExperiment(process.argv[2], {
     controlsOnly: process.argv[3] === 'controls-only',
-    lifecycle: process.argv[3] === 'lifecycle',
+    lifecycle: ['lifecycle', 'native-lifecycle'].includes(process.argv[3]),
+    nativeLifecycle: process.argv[3] === 'native-lifecycle',
   });
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 }
