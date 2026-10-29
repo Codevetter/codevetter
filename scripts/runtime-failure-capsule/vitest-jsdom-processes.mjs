@@ -84,7 +84,8 @@ export async function observeNativeChild(rootPid) {
   return {
     async terminate(signal = 'SIGTERM') {
       const table = await processTable();
-      if (table.some((row) => row.group === rootPid && observed.has(key(row)))) {
+      // The detached child's group remains owned even when its root exits before sampling.
+      if (table.some((row) => row.group === rootPid)) {
         try {
           process.kill(-rootPid, signal);
         } catch (error) {
@@ -119,7 +120,9 @@ export async function observeNativeChild(rootPid) {
       }
       for (let retry = 0; latest.length && retry < 10; retry++) {
         await delay(50);
-        await sample();
+        await sample().catch((error) => {
+          failure ??= error.message;
+        });
       }
       return {
         root_pid: rootPid,
@@ -206,13 +209,14 @@ export async function runObservedNative(
   let status = 'exited';
   let operationalError;
   let observer;
+  let observation;
   let escalation;
   const terminate = (signal = 'SIGTERM') => {
     if (signal === 'SIGTERM' && !escalation) {
       escalation = setTimeout(() => terminate('SIGKILL'), 500);
       escalation.unref();
     }
-    if (child.exitCode === null && child.signalCode === null && child.pid) {
+    if (child.pid) {
       try {
         process.kill(-child.pid, signal);
       } catch (error) {
@@ -266,14 +270,14 @@ export async function runObservedNative(
   cancellation?.addEventListener('abort', cancel);
   if (cancellation?.aborted) cancel();
   const deadline = setTimeout(() => {
-    status = 'timeout';
+    if (status === 'exited') status = 'timeout';
     terminate();
   }, timeoutMs);
   deadline.unref();
   let forceDeadline;
   const forced = new Promise((resolvePromise) => {
     forceDeadline = setTimeout(() => {
-      status = 'timeout';
+      if (status === 'exited') status = 'timeout';
       terminate('SIGKILL');
       child.stdout.destroy();
       child.stderr.destroy();
@@ -285,15 +289,19 @@ export async function runObservedNative(
     await Promise.race([exited, forced]);
     await delay(50);
     const beforeCleanup = await observer.refresh();
-    if (beforeCleanup.surviving_processes.length) {
+    const needsCleanup = (value) =>
+      value.surviving_processes.length || value.unverified_group_processes.length;
+    if (needsCleanup(beforeCleanup)) {
       terminate();
       await delay(100);
-      if ((await observer.refresh()).surviving_processes.length) terminate('SIGKILL');
-      if (status === 'exited') status = 'cleanup_required';
+      if (needsCleanup(await observer.refresh())) terminate('SIGKILL');
+      if (status === 'exited')
+        status = beforeCleanup.unverified_group_processes.length
+          ? 'cleanup_unqualified'
+          : 'cleanup_required';
     }
-    if (beforeCleanup.unverified_group_processes.length) status = 'cleanup_unqualified';
     const outcome = await Promise.race([closed, forced]);
-    const observation = await observer.stop();
+    observation = await observer.stop();
     return {
       ...outcome,
       status: outcome.exitCode === 0 ? status : status === 'exited' ? 'failed' : status,
@@ -307,6 +315,12 @@ export async function runObservedNative(
       unverified_before_cleanup: beforeCleanup.unverified_group_processes,
     };
   } finally {
+    if (!observation) {
+      terminate('SIGKILL');
+      await observer.stop().catch((error) => {
+        operationalError ??= error.message;
+      });
+    }
     clearTimeout(deadline);
     clearTimeout(escalation);
     clearTimeout(forceDeadline);
@@ -320,7 +334,9 @@ export async function withStudyCancellation(operation) {
   process.on('SIGTERM', cancel);
   process.on('SIGINT', cancel);
   try {
-    return await operation(controller.signal);
+    const result = await operation(controller.signal);
+    controller.signal.throwIfAborted();
+    return result;
   } finally {
     process.removeListener('SIGTERM', cancel);
     process.removeListener('SIGINT', cancel);

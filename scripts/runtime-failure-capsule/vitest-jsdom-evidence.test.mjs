@@ -235,6 +235,9 @@ test('lifecycle acceptance rejects missing memory, surviving children and promot
       value.lifecycle.pairs[0].warm.source_identity = 'edited';
     },
     (value) => {
+      value.lifecycle.pairs[0].warm.tests[0].worker_pid = null;
+    },
+    (value) => {
       value.lifecycle.pairs[0].warm.tests.forEach((row) => {
         row.worker_pid = 99;
       });

@@ -10,8 +10,21 @@ import {
   observeNativeChild,
   runObservedNative,
   NATIVE_NETWORK_POLICY,
+  withStudyCancellation,
 } from './vitest-jsdom-processes.mjs';
 import { restorePreparationFiles } from './vitest-jsdom-experiment.mjs';
+
+test('cancellation outside the native child lifetime cannot return a successful study', async () => {
+  const listeners = process.listenerCount('SIGINT');
+  await assert.rejects(
+    withStudyCancellation(async () => {
+      process.emit('SIGINT');
+      return 'must not publish';
+    }),
+    { name: 'AbortError' }
+  );
+  assert.equal(process.listenerCount('SIGINT'), listeners);
+});
 
 test('native observer terminates its observed child tree and reads back no survivors', {
   skip: process.platform !== 'darwin',
@@ -60,6 +73,32 @@ test('supervisor reaps an observed orphan after its root exits with inherited pi
   assert.ok(result.orphaned_before_cleanup.length > 0);
   assert.deepEqual(result.process_observation.surviving_processes, []);
   assert.equal(result.forced_return, undefined);
+});
+
+test('supervisor reaps an unsampled process-group orphan after an immediate root exit', {
+  skip: process.platform !== 'darwin',
+  timeout: 10000,
+}, async (t) => {
+  const result = await runObservedNative('/bin/sh', ['-c', 'sleep 4 & echo $!; exit 0'], {
+    timeoutMs: 500,
+    env: { PATH: process.env.PATH },
+  });
+  const descendant = Number(result.stdout.trim());
+  t.after(() => {
+    if (descendant > 0) {
+      try {
+        process.kill(descendant, 'SIGKILL');
+      } catch (error) {
+        if (error.code !== 'ESRCH') throw error;
+      }
+    }
+  });
+  assert.ok(descendant > 0);
+  assert.equal(result.status, 'cleanup_unqualified');
+  assert.equal(result.forced_return, undefined);
+  assert.deepEqual(result.process_observation.surviving_processes, []);
+  assert.deepEqual(result.process_observation.unverified_group_processes, []);
+  assert.throws(() => process.kill(descendant, 0), { code: 'ESRCH' });
 });
 
 test('cancelled source configuration and lock mutation probes restore bytes and reap children', {

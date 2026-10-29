@@ -118,10 +118,12 @@ function qualifyLifecycleArm(row, expected, vector, label, runs) {
   if (!memory?.processes?.some((item) => item.pid === memory.controller_pid)) return false;
   const descendants = memory.processes.filter((item) => item.pid !== memory.controller_pid).length;
   if (
-    !row.tests.some((test) =>
-      memory.processes.some(
-        (item) => item.pid === test.worker_pid && item.pid !== memory.controller_pid
-      )
+    !row.tests.every(
+      (test) =>
+        Number.isInteger(test.worker_pid) &&
+        memory.processes.some(
+          (item) => item.pid === test.worker_pid && item.pid !== memory.controller_pid
+        )
     )
   )
     return false;
