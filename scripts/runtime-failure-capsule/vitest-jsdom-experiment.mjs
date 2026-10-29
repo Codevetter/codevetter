@@ -157,12 +157,12 @@ export async function vitestJsdomExperiment(
       timeoutMs: 120000,
     };
     const plan = await planPerformanceExecution(scope);
-    await writeFile(join(study, 'execution-plan.json'), JSON.stringify(plan, null, 2));
     assertStudyAdmission(plan, nativeLifecycle, lifecycle);
     const invalidations = lifecycle ? await preparationInvalidations(root, scope, plan) : null;
     const execution = nativeLifecycle
       ? await runNativeLifecycle(root, scope.target)
       : await runClosedAdapter({ ...scope, executionPlan: plan });
+    await writeFile(join(study, 'execution-plan.json'), JSON.stringify(plan, null, 2));
     await writeFile(join(study, 'execution.json'), JSON.stringify(execution, null, 2));
     assert.equal(execution.exitCode, 0, execution.stderr);
     const marker = execution.stdout
