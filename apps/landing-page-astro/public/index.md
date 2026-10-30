@@ -8,7 +8,7 @@ Execution-backed verification and evaluation for coding agents.
 - Deterministic and calibrated graders
 - Machine-readable verification bundles through CLI and MCP
 - Local SQLite storage and a native macOS viewer
-- Open source (ISC)
+- Open source (MIT)
 
 ## Who it's for
 

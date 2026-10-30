@@ -35,7 +35,7 @@ const OPENAPI_SPEC = {
     description:
       'CodeVetter provides execution-backed verification and evaluation for coding-agent changes. The public web API exposes read-only agent surfaces: the agent catalog, sitemap, and markdown alternates. The verification engine itself runs locally through the packaged CLI and MCP sidecars and does not expose a remote API.',
     contact: { name: 'CodeVetter', url: 'https://codevetter.com' },
-    license: { name: 'ISC', url: 'https://github.com/Codevetter/codevetter/blob/main/LICENSE' },
+    license: { name: 'MIT', url: 'https://github.com/Codevetter/codevetter/blob/main/LICENSE' },
   },
   servers: [{ url: 'https://codevetter.com' }],
   tags: [{ name: 'agent-surfaces', description: 'Machine-readable public surfaces' }],

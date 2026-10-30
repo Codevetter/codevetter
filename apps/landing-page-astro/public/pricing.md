@@ -5,7 +5,7 @@ CodeVetter currently charges no subscription, account, licence, or hosted-servic
 ## Available without purchase
 
 - The Apple-silicon macOS build is published through GitHub Releases.
-- The source, benchmark cases, scorer, product documentation, and release workflows are public under the ISC licence.
+- The source, benchmark cases, scorer, product documentation, and release workflows are public under the MIT licence.
 - The packaged CLI and read-only stdio MCP sidecar run locally as part of the desktop distribution.
 
 ## Costs outside CodeVetter
