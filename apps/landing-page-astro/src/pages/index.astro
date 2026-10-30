@@ -10,6 +10,8 @@ import { workbenchContent } from '@saas-maker/templates/schema';
 import json from '../content/codevetter.json';
 import { serializeSiteSchema } from '../data/site-schema';
 import headlineItalic from '@saas-maker/ui/fonts/instrument-serif-latin-italic.woff2?url';
+import bodyFont from '@saas-maker/ui/fonts/geist-latin-normal.woff2?url';
+import '../styles/home-fonts.css';
 
 const content = workbenchContent.parse(json);
 // v0.1.18 supplies intrinsic dimensions and priority, but its strict window
@@ -50,8 +52,9 @@ const analytics = between(
 
 <Base {...baseProps(content)}>
   <Fragment slot="head">
-    {/* The headline italic swaps in after first paint and shifts the actions below it (CLS 0.08). */}
+    {/* Start both text roles early; metric fallbacks keep cold font swaps stable. */}
     <link rel="preload" as="font" type="font/woff2" href={headlineItalic} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={bodyFont} crossorigin />
     <meta name="application-name" content="CodeVetter" />
     <meta name="keywords" content="coding agent verification, AI code verification, executable evidence, agent evaluation, software verification, local developer tool, verification receipt" />
     <meta name="author" content="CodeVetter" />

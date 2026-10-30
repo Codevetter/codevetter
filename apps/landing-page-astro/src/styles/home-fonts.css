@@ -1,0 +1,29 @@
+/* Match the existing italic headline while its preloaded face arrives.
+   Unadjusted Georgia adds a line and moves the actions and product capture. */
+@font-face {
+  font-family: 'CodeVetter Accent Fallback';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Georgia Italic');
+  size-adjust: 81.4%;
+  ascent-override: 121.62%;
+  descent-override: 38.08%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'CodeVetter Accent Fallback Times';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Times New Roman Italic'), local('TimesNewRomanPS-ItalicMT'),
+    local('Liberation Serif Italic');
+  size-adjust: 92.21%;
+  ascent-override: 107.36%;
+  descent-override: 33.62%;
+  line-gap-override: 0%;
+}
+
+h1 {
+  --font-accent: 'Instrument Serif', 'CodeVetter Accent Fallback',
+    'CodeVetter Accent Fallback Times', Georgia, serif;
+}
