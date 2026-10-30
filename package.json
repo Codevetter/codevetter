@@ -131,7 +131,7 @@
     "plugin:build": "node scripts/build-agent-plugin.mjs",
     "test:agent-plugin": "node --test scripts/build-agent-plugin.test.mjs && python3 -m unittest discover -s scripts/agent-plugin -p 'test_*.py'"
   },
-  "license": "ISC",
+  "license": "MIT",
   "lint-staged": {
     "*.{js,mjs,cjs,ts,tsx,json,jsonc}": "biome check --no-errors-on-unmatched"
   },
