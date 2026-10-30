@@ -73,7 +73,7 @@
       "label": "Get the macOS build",
       "href": "/download"
     },
-    "note": "Apple silicon · open source (ISC) · no CodeVetter account",
+    "note": "Apple silicon · open source (MIT) · no CodeVetter account",
     "window": {
       "title": "CodeVetter — review",
       "src": "images/workbench.webp",
@@ -189,7 +189,7 @@
               "body": "Product state and verification evidence live on your machine. Model review uses the Anthropic, OpenAI or OpenRouter credentials you configure."
             },
             {
-              "title": "Open source · ISC",
+              "title": "Open source · MIT",
               "body": "The repository, benchmark cases, scorer, docs, and release workflows are public on GitHub."
             }
           ]
@@ -227,7 +227,7 @@
             },
             {
               "q": "What can I download today?",
-              "a": "The current GitHub release has an Apple-silicon macOS DMG and updater archive. Source is ISC-licensed. Other platform installers and a Homebrew cask are not published yet."
+              "a": "The current GitHub release has an Apple-silicon macOS DMG and updater archive. Source is MIT-licensed. Other platform installers and a Homebrew cask are not published yet."
             }
           ]
         }
@@ -249,7 +249,7 @@
             "label": "Inspect the public benchmark",
             "href": "/benchmark"
           },
-          "note": "No CodeVetter account · local SQLite state · ISC license"
+          "note": "No CodeVetter account · local SQLite state · MIT license"
         }
       ]
     }
@@ -357,7 +357,7 @@
         ]
       }
     ],
-    "legal": "© 2026 CodeVetter · ISC License",
+    "legal": "© 2026 CodeVetter · MIT License",
     "catalogId": "codevetter",
     "privacyUrl": "https://codevetter.com/privacy"
   }

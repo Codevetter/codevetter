@@ -12,7 +12,7 @@ AI software quality workbench for agent-generated code — desktop-first, local-
 | **Verdict based on** | Executed evidence — builds, tests, runtime behavior | A model reading the diff | Diff structure + declared claims | A second model's opinion |
 | **Where it runs** | Your Mac — app, CLI, MCP | Vendor cloud | Your CI / GitHub Actions | Wherever you run it |
 | **Your code leaves the machine** | Never | Yes | No | Depends on provider |
-| **Open source** | Yes (ISC) | Mostly no | Yes | Varies |
+| **Open source** | Yes (MIT) | Mostly no | Yes | Varies |
 
 ## Product Direction
 
@@ -145,7 +145,7 @@ scripts/               Benchmark + corpus + deploy + doc-validation scripts
 
 ## License
 
-ISC — see the root `package.json`.
+MIT — see [LICENSE](LICENSE).
 
 <!-- ACTIVE-AI-TASK-LOG:START -->
 ## Active AI Task Log

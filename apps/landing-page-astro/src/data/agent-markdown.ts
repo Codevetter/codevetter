@@ -205,7 +205,7 @@ The core loop is: task → agent change → executable verification → evidence
 
 ## Open source
 
-CodeVetter is open-source under the ISC license. The source lives at github.com/Codevetter/codevetter. The current Apple-silicon macOS build and updater archive are published via GitHub Releases.
+CodeVetter is open-source under the MIT license. The source lives at github.com/Codevetter/codevetter. The current Apple-silicon macOS build and updater archive are published via GitHub Releases.
 
 ## Built by
 
@@ -241,7 +241,7 @@ For agent-to-agent or directory verification, use sarthakagrawal@agentmail.to.`
   terms: page(
     'CodeVetter terms of use',
     '/terms',
-    `CodeVetter is open-source desktop software distributed under the ISC License. Source and release binaries are provided as-is.
+    `CodeVetter is open-source desktop software distributed under the MIT License. Source and release binaries are provided as-is.
 
 Code review and verification output is assistive, not authoritative. Users remain responsible for the software they ship and should not treat CodeVetter as a substitute for human review or security testing.
 
