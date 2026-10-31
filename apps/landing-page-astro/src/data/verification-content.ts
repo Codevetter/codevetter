@@ -230,6 +230,14 @@ verificationContent['/verify-ai-generated-code'].html = verificationContent[
   '<h2 id="worked-example">Try it: catch a real class of AI-code bug</h2>'
 );
 
+for (const path of ['/verify-ai-generated-code', '/ai-code-review-vs-verification']) {
+  const content = verificationContent[path];
+  content.markdown +=
+    '\n\n## A public-repository case\n\n[Inspect a React hydration visibility regression](/articles/react-hydration-hidden-root-regression): one CodeVetter review finding, two failing visibility cases before repair, and four passing checks afterward. The article links pinned public source, a redacted evidence summary and a focused replay. This is one observed case, not a catch-rate benchmark.\n';
+  content.html +=
+    '<h2>A public-repository case</h2><p><a href="/articles/react-hydration-hidden-root-regression" data-log="verification_recipe_opened">Inspect a React hydration visibility regression</a>: one CodeVetter review finding, two failing visibility cases before repair, and four passing checks afterward. The article links pinned public source, a redacted evidence summary and a focused replay. This is one observed case, not a catch-rate benchmark.</p>';
+}
+
 const formerAvailabilityClaim = 'Solo desktop tier is $0 with a bring-your-own model key';
 const currentAvailability =
   'Apple-silicon macOS build through GitHub Releases; no CodeVetter subscription is currently declared, and model-provider costs are separate';

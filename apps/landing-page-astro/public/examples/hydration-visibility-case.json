@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "codevetter.public-case-summary.v1",
+  "evidenceKind": "redacted-local-reproduction-summary",
+  "observedAt": "2026-10-31",
+  "case": "React public-entry hydration visibility race",
+  "repository": "https://github.com/Significant-Hobbies/swe-interview-prep",
+  "pullRequest": "https://github.com/Significant-Hobbies/swe-interview-prep/pull/158",
+  "reviewedHead": "9cd5e5ebe84375277f0ff252052321024ec50e7b",
+  "repairedHead": "5f79e57fe99bfc22c576465214cf90881c71acab",
+  "mergeCommit": "bd1631061e828b7d473b546be9de116859feafe0",
+  "discovery": "A CodeVetter review finding, then native repository-owned tests; no automatic test-generation claim",
+  "reproduction": {
+    "command": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "src/lib/publicEntry.test.ts",
+      "--reporter=json"
+    ],
+    "environment": "Vitest / happy-dom; tests read the actual index.html visibility stylesheet",
+    "heldConstant": "The repaired four-case test target; only publicEntry.ts guard changes",
+    "sourceBeforeSha256": "a32ffebacf084b47ffd52f3b7f721ad6847175b8c4a74beb6be36b08323e098d",
+    "sourceAfterSha256": "29b026fec58fbe918d3c38663371ed93c3dd8a12091857d1641b6f65b875d8c3",
+    "before": {
+      "exitCode": 1,
+      "passed": 2,
+      "failed": 2,
+      "total": 4
+    },
+    "after": {
+      "exitCode": 0,
+      "passed": 4,
+      "failed": 0,
+      "total": 4
+    },
+    "regressions": [
+      "Initial saved profile disappears before bootstrap",
+      "Initial saved progress disappears before bootstrap"
+    ]
+  },
+  "limitations": [
+    "This is a redacted summary of recorded local checks, not the original private review receipt.",
+    "The four-case target is replayed against both guards; it is not the unmodified test suite at the reviewed head.",
+    "One observed case; not a catch-rate, productivity, performance or competitor benchmark.",
+    "Does not establish draft loss, real-user outcomes or full browser/authenticated workflow coverage."
+  ]
+}

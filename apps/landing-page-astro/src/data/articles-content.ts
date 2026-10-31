@@ -1,6 +1,8 @@
 import type { EditorialContent } from '@/data/verification-content';
+import { hydrationCaseContent } from '@/data/hydration-case';
 
 export const articlesContent: Record<string, EditorialContent> = {
+  [hydrationCaseContent.path]: hydrationCaseContent,
   '/articles/agent-evaluation-vs-tests-vs-code-review': {
     title: 'Agent evaluation vs tests vs code review: what each can actually prove',
     seoTitle: 'Agent Eval vs Tests vs Code Review | What Each Proves',
