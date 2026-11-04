@@ -22,6 +22,9 @@ test('benchmark entry points declare the catalog CTA event', async () => {
 
 for (const [page, event] of [
   ['/benchmark', 'benchmark_opened'],
+  ['/coding-agent-verification', 'verification_recipe_opened'],
+  ['/coding-agent-verification', 'verification_proof_opened'],
+  ['/coding-agent-verification', 'verification_install_opened'],
   ['/articles/react-hydration-hidden-root-regression', 'verification_proof_opened'],
   ['/articles/react-hydration-hidden-root-regression', 'verification_recipe_opened'],
   ['/articles/react-hydration-hidden-root-regression', 'verification_install_opened'],
