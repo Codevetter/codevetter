@@ -54,7 +54,7 @@ jobs:
       # cache is a cache-poisoning surface in a workflow that can publish
       # releases (zizmor cache-poisoning).
       - name: Download exact qualified production candidate
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           pattern: native-production-qualification-*
           path: artifacts/native-release
