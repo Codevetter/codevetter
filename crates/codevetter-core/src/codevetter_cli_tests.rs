@@ -88,6 +88,7 @@ fn fixture_local_check(verdict: LocalCheckVerdict) -> LocalCheckReceipt {
     LocalCheckReceipt {
         schema_version: "codevetter.local-check/v1".into(),
         request_id: None,
+        correctness_selection: None,
         run_id: "local-check-fixture".into(),
         ran_at: "2026-08-24T00:00:00Z".into(),
         repo_path: "/tmp/widget".into(),
@@ -1943,6 +1944,7 @@ fn local_check_output_and_exit_codes_preserve_stage_meaning() {
     let preflight = LocalCheckPreflightReceipt {
         schema_version: "codevetter.local-check-preflight/v1".into(),
         request_id: None,
+        correctness_selection: None,
         ran_at: "2026-08-29T00:00:00Z".into(),
         repo_path: passed.repo_path.clone(),
         task: passed.task.clone(),

@@ -70,9 +70,16 @@ pub(super) fn dispatch_tool(
                 repo_path,
                 required_string(&arguments, "run_id")?,
             )?;
+            let outcomes = match crate::commands::verification_outcomes::list_outcomes(
+                connection, repo_path, required_string(&arguments, "run_id")?,
+            ) {
+                Ok(projection) => serde_json::to_value(projection).map_err(|error| error.to_string())?,
+                Err(reason) => json!({"status":"unavailable", "reason":reason, "caller_reported":true, "independent_correctness_evidence":false}),
+            };
             Ok(json!({
                 "schema_version": "codevetter.verification-receipt-projection/v1",
                 "authority": "read_only_projection",
+                "outcomes": outcomes,
                 "receipt": receipt,
             }))
         }

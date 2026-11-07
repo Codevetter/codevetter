@@ -1,3 +1,6 @@
+#[path = "codevetter/learning.rs"]
+mod codevetter_learning;
+
 use codevetter_core::application::verification_service::{
     run_verification_command, VerificationCommand, VerificationOperation, VerificationProgress,
     VerificationResult,
@@ -127,6 +130,8 @@ Usage:
   codevetter runs [--repo <path>] [--limit <n>] [--json]
   codevetter runs --ledger <path> --repo <recorded-path> --invocation-id <uuid> [--pointer <json-pointer>] [--json]
   codevetter runs --ledger <path> [--fixture] [--repo <recorded-path>] [--task-id <uuid>] [--skill <skill>] [--state <state>] [--assessment <outcome>] [--offset <n>] [--limit <n>] [--json]
+  codevetter outcomes --operation <record|list|summary> --repo <path> --run-id <id> [--kind <incident|revert|confirmed_safe|human_override> --event-id <id> --reason <text> --evidence-ref <ref> [--group-id <id>] [--basis <text>] [--action <accept|reject|defer>]] [--json]
+  codevetter explain --repo <path> --run-id <id> --endpoint http://127.0.0.1:<port>/v1 --model <id> [--json]
   codevetter fix-packet --run-id <id> [--finding <id> ...] [--json]
   codevetter fix --operation execute --run-id <id> --finding <id> [--finding <id> ...] --agent <name> --confirm-run [--timeout-ms <n>] [--json]
   codevetter fix --operation inspect --attempt-id <id> [--json]
@@ -518,6 +523,7 @@ struct WatcherArguments {
 }
 
 enum CliCommand {
+    Learning(codevetter_learning::LearningArguments),
     Check(Box<CheckArguments>),
     Capabilities(OutputMode),
     CapabilitySchema,
@@ -630,6 +636,7 @@ async fn run() -> Result<i32, String> {
             );
             Ok(0)
         }
+        CliCommand::Learning(arguments) => codevetter_learning::run(arguments).await,
         CliCommand::Check(arguments) => run_check(*arguments).await,
         CliCommand::Collect(arguments) => run_collect(arguments).await,
         CliCommand::Runs(arguments) => run_runs(arguments),
@@ -2257,6 +2264,9 @@ fn parse_arguments(
                 [argument] if argument == "--schema" => Ok(CliCommand::CapabilitySchema),
                 _ => Err("capabilities accepts only --json or --schema".to_string()),
             };
+        }
+        "outcomes" | "explain" => {
+            return codevetter_learning::parse(&command, arguments).map(CliCommand::Learning)
         }
         "check" => return parse_check(arguments, cwd),
         "collect" => return parse_collect(arguments, cwd),

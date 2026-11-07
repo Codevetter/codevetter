@@ -98,7 +98,7 @@ pub fn capability_registry() -> CapabilityRegistry {
                         Authority::ReadExecute,
                         &["Native Review (acceptance binding, plan, execute, findings, proof map, intent diagnostic, recorded-QA artifacts, isolated fix/recheck, source, X-Ray, export)"],
                     ),
-                    projection(Availability::Available, Authority::ReadExecute, &["codevetter check", "codevetter fix-packet", "codevetter fix", "codevetter xray"]),
+                    projection(Availability::Available, Authority::ReadExecute, &["codevetter check", "codevetter fix-packet", "codevetter fix", "codevetter xray", "codevetter outcomes", "codevetter explain"]),
                     projection(
                         Availability::Available,
                         Authority::ReadExecute,

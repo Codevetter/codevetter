@@ -527,6 +527,18 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     );
     assert_eq!(receipt_projection["authority"], "read_only_projection");
     assert_eq!(
+        receipt_projection["outcomes"]["summary"]["observation_count"],
+        0
+    );
+    assert_eq!(
+        receipt_projection["outcomes"]["summary"]["caller_reported"],
+        true
+    );
+    assert_eq!(
+        receipt_projection["outcomes"]["summary"]["independent_correctness_evidence"],
+        false
+    );
+    assert_eq!(
         receipt_projection["receipt"]["schema_version"],
         local_expected["receipt_schema"]
     );
@@ -556,6 +568,56 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
         .is_some_and(|limitations| limitations.contains(&local_expected["limitation"])));
     assert!(receipt_projection["receipt"].get("repo_path").is_none());
     assert!(parity_receipt.to_string().find(&repo_path).is_none());
+    crate::commands::verification_outcomes::record_outcome(
+        &connection,
+        &repo_path,
+        local_expected["run_id"].as_str().unwrap(),
+        crate::commands::verification_outcomes::OutcomeObservation {
+            event_id: "protocol-outcome".into(),
+            reason: "Fixture regression observed".into(),
+            evidence_ref: "fixture:protocol".into(),
+            group_id: None,
+            event: crate::commands::verification_outcomes::OutcomeEvent::Incident,
+        },
+    )
+    .unwrap();
+    let mut replaced = canonical_local_check.clone();
+    replaced["task"] = json!("Updated stored receipt");
+    connection
+        .execute(
+            "UPDATE local_check_runs SET receipt_json=?1 WHERE run_id=?2",
+            params![
+                replaced.to_string(),
+                local_expected["run_id"].as_str().unwrap()
+            ],
+        )
+        .unwrap();
+    let stale_projection = client
+        .call_tool(
+            CallToolRequestParams::new("verification_get_receipt").with_arguments(
+                json!({"run_id":local_expected["run_id"]})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            ),
+        )
+        .await
+        .unwrap()
+        .structured_content
+        .unwrap();
+    assert_eq!(
+        stale_projection["data"]["data"]["receipt"]["task"],
+        "Updated stored receipt"
+    );
+    assert_eq!(
+        stale_projection["data"]["data"]["outcomes"]["status"],
+        "unavailable"
+    );
+    assert_eq!(
+        stale_projection["data"]["data"]["authority"],
+        "read_only_projection"
+    );
+
     let first_page = client
         .call_tool(
             CallToolRequestParams::new("history_list_releases")

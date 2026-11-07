@@ -208,6 +208,26 @@ pub fn run_migration(conn: &Connection) -> Result<(), rusqlite::Error> {
             ran_at TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS verification_outcome_events (
+            repo_path TEXT NOT NULL,
+            run_id TEXT NOT NULL,
+            event_id TEXT NOT NULL,
+            receipt_sha256 TEXT NOT NULL,
+            record_json TEXT NOT NULL,
+            PRIMARY KEY(repo_path, event_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_verification_outcomes_run
+            ON verification_outcome_events(repo_path, run_id);
+        CREATE TRIGGER IF NOT EXISTS verification_outcomes_no_update
+            BEFORE UPDATE ON verification_outcome_events BEGIN
+            SELECT RAISE(ABORT, 'Verification outcome events are append-only'); END;
+        CREATE TRIGGER IF NOT EXISTS verification_outcomes_no_delete
+            BEFORE DELETE ON verification_outcome_events BEGIN
+            SELECT RAISE(ABORT, 'Verification outcome events are append-only'); END;
+        INSERT OR IGNORE INTO verification_workbench_schema_migrations
+            (version, migration_identity, applied_at)
+        VALUES (3, 'verification-outcome-events-v3', strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+
         CREATE INDEX IF NOT EXISTS idx_local_check_runs_repo_time
             ON local_check_runs(repo_path, ran_at DESC);
 

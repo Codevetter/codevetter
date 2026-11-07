@@ -4,7 +4,7 @@
 //! inputs only. This module resolves them to closed adapter/target candidates;
 //! it never executes the phrase or accepts an arbitrary command.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::io::Read;
 use std::path::{Component, Path, PathBuf};
 use std::process::Stdio;
@@ -57,8 +57,27 @@ pub struct EvidenceScopeCandidate {
     pub reason: String,
     pub source_paths: Vec<String>,
     pub confidence_milli: u16,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub check_priority: Option<CheckPriority>,
     pub testing_supported: bool,
     pub performance_supported: bool,
+}
+
+/// Ordinal scheduling hints only. These points are not probabilities or verdicts.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CheckPriority {
+    pub policy_version: String,
+    pub score: u16,
+    pub factors: Vec<CheckPriorityFactor>,
+    pub limitations: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct CheckPriorityFactor {
+    pub kind: String,
+    pub points: u16,
+    pub source_path: String,
+    pub explanation: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -110,6 +129,7 @@ pub(crate) async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceSco
     .await?
     .is_empty();
     let files = repository_files(&root).await?;
+    let mut priority_source_qualified = !dirty;
     let (scope_paths, mut limitations) = match input.kind {
         EvidenceScopeKind::Flow => (
             matching_paths(&root, &files, original_input.as_deref().unwrap_or_default()),
@@ -124,6 +144,7 @@ pub(crate) async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceSco
                 original_input.as_deref().unwrap_or_default(),
             )
             .await?;
+            priority_source_qualified &= source.head_sha == repository_revision;
             (
                 source.changed_paths,
                 vec![format!(
@@ -147,7 +168,20 @@ pub(crate) async fn resolve(mut input: EvidenceScopeInput) -> Result<EvidenceSco
     };
     let discovery_files = target_discovery_files(&root, input.kind, &files, &scope_paths);
     let targets = discover_targets(&root, &discovery_files);
-    let mut scored = score_targets(input.kind, original_input.as_deref(), &scope_paths, targets);
+    let mut scored = score_targets_with_priority(
+        input.kind,
+        original_input.as_deref(),
+        &scope_paths,
+        targets,
+        (input.consumer == EvidenceScopeConsumer::Testing && priority_source_qualified)
+            .then_some(&root),
+    );
+    if input.consumer == EvidenceScopeConsumer::Testing {
+        limitations.push("Check priority is ordinal scheduling advice, not correctness, defect probability, or approval. Downstream reach is not measured.".into());
+        if !priority_source_qualified {
+            limitations.push("Content priority unavailable: the checkout is dirty or the selected change head differs from HEAD.".into());
+        }
+    }
     match input.consumer {
         EvidenceScopeConsumer::Testing => scored.retain(|candidate| candidate.testing_supported),
         EvidenceScopeConsumer::Performance => {
@@ -663,13 +697,39 @@ fn matching_paths(root: &Path, files: &[String], query: &str) -> Vec<String> {
         .collect()
 }
 
+#[cfg(test)]
 fn score_targets(
     kind: EvidenceScopeKind,
     original_input: Option<&str>,
     scope_paths: &[String],
     targets: Vec<DiscoveredTarget>,
 ) -> Vec<EvidenceScopeCandidate> {
+    score_targets_with_priority(kind, original_input, scope_paths, targets, None)
+}
+
+fn score_targets_with_priority(
+    kind: EvidenceScopeKind,
+    original_input: Option<&str>,
+    scope_paths: &[String],
+    targets: Vec<DiscoveredTarget>,
+    priority_root: Option<&Path>,
+) -> Vec<EvidenceScopeCandidate> {
     let tokens = intent_tokens(original_input.unwrap_or_default());
+    let priority_sources = priority_root.map(|root| {
+        let mut remaining = MAX_CONTENT_BYTES;
+        scope_paths
+            .iter()
+            .filter(|path| priority_source_path(path))
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .map(|path| {
+                (
+                    path.clone(),
+                    bounded_file_text(root, path, &mut remaining).to_ascii_lowercase(),
+                )
+            })
+            .collect::<BTreeMap<_, _>>()
+    });
     let mut candidates = targets
         .into_iter()
         .filter_map(|target| {
@@ -684,6 +744,9 @@ fn score_targets(
                     .saturating_add((score as u16).saturating_mul(50))
                     .min(950)
             };
+            let check_priority = priority_sources
+                .as_ref()
+                .map(|sources| assess_check_priority(scope_paths, &target, sources));
             let reason = candidate_reason(kind, &source_paths, score);
             let id = format!(
                 "scope-{:x}",
@@ -699,6 +762,7 @@ fn score_targets(
                     reason,
                     source_paths,
                     confidence_milli,
+                    check_priority,
                     testing_supported: target.testing_supported,
                     performance_supported: target.performance_supported,
                 },
@@ -710,12 +774,128 @@ fn score_targets(
             .confidence_milli
             .cmp(&left.confidence_milli)
             .then_with(|| right_score.cmp(left_score))
+            .then_with(|| {
+                right
+                    .check_priority
+                    .as_ref()
+                    .map(|p| p.score)
+                    .unwrap_or(0)
+                    .cmp(&left.check_priority.as_ref().map(|p| p.score).unwrap_or(0))
+            })
             .then_with(|| left.target.cmp(&right.target))
     });
     candidates
         .into_iter()
         .map(|(_, candidate)| candidate)
         .collect()
+}
+
+fn assess_check_priority(
+    scope_paths: &[String],
+    target: &DiscoveredTarget,
+    sources: &BTreeMap<String, String>,
+) -> CheckPriority {
+    let mut priority = CheckPriority {
+        policy_version: "codevetter.check-priority/v1".into(),
+        score: 0,
+        factors: Vec::new(),
+        limitations: vec![
+            "Bounded lexical source indicators; no call graph or downstream reach measurement."
+                .into(),
+        ],
+    };
+    let lower_content = target.content.to_ascii_lowercase();
+    let paths = scope_paths
+        .iter()
+        .filter(|path| {
+            priority_source_path(path) && path_relation(path, &target.target, &lower_content) >= 5
+        })
+        .take(6);
+    let mut read_count = 0;
+    for path in paths {
+        let content = sources.get(path).map(String::as_str).unwrap_or_default();
+        if content.is_empty() {
+            priority.limitations.push(format!(
+                "Source evidence unavailable within safe read bounds: {path}"
+            ));
+            continue;
+        }
+        read_count += 1;
+        for (kind, points, markers, explanation) in [
+            (
+                "sensitive_boundary",
+                3,
+                &[
+                    "authorize(",
+                    "haspermission(",
+                    "check_permission(",
+                    "verify_token(",
+                    "jwt.verify(",
+                    "requireauth(",
+                ][..],
+                "Associated source contains an authorization or token-validation operation",
+            ),
+            (
+                "persistent_write",
+                3,
+                &[
+                    "writefile(",
+                    "write_file(",
+                    "fs::write(",
+                    "insert into ",
+                    "delete from ",
+                    "storage.setitem(",
+                    ".commit(",
+                ][..],
+                "Associated source contains a persistent-write operation",
+            ),
+        ] {
+            if markers.iter().any(|marker| content.contains(marker))
+                && !priority.factors.iter().any(|factor| factor.kind == kind)
+            {
+                priority.factors.push(CheckPriorityFactor {
+                    kind: kind.into(),
+                    points,
+                    source_path: path.clone(),
+                    explanation: explanation.into(),
+                });
+                priority.score += points;
+            }
+        }
+    }
+    if read_count == 0 {
+        priority.limitations.push("No associated production-source content was available; zero points is not evidence of safety.".into());
+    }
+    priority
+}
+
+fn priority_source_path(path: &str) -> bool {
+    let lower = path.to_ascii_lowercase();
+    safe_relative(path)
+        && !excluded_path(path)
+        && is_source_path(path)
+        && !lower.ends_with(".json")
+        && !lower.split('/').any(|part| {
+            part.starts_with('.')
+                || [
+                    "secrets",
+                    "credentials",
+                    "generated",
+                    "fixtures",
+                    "__fixtures__",
+                    "tests",
+                    "__tests__",
+                    "test",
+                    "e2e",
+                    "target",
+                ]
+                .contains(&part)
+                || part.contains("secret")
+                || part.contains("credential")
+                || part.contains(".test.")
+                || part.contains(".spec.")
+                || part.ends_with("_test.go")
+        })
 }
 
 fn target_score(
@@ -869,7 +1049,7 @@ fn short_revision(value: &str) -> &str {
 }
 
 #[cfg(test)]
-mod tests {
+pub(super) mod tests {
     use super::*;
     use std::process::Command as StdCommand;
 
@@ -926,6 +1106,225 @@ mod tests {
                 .success());
         }
         repo
+    }
+
+    pub(crate) fn learning_repository() -> tempfile::TempDir {
+        let mut files = vec![
+            (
+                "src/harmless.mjs".into(),
+                "export const label = 'hello';".into(),
+            ),
+            (
+                "src/risky.mjs".into(),
+                "export function persist() { requireAuth(); writeFile('state', 'data'); }".into(),
+            ),
+        ];
+        files.extend((0..12).map(|index| {
+            (
+                format!("tests/a{index:02}.test.mjs"),
+                "import test from 'node:test'; import '../src/harmless.mjs';".into(),
+            )
+        }));
+        files.push((
+            "tests/zz-risky.test.mjs".into(),
+            "import test from 'node:test'; import '../src/risky.mjs';".into(),
+        ));
+        committed_repository(&files)
+    }
+
+    #[tokio::test]
+    async fn verification_learning_priority_ranks_equal_relevance_before_cap_without_changing_performance(
+    ) {
+        let repo = learning_repository();
+        let input = |consumer, kind, value| EvidenceScopeInput {
+            repo_path: repo.path().to_string_lossy().into_owned(),
+            kind,
+            value,
+            consumer,
+        };
+        let plan = resolve(input(
+            EvidenceScopeConsumer::Testing,
+            EvidenceScopeKind::Codebase,
+            None,
+        ))
+        .await
+        .unwrap();
+        assert_eq!(plan.candidates.len(), 12);
+        assert_eq!(plan.candidates[0].target, "tests/zz-risky.test.mjs");
+        let priority = plan.candidates[0].check_priority.as_ref().unwrap();
+        assert_eq!(priority.score, 6);
+        assert_eq!(
+            priority.score,
+            priority
+                .factors
+                .iter()
+                .map(|factor| factor.points)
+                .sum::<u16>()
+        );
+        assert!(priority
+            .factors
+            .iter()
+            .all(|factor| factor.source_path == "src/risky.mjs"));
+        assert_eq!(plan.candidates[0].confidence_milli, 600);
+        let mut changed_policy = plan.candidates.clone();
+        changed_policy[0]
+            .check_priority
+            .as_mut()
+            .unwrap()
+            .policy_version = "future-policy".into();
+        assert_ne!(
+            plan.plan_id,
+            plan_identity(
+                &plan.repository_revision,
+                plan.dirty,
+                plan.kind,
+                None,
+                plan.consumer,
+                &changed_policy
+            )
+        );
+        let performance = resolve(input(
+            EvidenceScopeConsumer::Performance,
+            EvidenceScopeKind::Codebase,
+            None,
+        ))
+        .await
+        .unwrap();
+        assert!(performance
+            .candidates
+            .iter()
+            .all(|candidate| candidate.check_priority.is_none()));
+        assert!(!performance
+            .candidates
+            .iter()
+            .any(|candidate| candidate.target == "tests/zz-risky.test.mjs"));
+        let explicit = resolve(input(
+            EvidenceScopeConsumer::Testing,
+            EvidenceScopeKind::Flow,
+            Some("tests/a11.test.mjs".into()),
+        ))
+        .await
+        .unwrap();
+        assert_eq!(explicit.candidates[0].target, "tests/a11.test.mjs");
+        std::fs::write(
+            repo.path().join("src/risky.mjs"),
+            "writeFile('changed', 'data');",
+        )
+        .unwrap();
+        let dirty = resolve(input(
+            EvidenceScopeConsumer::Testing,
+            EvidenceScopeKind::Codebase,
+            None,
+        ))
+        .await
+        .unwrap();
+        assert!(dirty
+            .candidates
+            .iter()
+            .all(|candidate| candidate.check_priority.is_none()));
+        assert!(dirty
+            .limitations
+            .iter()
+            .any(|limitation| limitation.contains("checkout is dirty")));
+    }
+
+    #[test]
+    fn verification_learning_priority_preserves_unsaturated_relevance_and_caches_safe_source_reads()
+    {
+        let repo = tempfile::tempdir().unwrap();
+        std::fs::create_dir(repo.path().join("src")).unwrap();
+        std::fs::write(
+            repo.path().join("src/shared.mjs"),
+            format!("writeFile('state','data');{}", " ".repeat(120_000)),
+        )
+        .unwrap();
+        let target = |index| DiscoveredTarget {
+            adapter: "node-test".into(),
+            target: format!("tests/{index:02}.test.mjs"),
+            name: None,
+            testing_supported: true,
+            performance_supported: true,
+            content: "import '../src/shared.mjs';".into(),
+        };
+        let scope = vec!["src/shared.mjs".into()];
+        let candidates = score_targets_with_priority(
+            EvidenceScopeKind::Codebase,
+            None,
+            &scope,
+            (0..30).map(target).collect(),
+            Some(repo.path()),
+        );
+        assert_eq!(candidates.len(), 30);
+        assert!(candidates.iter().all(|candidate| candidate
+            .check_priority
+            .as_ref()
+            .unwrap()
+            .score
+            == 3));
+        let mut relevant = target(99);
+        relevant.content =
+            "invoice coupon discount shipping tax customer address currency subtotal total".into();
+        let query = relevant.content.clone();
+        let ranked = score_targets_with_priority(
+            EvidenceScopeKind::Flow,
+            Some(&query),
+            &scope,
+            vec![target(0), relevant],
+            Some(repo.path()),
+        );
+        assert_eq!(ranked[0].target, "tests/99.test.mjs");
+        assert_eq!(ranked[0].confidence_milli, 950);
+        assert_eq!(ranked[1].check_priority.as_ref().unwrap().score, 3);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn verification_learning_priority_refuses_symlinks_protected_paths_and_fixture_markers() {
+        use std::os::unix::fs::symlink;
+        let repo = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        std::fs::write(
+            outside.path().join("outside.mjs"),
+            "requireAuth(); writeFile('state','data');",
+        )
+        .unwrap();
+        std::fs::create_dir(repo.path().join("src")).unwrap();
+        symlink(
+            outside.path().join("outside.mjs"),
+            repo.path().join("src/linked.mjs"),
+        )
+        .unwrap();
+        let source_paths = vec![
+            "src/linked.mjs".into(),
+            ".secrets/hidden.mjs".into(),
+            "fixtures/writer.mjs".into(),
+            "src/.env.ts".into(),
+        ];
+        let target = DiscoveredTarget {
+            adapter: "node-test".into(),
+            target: "tests/linked.test.mjs".into(),
+            name: None,
+            testing_supported: true,
+            performance_supported: true,
+            content: "linked hidden writer requireAuth(); writeFile('fixture','data');".into(),
+        };
+        let ranked = score_targets_with_priority(
+            EvidenceScopeKind::Codebase,
+            None,
+            &source_paths,
+            vec![target],
+            Some(repo.path()),
+        );
+        let priority = ranked[0].check_priority.as_ref().unwrap();
+        assert_eq!(priority.score, 0);
+        assert!(priority.factors.is_empty());
+        assert!(priority
+            .limitations
+            .iter()
+            .any(|limitation| limitation.contains("unavailable")));
+        assert!(!priority_source_path(".secrets/hidden.mjs"));
+        assert!(!priority_source_path("fixtures/writer.mjs"));
+        assert!(!priority_source_path("src/.env.ts"));
     }
 
     #[test]
