@@ -80,7 +80,9 @@ full base/head, source mode, and source input. Replaced receipts fail closed.
 Labels never rewrite the canonical receipt, change approval, or train a model.
 `verification_get_receipt` exposes a bounded caller-reported summary, record
 count, and receipt digest as a separate read-only MCP sibling; use CLI `list`
-for full records. Unavailable feedback leaves the receipt readable.
+for full records. Unavailable feedback leaves the receipt readable. The sibling
+is omitted when it would exceed the response budget of an otherwise readable
+receipt; absent feedback does not mean there are no recorded outcomes.
 
 Optional wording uses an explicitly selected local OpenAI-compatible endpoint:
 
@@ -94,9 +96,12 @@ are eligible. The request contains opaque IDs and original title, description,
 and suggestion text. Paths, anchors, severity, and other receipt metadata are
 not added to the payload. Literal HTTP loopback, the exact `/v1` path, no proxy,
 no redirects, bounded bytes, and a 15-second total deadline constrain one
-request without retries. Invalid model output or network failure preserves
-original wording. `wording_verified` is always false. Provider-reported tokens
-and actual duration are separate from unknown cost; no savings are claimed.
+request without retries. Invalid canonical identities, oversized individual
+findings, or excessive finding counts fail with an input error. An oversized
+aggregate request, invalid model output, or network failure preserves original
+wording without changing canonical evidence. `wording_verified` is always false.
+Provider-reported tokens and actual duration are separate from unknown cost;
+no savings are claimed.
 These optional CLI operations add no native controls or MCP execution authority.
 
 ## Agent usage ownership

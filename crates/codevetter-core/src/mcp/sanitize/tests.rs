@@ -67,6 +67,37 @@ fn enforces_excerpt_and_total_response_byte_limits() {
 }
 
 #[test]
+fn verification_learning_optional_feedback_preserves_receipt_at_response_limit() {
+    let mut response = json!({"data":{"operation":"verification_get_receipt","data":{
+        "schema_version":"codevetter.verification-receipt-projection/v1",
+        "authority":"read_only_projection", "receipt":{"opaque":""}
+    }}});
+    let overhead = serde_json::to_vec(&response).unwrap().len();
+    response["data"]["data"]["receipt"]["opaque"] =
+        json!("r".repeat(MAX_RESPONSE_BYTES - overhead - 1));
+    let original = sanitize_response(response.clone()).expect("receipt fits without feedback");
+    assert_eq!(
+        serde_json::to_vec(&original).unwrap().len(),
+        MAX_RESPONSE_BYTES - 1
+    );
+    response["data"]["data"]["outcomes"] =
+        json!({"record_count":1,"summary":{"caller_reported":true,"observation_count":1}});
+    let preserved =
+        sanitize_response(response.clone()).expect("optional feedback cannot displace receipt");
+    assert_eq!(preserved, original);
+
+    response["data"]["operation"] = json!("other_tool");
+    assert!(sanitize_response(response.clone()).is_err());
+    response["data"]["operation"] = json!("verification_get_receipt");
+    response["data"]["data"]["schema_version"] = json!("other-schema");
+    assert!(sanitize_response(response.clone()).is_err());
+    response["data"]["data"]["schema_version"] =
+        json!("codevetter.verification-receipt-projection/v1");
+    response["data"]["data"]["receipt"]["opaque"] = json!("r".repeat(MAX_RESPONSE_BYTES));
+    assert!(sanitize_response(response).is_err());
+}
+
+#[test]
 fn redacts_absolute_paths_embedded_in_text() {
     let value = sanitize_response(json!({
         "unix": "Build failed at /Users/alice/project/src/main.rs:12",
