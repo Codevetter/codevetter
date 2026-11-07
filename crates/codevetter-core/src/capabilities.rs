@@ -828,6 +828,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn verification_learning_capabilities_native_fixture_matches_registry() {
+        let native: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../apps/macos/CodeVetterPackage/Sources/CodeVetterFeature/Resources/capabilities.v1.json"
+        ))
+        .expect("native capability fixture");
+        assert!(
+            native == serde_json::to_value(capability_registry()).unwrap(),
+            "Native capability fixture is stale; run pnpm capabilities:sync"
+        );
+    }
+
+    #[test]
     fn canonical_registry_is_complete_and_duplicate_safe() {
         let registry = capability_registry();
         validate_registry(&registry).expect("valid registry");

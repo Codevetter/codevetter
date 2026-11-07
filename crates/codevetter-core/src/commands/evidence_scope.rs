@@ -717,16 +717,31 @@ fn score_targets_with_priority(
     let tokens = intent_tokens(original_input.unwrap_or_default());
     let priority_sources = priority_root.map(|root| {
         let mut remaining = MAX_CONTENT_BYTES;
-        scope_paths
-            .iter()
-            .filter(|path| priority_source_path(path))
-            .collect::<BTreeSet<_>>()
+        let mut related = BTreeMap::<String, (usize, usize)>::new();
+        for target in targets.iter().filter(|target| target.testing_supported) {
+            let (score, _) = target_score(kind, &tokens, scope_paths, target);
+            if kind != EvidenceScopeKind::Codebase && score == 0 {
+                continue;
+            }
+            for (relation, path) in priority_source_paths(scope_paths, target) {
+                let rank = (score, relation);
+                related
+                    .entry(path.clone())
+                    .and_modify(|current| *current = (*current).max(rank))
+                    .or_insert(rank);
+            }
+        }
+        let mut related = related.into_iter().collect::<Vec<_>>();
+        related.sort_by(|(left_path, left_rank), (right_path, right_rank)| {
+            right_rank
+                .cmp(left_rank)
+                .then_with(|| left_path.cmp(right_path))
+        });
+        related
             .into_iter()
-            .map(|path| {
-                (
-                    path.clone(),
-                    bounded_file_text(root, path, &mut remaining).to_ascii_lowercase(),
-                )
+            .map(|(path, _)| {
+                let content = bounded_file_text(root, &path, &mut remaining).to_ascii_lowercase();
+                (path, content)
             })
             .collect::<BTreeMap<_, _>>()
     });
@@ -746,6 +761,7 @@ fn score_targets_with_priority(
             };
             let check_priority = priority_sources
                 .as_ref()
+                .filter(|_| target.testing_supported)
                 .map(|sources| assess_check_priority(scope_paths, &target, sources));
             let reason = candidate_reason(kind, &source_paths, score);
             let id = format!(
@@ -790,6 +806,26 @@ fn score_targets_with_priority(
         .collect()
 }
 
+fn priority_source_paths<'a>(
+    scope_paths: &'a [String],
+    target: &DiscoveredTarget,
+) -> Vec<(usize, &'a String)> {
+    let lower_content = target.content.to_ascii_lowercase();
+    let mut paths = scope_paths
+        .iter()
+        .filter(|path| priority_source_path(path))
+        .map(|path| (path_relation(path, &target.target, &lower_content), path))
+        .filter(|(relation, _)| *relation >= 5)
+        .collect::<Vec<_>>();
+    paths.sort_by(|(left_relation, left_path), (right_relation, right_path)| {
+        right_relation
+            .cmp(left_relation)
+            .then_with(|| left_path.cmp(right_path))
+    });
+    paths.truncate(6);
+    paths
+}
+
 fn assess_check_priority(
     scope_paths: &[String],
     target: &DiscoveredTarget,
@@ -804,15 +840,8 @@ fn assess_check_priority(
                 .into(),
         ],
     };
-    let lower_content = target.content.to_ascii_lowercase();
-    let paths = scope_paths
-        .iter()
-        .filter(|path| {
-            priority_source_path(path) && path_relation(path, &target.target, &lower_content) >= 5
-        })
-        .take(6);
     let mut read_count = 0;
-    for path in paths {
+    for (_, path) in priority_source_paths(scope_paths, target) {
         let content = sources.get(path).map(String::as_str).unwrap_or_default();
         if content.is_empty() {
             priority.limitations.push(format!(
@@ -1275,6 +1304,74 @@ pub(super) mod tests {
         assert_eq!(ranked[0].target, "tests/99.test.mjs");
         assert_eq!(ranked[0].confidence_milli, 950);
         assert_eq!(ranked[1].check_priority.as_ref().unwrap().score, 3);
+    }
+
+    #[test]
+    fn verification_learning_priority_budget_ignores_unrelated_and_unsupported_sources() {
+        let repo = tempfile::tempdir().unwrap();
+        std::fs::create_dir(repo.path().join("src")).unwrap();
+        let mut scope = Vec::new();
+        for index in 0..18 {
+            let path = format!("src/a{index:02}.mjs");
+            std::fs::write(repo.path().join(&path), " ".repeat(MAX_FILE_BYTES as usize)).unwrap();
+            scope.push(path);
+        }
+        scope.push("src/zz-risky.mjs".into());
+        std::fs::write(
+            repo.path().join("src/zz-risky.mjs"),
+            "requireAuth(); writeFile('state','data');",
+        )
+        .unwrap();
+        let target = |testing_supported, content: String| DiscoveredTarget {
+            adapter: "node-test".into(),
+            target: if testing_supported {
+                "tests/zz-risky.test.mjs"
+            } else {
+                "tests/unsupported.test.mjs"
+            }
+            .into(),
+            name: None,
+            testing_supported,
+            performance_supported: true,
+            content,
+        };
+        let mut unsupported = (0..18)
+            .map(|index| DiscoveredTarget {
+                target: format!("tests/a{index:02}.test.mjs"),
+                content: format!("import '../src/a{index:02}.mjs';"),
+                ..target(false, String::new())
+            })
+            .collect::<Vec<_>>();
+        unsupported.push(target(true, "import '../src/zz-risky.mjs';".into()));
+        for targets in [
+            vec![target(true, "import '../src/zz-risky.mjs';".into())],
+            unsupported,
+        ] {
+            let ranked = score_targets_with_priority(
+                EvidenceScopeKind::Codebase,
+                None,
+                &scope,
+                targets,
+                Some(repo.path()),
+            );
+            assert!(ranked
+                .iter()
+                .filter(|candidate| !candidate.testing_supported)
+                .all(|candidate| candidate.check_priority.is_none()));
+            let risky = ranked
+                .iter()
+                .find(|candidate| candidate.testing_supported)
+                .unwrap();
+            let priority = risky.check_priority.as_ref().unwrap();
+            assert_eq!(
+                priority.score, 6,
+                "unrelated or unsupported evidence consumed the budget"
+            );
+            assert!(priority
+                .factors
+                .iter()
+                .all(|factor| factor.source_path == "src/zz-risky.mjs"));
+        }
     }
 
     #[cfg(unix)]

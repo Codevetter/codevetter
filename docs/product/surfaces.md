@@ -78,8 +78,9 @@ idempotent; conflicting retries fail. At most 1,000 events attach to one run.
 The append-only ledger binds the exact stored receipt digest, repository,
 full base/head, source mode, and source input. Replaced receipts fail closed.
 Labels never rewrite the canonical receipt, change approval, or train a model.
-`verification_get_receipt` exposes these caller-reported labels as a separate
-read-only MCP sibling; unavailable feedback leaves the receipt readable.
+`verification_get_receipt` exposes a bounded caller-reported summary, record
+count, and receipt digest as a separate read-only MCP sibling; use CLI `list`
+for full records. Unavailable feedback leaves the receipt readable.
 
 Optional wording uses an explicitly selected local OpenAI-compatible endpoint:
 

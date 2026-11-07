@@ -73,7 +73,12 @@ pub(super) fn dispatch_tool(
             let outcomes = match crate::commands::verification_outcomes::list_outcomes(
                 connection, repo_path, required_string(&arguments, "run_id")?,
             ) {
-                Ok(projection) => serde_json::to_value(projection).map_err(|error| error.to_string())?,
+                Ok(projection) => json!({
+                    "schema_version": projection.schema_version,
+                    "receipt_sha256": projection.source.receipt_sha256,
+                    "record_count": projection.records.len(),
+                    "summary": projection.summary,
+                }),
                 Err(reason) => json!({"status":"unavailable", "reason":reason, "caller_reported":true, "independent_correctness_evidence":false}),
             };
             Ok(json!({

@@ -22,7 +22,9 @@
             "codevetter check",
             "codevetter fix-packet",
             "codevetter fix",
-            "codevetter xray"
+            "codevetter xray",
+            "codevetter outcomes",
+            "codevetter explain"
           ]
         },
         "agent": {

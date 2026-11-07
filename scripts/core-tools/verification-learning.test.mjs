@@ -23,7 +23,12 @@ test('verification learning executes Rust source, ledger, wording, and CLI accep
         'codevetter',
         'verification_learning',
       ],
-      { cwd: root, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] }
+      {
+        cwd: root,
+        detached: process.platform !== 'win32',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, CARGO_INCREMENTAL: '0' },
+      }
     );
     let output = '';
     const stop = () => {

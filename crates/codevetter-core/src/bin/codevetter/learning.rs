@@ -63,15 +63,21 @@ pub(super) fn parse(
             "explain" => &["--repo", "--run-id", "--endpoint", "--model"][..],
             _ => return Err("Unknown verification learning command".into()),
         };
-        if !allowed.contains(&argument.as_str()) {
+        let (key, inline_value) = argument
+            .split_once('=')
+            .map_or((argument.as_str(), None), |(key, value)| (key, Some(value)));
+        if !allowed.contains(&key) {
             return Err(format!("Unknown {command} argument {argument}"));
         }
-        let value = arguments
-            .next()
-            .filter(|value| !value.starts_with("--"))
-            .ok_or_else(|| format!("{argument} requires a value"))?;
-        if values.insert(argument.clone(), value).is_some() {
-            return Err(format!("Duplicate {argument}"));
+        let value = match inline_value {
+            Some(value) => value.to_string(),
+            None => arguments
+                .next()
+                .filter(|value| !value.starts_with("--"))
+                .ok_or_else(|| format!("{key} requires a value"))?,
+        };
+        if values.insert(key.to_string(), value).is_some() {
+            return Err(format!("Duplicate {key}"));
         }
     }
     let repo = PathBuf::from(take_required(&mut values, "--repo")?);
@@ -182,6 +188,55 @@ mod tests {
 
     fn parse_args(command: &str, args: &[&str]) -> Result<LearningArguments, String> {
         parse(command, args.iter().map(|value| value.to_string()))
+    }
+
+    #[test]
+    fn verification_learning_cli_accepts_equals_text_and_preserves_validation() {
+        let valid = [
+            "--operation=record",
+            "--repo=/fixture/repo",
+            "--run-id=run-1",
+            "--event-id=event-1",
+            "--kind=confirmed_safe",
+            "--basis=--fixture passed",
+            "--reason=--force push reverted this",
+            "--evidence-ref=--fixture=result",
+            "--json",
+        ];
+        let parsed = parse_args("outcomes", &valid).expect("equals-form free text");
+        assert!(parsed.json);
+        let LearningCommand::Outcomes {
+            operation: OutcomeOperation::Record(observation),
+            ..
+        } = parsed.command
+        else {
+            panic!("expected recorded outcome");
+        };
+        assert_eq!(observation.reason, "--force push reverted this");
+        assert_eq!(observation.evidence_ref, "--fixture=result");
+        assert_eq!(
+            observation.event,
+            OutcomeEvent::ConfirmedSafe {
+                basis: "--fixture passed".into()
+            }
+        );
+        for invalid in [
+            "--reason=duplicate",
+            "--unknown=value",
+            "--json=true",
+            "--json=false",
+            "--json",
+        ] {
+            let mut args = valid.to_vec();
+            args.push(invalid);
+            assert!(parse_args("outcomes", &args).is_err(), "{invalid}");
+        }
+        let mut missing = valid.to_vec();
+        missing[6] = "--reason";
+        assert!(parse_args("outcomes", &missing).is_err());
+        let mut empty = valid.to_vec();
+        empty[6] = "--reason=";
+        assert!(parse_args("outcomes", &empty).is_err());
     }
 
     #[test]
