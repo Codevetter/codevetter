@@ -118,8 +118,9 @@ test('cancelled source configuration and lock mutation probes restore bytes and 
     const original = Buffer.from('original bytes');
     await writeFile(file, original);
     const controller = new AbortController();
-    const source = `const fs=require('node:fs');process.on('SIGTERM',()=>{});fs.writeFileSync(${JSON.stringify(file)},'changed');setTimeout(()=>{},4000);`;
-    const running = runObservedNative(process.execPath, ['-e', source], {
+    const source =
+      "const fs=require('node:fs');process.on('SIGTERM',()=>{});fs.writeFileSync(process.argv[1],'changed');setTimeout(()=>{},4000);";
+    const running = runObservedNative(process.execPath, ['-e', source, file], {
       signal: controller.signal,
       timeoutMs: 2000,
       env: { PATH: process.env.PATH },
