@@ -142,7 +142,7 @@
     "fast-xml-parser": "5.11.2",
     "husky": "^9.1.7",
     "jscpd": "5.0.14",
-    "knip": "^6.37.0",
+    "knip": "^6.43.0",
     "lint-staged": "^17.6.0",
     "navigator-typescript": "npm:typescript@7.0.2",
     "size-limit": "14.2.0"
