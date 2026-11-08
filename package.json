@@ -136,7 +136,7 @@
     "*.{js,mjs,cjs,ts,tsx,json,jsonc}": "biome check --no-errors-on-unmatched"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.4",
     "@friedemannsommer/lcov-parser": "8.0.0",
     "@size-limit/file": "14.2.0",
     "fast-xml-parser": "5.11.2",
