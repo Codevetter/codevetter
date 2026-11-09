@@ -58,6 +58,19 @@ pub struct LocalCheckTarget {
     pub source: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(tag = "authority", rename_all = "snake_case")]
+pub enum CorrectnessSelection {
+    Explicit {
+        target: LocalCheckTarget,
+    },
+    Discovered {
+        plan_id: String,
+        candidate: EvidenceScopeCandidate,
+        limitations: Vec<String>,
+    },
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalCheckStage {
     pub status: LocalCheckStatus,
@@ -77,6 +90,8 @@ pub struct LocalCheckStages {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalCheckReceipt {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correctness_selection: Option<CorrectnessSelection>,
     pub schema_version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_id: Option<String>,
@@ -96,6 +111,8 @@ pub struct LocalCheckReceipt {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalCheckPreflightReceipt {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub correctness_selection: Option<CorrectnessSelection>,
     pub schema_version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_id: Option<String>,
@@ -162,6 +179,7 @@ where
         source,
         spec_packet,
         test_plan,
+        correctness_selection,
         performance_plan,
         correctness_target,
         performance_target,
@@ -307,6 +325,7 @@ where
     });
     let receipt = LocalCheckReceipt {
         schema_version: "codevetter.local-check/v1".into(),
+        correctness_selection,
         request_id: None,
         run_id: format!("local-check-{}", uuid::Uuid::new_v4()),
         ran_at: chrono::Utc::now().to_rfc3339(),
@@ -411,6 +430,7 @@ pub async fn preflight_local_check(
         source,
         spec_packet,
         test_plan,
+        correctness_selection,
         performance_plan,
         correctness_target,
         performance_target,
@@ -503,6 +523,7 @@ pub async fn preflight_local_check(
 
     Ok(LocalCheckPreflightReceipt {
         schema_version: "codevetter.local-check-preflight/v1".into(),
+        correctness_selection,
         request_id: None,
         ran_at: chrono::Utc::now().to_rfc3339(),
         repo_path: repo_text,
@@ -523,6 +544,7 @@ struct PreparedLocalCheck {
     source: TrexSourceReceipt,
     spec_packet: Option<super::spec_coverage::SpecPacket>,
     test_plan: Result<EvidenceScopePlan, String>,
+    correctness_selection: Option<CorrectnessSelection>,
     performance_plan: Result<EvidenceScopePlan, String>,
     correctness_target: Option<LocalCheckTarget>,
     performance_target: Option<LocalCheckTarget>,
@@ -558,6 +580,11 @@ async fn prepare_local_check(input: &LocalCheckInput) -> Result<PreparedLocalChe
         .await
     };
     let correctness_target = select_target(input.test_target.clone(), test_plan.as_ref().ok());
+    let correctness_selection = correctness_selection(
+        input.test_target.as_ref(),
+        correctness_target.as_ref(),
+        test_plan.as_ref().ok(),
+    );
     let (performance_target, performance_selection_limitation) = select_performance_target(
         input.performance_target.clone(),
         performance_plan.as_ref().ok(),
@@ -573,10 +600,35 @@ async fn prepare_local_check(input: &LocalCheckInput) -> Result<PreparedLocalChe
         source,
         spec_packet,
         test_plan,
+        correctness_selection,
         performance_plan,
         correctness_target,
         performance_target,
         performance_selection_limitation,
+    })
+}
+
+fn correctness_selection(
+    explicit: Option<&LocalCheckTarget>,
+    selected: Option<&LocalCheckTarget>,
+    plan: Option<&EvidenceScopePlan>,
+) -> Option<CorrectnessSelection> {
+    let selected = selected?;
+    if explicit.is_some() {
+        return Some(CorrectnessSelection::Explicit {
+            target: selected.clone(),
+        });
+    }
+    let plan = plan?;
+    let candidate = plan.candidates.iter().find(|candidate| {
+        candidate.adapter == selected.adapter
+            && candidate.target == selected.target
+            && candidate.name == selected.name
+    })?;
+    Some(CorrectnessSelection::Discovered {
+        plan_id: plan.plan_id.clone(),
+        candidate: candidate.clone(),
+        limitations: plan.limitations.clone(),
     })
 }
 
@@ -1575,6 +1627,93 @@ fn elapsed_ms(started: Instant) -> u64 {
 mod tests {
     use super::*;
 
+    #[tokio::test]
+    async fn verification_learning_correctness_selection_survives_preflight_and_persistence() {
+        let repo = super::super::evidence_scope::tests::learning_repository();
+        std::fs::write(
+            repo.path().join("src/risky.mjs"),
+            "export function persist() { requireAuth(); writeFile('state','updated'); }",
+        )
+        .unwrap();
+        assert!(std::process::Command::new("git")
+            .args([
+                "-c",
+                "user.name=Fixture",
+                "-c",
+                "user.email=fixture@example.invalid",
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "-am",
+                "Changed persistence"
+            ])
+            .current_dir(repo.path())
+            .output()
+            .unwrap()
+            .status
+            .success());
+        let mut input = LocalCheckInput {
+            repo_path: repo.path().into(),
+            change: "HEAD~1..HEAD".into(),
+            task: "Preserve persistence".into(),
+            standards_pack: None,
+            standards_context: None,
+            spec_paths: vec![],
+            selected_requirement_ids: vec![],
+            review_agent: "codex".into(),
+            test_target: None,
+            performance_target: None,
+            skip_performance: true,
+            baseline_repo_path: None,
+            samples: 2,
+            warmups: 0,
+            timeout_ms: 100,
+        };
+        let prepared = prepare_local_check(&input).await.unwrap();
+        let selection = prepared.correctness_selection.unwrap();
+        let CorrectnessSelection::Discovered {
+            plan_id, candidate, ..
+        } = &selection
+        else {
+            panic!("discovered selection");
+        };
+        assert_eq!(candidate.target, "tests/zz-risky.test.mjs");
+        assert_eq!(candidate.check_priority.as_ref().unwrap().score, 6);
+        assert_eq!(plan_id, &prepared.test_plan.unwrap().plan_id);
+        let preflight = preflight_local_check(&input).await.unwrap();
+        assert_eq!(preflight.correctness_selection.as_ref(), Some(&selection));
+        let connection = rusqlite::Connection::open_in_memory().unwrap();
+        crate::db::verification_workbench_schema::run_migration(&connection).unwrap();
+        let fixture: Value = serde_json::from_str(include_str!(
+            "../../tests/fixtures/surface-parity/local-check-v1.json"
+        ))
+        .unwrap();
+        let mut receipt: LocalCheckReceipt =
+            serde_json::from_value(fixture["canonical_receipt"].clone()).unwrap();
+        assert!(
+            receipt.correctness_selection.is_none(),
+            "archived receipts remain readable"
+        );
+        receipt.correctness_selection = Some(selection);
+        persist_local_check_receipt(&connection, &receipt).unwrap();
+        let saved =
+            get_local_check_receipt(&connection, &receipt.repo_path, &receipt.run_id).unwrap();
+        assert_eq!(saved.correctness_selection, receipt.correctness_selection);
+        let explicit = LocalCheckTarget {
+            adapter: "node-test".into(),
+            target: "tests/a00.test.mjs".into(),
+            name: None,
+            source: "explicit".into(),
+        };
+        input.test_target = Some(explicit.clone());
+        let preflight = preflight_local_check(&input).await.unwrap();
+        assert_eq!(preflight.correctness_target, Some(explicit.clone()));
+        assert_eq!(
+            preflight.correctness_selection,
+            Some(CorrectnessSelection::Explicit { target: explicit })
+        );
+    }
+
     #[test]
     fn executable_preflight_requires_a_versioned_ready_receipt() {
         assert!(!runtime_prerequisites_ready(None));
@@ -1816,6 +1955,7 @@ mod tests {
             reason: "fixture".into(),
             source_paths: Vec::new(),
             confidence_milli: 900,
+            check_priority: None,
             testing_supported: true,
             performance_supported: true,
         };
@@ -1880,6 +2020,7 @@ mod tests {
         let receipt = |run_id: &str, repo_path: &str, ran_at: &str| LocalCheckReceipt {
             schema_version: "codevetter.local-check/v1".into(),
             request_id: None,
+            correctness_selection: None,
             run_id: run_id.into(),
             ran_at: ran_at.into(),
             repo_path: repo_path.into(),

@@ -166,7 +166,7 @@ struct TestClient;
 impl ClientHandler for TestClient {}
 
 #[tokio::test]
-async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
+async fn verification_learning_mcp_receipt_stays_bounded_scoped_and_live_revocable() {
     let fixture = tempfile::tempdir().expect("fixture");
     let surface_fixture = surface_parity_fixture();
     let local_check_fixture = local_check_parity_fixture();
@@ -527,6 +527,18 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
     );
     assert_eq!(receipt_projection["authority"], "read_only_projection");
     assert_eq!(
+        receipt_projection["outcomes"]["summary"]["observation_count"],
+        0
+    );
+    assert_eq!(
+        receipt_projection["outcomes"]["summary"]["caller_reported"],
+        true
+    );
+    assert_eq!(
+        receipt_projection["outcomes"]["summary"]["independent_correctness_evidence"],
+        false
+    );
+    assert_eq!(
         receipt_projection["receipt"]["schema_version"],
         local_expected["receipt_schema"]
     );
@@ -556,6 +568,148 @@ async fn protocol_lifecycle_is_scoped_structured_and_live_revocable() {
         .is_some_and(|limitations| limitations.contains(&local_expected["limitation"])));
     assert!(receipt_projection["receipt"].get("repo_path").is_none());
     assert!(parity_receipt.to_string().find(&repo_path).is_none());
+    crate::commands::verification_outcomes::record_outcome(
+        &connection,
+        &repo_path,
+        local_expected["run_id"].as_str().unwrap(),
+        crate::commands::verification_outcomes::OutcomeObservation {
+            event_id: "protocol-outcome".into(),
+            reason: "Fixture regression observed".into(),
+            evidence_ref: "fixture:protocol".into(),
+            group_id: None,
+            event: crate::commands::verification_outcomes::OutcomeEvent::Incident,
+        },
+    )
+    .unwrap();
+    for index in 0..120 {
+        crate::commands::verification_outcomes::record_outcome(
+            &connection,
+            &repo_path,
+            local_expected["run_id"].as_str().unwrap(),
+            crate::commands::verification_outcomes::OutcomeObservation {
+                event_id: format!("large-outcome-{index}"),
+                reason: "r".repeat(2048),
+                evidence_ref: "e".repeat(2048),
+                group_id: Some("one-adverse-event".into()),
+                event: crate::commands::verification_outcomes::OutcomeEvent::Revert,
+            },
+        )
+        .unwrap();
+    }
+    let full_outcomes = crate::commands::verification_outcomes::list_outcomes(
+        &connection,
+        &repo_path,
+        local_expected["run_id"].as_str().unwrap(),
+    )
+    .unwrap();
+    assert!(
+        serde_json::to_vec(&full_outcomes).unwrap().len() > crate::mcp::limits::MAX_RESPONSE_BYTES
+    );
+    let bounded_response = client
+        .call_tool(
+            CallToolRequestParams::new("verification_get_receipt").with_arguments(
+                json!({"run_id":local_expected["run_id"]})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            ),
+        )
+        .await
+        .expect("bounded receipt response");
+    assert_ne!(
+        bounded_response.is_error,
+        Some(true),
+        "{bounded_response:?}"
+    );
+    let bounded = bounded_response
+        .structured_content
+        .expect("bounded structured receipt");
+    let bounded_projection = &bounded["data"]["data"];
+    assert_eq!(bounded_projection["receipt"], receipt_projection["receipt"]);
+    let outcomes = &bounded_projection["outcomes"];
+    assert_eq!(
+        outcomes["summary"],
+        serde_json::to_value(&full_outcomes.summary).unwrap()
+    );
+    assert_eq!(outcomes["record_count"], 121);
+    assert_eq!(
+        outcomes["receipt_sha256"],
+        full_outcomes.source.receipt_sha256
+    );
+    assert!(outcomes.get("records").is_none());
+    assert_eq!(
+        crate::commands::verification_outcomes::list_outcomes(
+            &connection,
+            &repo_path,
+            local_expected["run_id"].as_str().unwrap(),
+        )
+        .unwrap()
+        .records
+        .len(),
+        121
+    );
+    let stored_after: String = connection
+        .query_row(
+            "SELECT receipt_json FROM local_check_runs WHERE run_id=?1",
+            params![local_expected["run_id"].as_str().unwrap()],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(&stored_after).unwrap(),
+        canonical_local_check
+    );
+    for table in [
+        "outcome_calibration_observations",
+        "outcome_calibration_summaries",
+    ] {
+        let count: i64 = connection
+            .query_row(&format!("SELECT count(*) FROM {table}"), [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+        assert_eq!(
+            count, 0,
+            "read-only MCP projection must not calibrate outcomes"
+        );
+    }
+    let mut replaced = canonical_local_check.clone();
+    replaced["task"] = json!("Updated stored receipt");
+    connection
+        .execute(
+            "UPDATE local_check_runs SET receipt_json=?1 WHERE run_id=?2",
+            params![
+                replaced.to_string(),
+                local_expected["run_id"].as_str().unwrap()
+            ],
+        )
+        .unwrap();
+    let stale_projection = client
+        .call_tool(
+            CallToolRequestParams::new("verification_get_receipt").with_arguments(
+                json!({"run_id":local_expected["run_id"]})
+                    .as_object()
+                    .unwrap()
+                    .clone(),
+            ),
+        )
+        .await
+        .unwrap()
+        .structured_content
+        .unwrap();
+    assert_eq!(
+        stale_projection["data"]["data"]["receipt"]["task"],
+        "Updated stored receipt"
+    );
+    assert_eq!(
+        stale_projection["data"]["data"]["outcomes"]["status"],
+        "unavailable"
+    );
+    assert_eq!(
+        stale_projection["data"]["data"]["authority"],
+        "read_only_projection"
+    );
+
     let first_page = client
         .call_tool(
             CallToolRequestParams::new("history_list_releases")

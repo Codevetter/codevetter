@@ -49,6 +49,61 @@ MCP remains read-only: it can inspect evidence and prepare bounded review
 context, but it cannot start a review, execute tests, approve a fix, alter
 settings, or publish anything.
 
+## Advisory ordering and optional feedback
+
+Testing scope plans carry `check_priority` ordinal points and source-backed
+factors. Relevance and exact target selection dominate this tie-breaker before
+the 12-target cap. Reads are bounded; missing source and downstream reach stay
+explicit. Dirty or mismatched-head checkouts disable content priority.
+Performance ordering is unchanged. Priority is scheduling advice, never a
+correctness verdict, defect probability, or approval. Preflight and saved checks
+preserve the selected plan and candidate in `correctness_selection`; an explicit
+target retains explicit selection authority.
+
+Attach caller-reported outcomes to an existing persisted local-check run:
+
+```bash
+codevetter outcomes --operation record --repo /absolute/repo --run-id <run-id> \
+  --event-id incident-42 --kind incident --group-id production-42 \
+  --reason "Regression reproduced" --evidence-ref "issue:42" --json
+codevetter outcomes --operation list --repo /absolute/repo --run-id <run-id> --json
+codevetter outcomes --operation summary --repo /absolute/repo --run-id <run-id> --json
+```
+
+`revert` can share the incident's `--group-id` so the adverse event counts once.
+`confirmed_safe` requires `--basis`; `human_override` requires
+`--action accept|reject|defer` and is counted separately. Every record requires a
+bounded reason, evidence reference, and unique event ID. Identical retries are
+idempotent; conflicting retries fail. At most 1,000 events attach to one run.
+The append-only ledger binds the exact stored receipt digest, repository,
+full base/head, source mode, and source input. Replaced receipts fail closed.
+Labels never rewrite the canonical receipt, change approval, or train a model.
+`verification_get_receipt` exposes a bounded caller-reported summary, record
+count, and receipt digest as a separate read-only MCP sibling; use CLI `list`
+for full records. Unavailable feedback leaves the receipt readable. The sibling
+is omitted when it would exceed the response budget of an otherwise readable
+receipt; absent feedback does not mean there are no recorded outcomes.
+
+Optional wording uses an explicitly selected local OpenAI-compatible endpoint:
+
+```bash
+codevetter explain --repo /absolute/repo --run-id <run-id> \
+  --endpoint http://127.0.0.1:1234/v1 --model local-model --json
+```
+
+Only completed, ready reviews and canonical source-qualified final findings
+are eligible. The request contains opaque IDs and original title, description,
+and suggestion text. Paths, anchors, severity, and other receipt metadata are
+not added to the payload. Literal HTTP loopback, the exact `/v1` path, no proxy,
+no redirects, bounded bytes, and a 15-second total deadline constrain one
+request without retries. Invalid canonical identities, oversized individual
+findings, or excessive finding counts fail with an input error. An oversized
+aggregate request, invalid model output, or network failure preserves original
+wording without changing canonical evidence. `wording_verified` is always false.
+Provider-reported tokens and actual duration are separate from unknown cost;
+no savings are claimed.
+These optional CLI operations add no native controls or MCP execution authority.
+
 ## Agent usage ownership
 
 The general agent-usage dashboard and provider allowance checks have moved to

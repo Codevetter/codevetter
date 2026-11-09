@@ -58,9 +58,26 @@ pub(crate) fn sanitize_invocation_response(mut value: Value) -> Result<Value, St
     check_response_size(value)
 }
 
-fn check_response_size(value: Value) -> Result<Value, String> {
-    let bytes =
+fn check_response_size(mut value: Value) -> Result<Value, String> {
+    let mut bytes =
         serde_json::to_vec(&value).map_err(|error| format!("Serialize MCP response: {error}"))?;
+    if bytes.len() > MAX_RESPONSE_BYTES
+        && value.pointer("/data/operation").and_then(Value::as_str)
+            == Some("verification_get_receipt")
+        && value
+            .pointer("/data/data/schema_version")
+            .and_then(Value::as_str)
+            == Some("codevetter.verification-receipt-projection/v1")
+    {
+        if let Some(projection) = value
+            .pointer_mut("/data/data")
+            .and_then(Value::as_object_mut)
+        {
+            projection.remove("outcomes");
+        }
+        bytes = serde_json::to_vec(&value)
+            .map_err(|error| format!("Serialize MCP response: {error}"))?;
+    }
     if bytes.len() > MAX_RESPONSE_BYTES {
         return Err(format!(
             "MCP response exceeds the {} byte limit; narrow the request",
