@@ -27,10 +27,11 @@ use crate::{
 };
 use rmcp::{
     model::{
-        Annotations, CallToolRequestParams, CallToolResult, ContentBlock, ErrorData,
-        Implementation, ListResourceTemplatesResult, ListResourcesResult, ListToolsResult,
-        PaginatedRequestParams, ProtocolVersion, ReadResourceRequestParams, ReadResourceResult,
-        Resource, ResourceContents, ResourceTemplate, ServerCapabilities, ServerInfo, Tool,
+        Annotations, CallToolRequestParams, CallToolResponse, CallToolResult, ContentBlock,
+        ErrorData, Implementation, ListResourceTemplatesResult, ListResourcesResult,
+        ListToolsResult, PaginatedRequestParams, ProtocolVersion, ReadResourceRequestParams,
+        ReadResourceResponse, ReadResourceResult, Resource, ResourceContents, ResourceTemplate,
+        ServerCapabilities, ServerConfig, Tool,
     },
     service::RequestContext,
     RoleServer, ServerHandler,
@@ -474,8 +475,8 @@ impl CodeVetterMcpServer {
 }
 
 impl ServerHandler for CodeVetterMcpServer {
-    fn get_info(&self) -> ServerInfo {
-        ServerInfo::new(
+    fn get_info(&self) -> ServerConfig {
+        ServerConfig::new(
             ServerCapabilities::builder()
                 .enable_tools()
                 .enable_resources()
@@ -507,14 +508,17 @@ impl ServerHandler for CodeVetterMcpServer {
         &self,
         request: CallToolRequestParams,
         _context: RequestContext<RoleServer>,
-    ) -> Result<CallToolResult, ErrorData> {
+    ) -> Result<CallToolResponse, ErrorData> {
         if !self.tools.iter().any(|tool| tool.name == request.name) {
             return Err(self.invalid_params("Unknown CodeVetter history tool".to_string()));
         }
         let arguments = request.arguments.unwrap_or_default();
         validate_tool_arguments(&request.name, &arguments)
             .map_err(|message| self.invalid_params(message))?;
-        Ok(self.execute_tool(request.name.to_string(), arguments).await)
+        Ok(self
+            .execute_tool(request.name.to_string(), arguments)
+            .await
+            .into())
     }
 
     async fn list_resources(
@@ -553,6 +557,7 @@ impl ServerHandler for CodeVetterMcpServer {
             meta: None,
             next_cursor,
             resources: page,
+            ..Default::default()
         })
     }
 
@@ -602,8 +607,8 @@ impl ServerHandler for CodeVetterMcpServer {
         &self,
         request: ReadResourceRequestParams,
         _context: RequestContext<RoleServer>,
-    ) -> Result<ReadResourceResult, ErrorData> {
-        self.read_scoped_resource(request.uri).await
+    ) -> Result<ReadResourceResponse, ErrorData> {
+        self.read_scoped_resource(request.uri).await.map(Into::into)
     }
 }
 

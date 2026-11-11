@@ -841,7 +841,7 @@ fn gates(d: &Value, s: &Value, z: &Value, min: u64, max: u64) -> Result<Value, S
 }
 
 fn zero_model_proof() -> Result<Value, String> {
-    let db = Connection::open_in_memory().map_err(|e| e.to_string())?;
+    let mut db = Connection::open_in_memory().map_err(|e| e.to_string())?;
     db.execute_batch("PRAGMA foreign_keys=ON;")
         .map_err(|e| e.to_string())?;
     archaeology_schema::run_migration(&db).map_err(|e| e.to_string())?;
@@ -871,8 +871,8 @@ fn zero_model_proof() -> Result<Value, String> {
         cancellation: &cancellation,
         now: NOW,
     };
-    let first = finalize_synthesis_catalog(&db, input())?;
-    let rerun = finalize_synthesis_catalog(&db, input())?;
+    let first = finalize_synthesis_catalog(&mut db, input())?;
+    let rerun = finalize_synthesis_catalog(&mut db, input())?;
     let counts: (i64, i64, i64, i64) = db
         .query_row(
             "SELECT

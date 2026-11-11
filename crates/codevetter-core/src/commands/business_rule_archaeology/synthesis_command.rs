@@ -192,12 +192,12 @@ async fn run_business_rule_synthesis_core(
     let plan = prepare_synthesis_plan(&input.request, &selection, &descriptor, limits)
         .map_err(|_| ERROR_INVALID_INPUT.to_string())?;
     let eligibility = {
-        let connection = lock_database(&connection)?;
+        let mut connection = lock_database(&connection)?;
         require_owned_job(&connection, &input)?;
         let eligibility = check_synthesis_eligibility(&connection, &input.request)
             .map_err(|_| ERROR_INVALID_INPUT.to_string())?;
         if matches!(eligibility, ArchaeologySynthesisEligibility::Eligible(_)) {
-            if let Some(result) = cached_synthesis_result(&connection, &input, &plan, limits)? {
+            if let Some(result) = cached_synthesis_result(&mut connection, &input, &plan, limits)? {
                 return Ok(result);
             }
         }
@@ -246,8 +246,8 @@ async fn run_business_rule_synthesis_core(
     };
     let start_ordinal = match reservation {
         ArchaeologyCacheReservation::Ready => {
-            let connection = lock_database(&connection)?;
-            return cached_synthesis_result(&connection, &input, &plan, limits)?
+            let mut connection = lock_database(&connection)?;
+            return cached_synthesis_result(&mut connection, &input, &plan, limits)?
                 .ok_or_else(|| ERROR_CACHE.to_string());
         }
         ArchaeologyCacheReservation::Excluded(code) => {
@@ -358,7 +358,7 @@ async fn run_business_rule_synthesis_core(
         Ok(mut run) => {
             run.response = canonicalize_synthesis_response(&input.request, &run.response, limits)
                 .map_err(|_| ERROR_INVALID_INPUT.to_string())?;
-            let connection = lock_database(&connection)?;
+            let mut connection = lock_database(&connection)?;
             finalize_synthesis_run(
                 &connection,
                 &input.job_id,
@@ -372,7 +372,7 @@ async fn run_business_rule_synthesis_core(
             )
             .map_err(|_| ERROR_PERSISTENCE.to_string())?;
             let catalog_status = finalize_model_catalog(
-                &connection,
+                &mut connection,
                 &input,
                 &plan.cache_key,
                 &run.response,
@@ -422,7 +422,7 @@ async fn run_business_rule_synthesis_core(
 }
 
 fn cached_synthesis_result(
-    connection: &Connection,
+    connection: &mut Connection,
     input: &ArchaeologySynthesisCommandInput,
     plan: &ArchaeologySynthesisPlan,
     limits: ArchaeologySynthesisLimits,
@@ -489,7 +489,7 @@ struct OwnedCatalogIdentity {
 }
 
 fn finalize_model_catalog(
-    connection: &Connection,
+    connection: &mut Connection,
     input: &ArchaeologySynthesisCommandInput,
     cache_key: &str,
     response: &ArchaeologySynthesisResponse,
@@ -733,12 +733,12 @@ pub async fn continue_business_rule_synthesis_without_model(
     db: State<'_, DbState>,
     input: ArchaeologyZeroModelContinuationInput,
 ) -> Result<ArchaeologyJobStatus, String> {
-    let connection = lock_database(&db.0)?;
-    continue_business_rule_synthesis_without_model_core(&connection, &input)
+    let mut connection = lock_database(&db.0)?;
+    continue_business_rule_synthesis_without_model_core(&mut connection, &input)
 }
 
 fn continue_business_rule_synthesis_without_model_core(
-    connection: &Connection,
+    connection: &mut Connection,
     input: &ArchaeologyZeroModelContinuationInput,
 ) -> Result<ArchaeologyJobStatus, String> {
     let identity = load_owned_catalog_identity(
@@ -1229,7 +1229,7 @@ mod tests {
 
     #[test]
     fn zero_model_command_materializes_manifest_and_is_retry_idempotent() {
-        let connection = seeded_database("source");
+        let mut connection = seeded_database("source");
         let input = ArchaeologyZeroModelContinuationInput {
             job_id: "job:one".into(),
             owner_id: "owner:one".into(),
@@ -1237,7 +1237,7 @@ mod tests {
             generation_id: "generation:one".into(),
         };
         let status =
-            continue_business_rule_synthesis_without_model_core(&connection, &input).unwrap();
+            continue_business_rule_synthesis_without_model_core(&mut connection, &input).unwrap();
         assert_eq!(status.stage, ArchaeologyJobStage::Validate);
         assert_eq!(
             connection
@@ -1249,7 +1249,7 @@ mod tests {
         assert_eq!(catalog_row_counts(&connection), (1, 1));
         let receipt = status.checkpoint_identity.clone();
         let retried =
-            continue_business_rule_synthesis_without_model_core(&connection, &input).unwrap();
+            continue_business_rule_synthesis_without_model_core(&mut connection, &input).unwrap();
         assert_eq!(retried.checkpoint_identity, receipt);
         assert_eq!(catalog_row_counts(&connection), (1, 1));
     }

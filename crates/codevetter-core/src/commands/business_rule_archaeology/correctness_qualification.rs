@@ -970,20 +970,20 @@ impl PipelineFixture {
         git(root.path(), &["add", "."])?;
         git(root.path(), &["commit", "-qm", "labeled prior"])?;
 
-        let connection = Connection::open_in_memory()
+        let mut connection = Connection::open_in_memory()
             .map_err(|error| format!("Open correctness database: {error}"))?;
         crate::db::archaeology_schema::run_migration(&connection)
             .map_err(|error| format!("Migrate archaeology database: {error}"))?;
         crate::db::history_graph_schema::run_migration(&connection)
             .map_err(|error| format!("Migrate history database: {error}"))?;
-        let before_generation = refresh(&connection, root.path())
+        let before_generation = refresh(&mut connection, root.path())
             .map_err(|error| format!("Publish prior correctness revision: {error}"))?;
 
         fs::copy(source_root.join("modern/payment.ts"), &current)
             .map_err(|error| format!("Install current labeled source: {error}"))?;
         git(root.path(), &["add", "modern/payment.ts"])?;
         git(root.path(), &["commit", "-qm", "labeled condition change"])?;
-        let after_generation = refresh(&connection, root.path())
+        let after_generation = refresh(&mut connection, root.path())
             .map_err(|error| format!("Publish current correctness revision: {error}"))?;
         let repository_id = connection
             .query_row(
@@ -1002,7 +1002,7 @@ impl PipelineFixture {
     }
 }
 
-fn refresh(connection: &Connection, root: &Path) -> Result<String, String> {
+fn refresh(connection: &mut Connection, root: &Path) -> Result<String, String> {
     let started = run_refresh(
         connection,
         ArchaeologyRefreshCommandInput {

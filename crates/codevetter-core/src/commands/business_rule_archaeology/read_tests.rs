@@ -898,7 +898,7 @@ fn selective_search_and_reverse_work_stay_bounded_with_irrelevant_catalog_noise(
     const MAX_REVERSE_CALLBACKS: usize = 30;
     const FANOUT_ROWS: usize = 512;
     const MAX_FANOUT_REVERSE_STEPS_PER_RULE: usize = 160;
-    let connection = fixture();
+    let mut connection = fixture();
     connection
         .execute_batch(&format!(
             "WITH RECURSIVE sequence(value) AS (
@@ -940,9 +940,9 @@ fn selective_search_and_reverse_work_stay_bounded_with_irrelevant_catalog_noise(
         ))
         .expect("seed irrelevant catalog noise");
 
-    let service = ArchaeologyReadService::new(&connection);
     let (search, search_callbacks) =
-        counted_sqlite_progress(&connection, PROGRESS_INTERVAL, || {
+        counted_sqlite_progress(&mut connection, PROGRESS_INTERVAL, |connection| {
+            let service = ArchaeologyReadService::new(connection);
             service.execute(ArchaeologyReadRequest::ListRules {
                 repository_id: REPO.into(),
                 filter: ArchaeologyRuleFilter {
@@ -967,7 +967,8 @@ fn selective_search_and_reverse_work_stay_bounded_with_irrelevant_catalog_noise(
     );
 
     let (broad_search, broad_search_callbacks) =
-        counted_sqlite_progress(&connection, PROGRESS_INTERVAL, || {
+        counted_sqlite_progress(&mut connection, PROGRESS_INTERVAL, |connection| {
+            let service = ArchaeologyReadService::new(connection);
             service.execute(ArchaeologyReadRequest::ListRules {
                 repository_id: REPO.into(),
                 filter: ArchaeologyRuleFilter {
@@ -994,7 +995,8 @@ fn selective_search_and_reverse_work_stay_bounded_with_irrelevant_catalog_noise(
     );
 
     let (reverse, reverse_callbacks) =
-        counted_sqlite_progress(&connection, PROGRESS_INTERVAL, || {
+        counted_sqlite_progress(&mut connection, PROGRESS_INTERVAL, |connection| {
+            let service = ArchaeologyReadService::new(connection);
             service.execute(ArchaeologyReadRequest::ReverseSource {
                 repository_id: REPO.into(),
                 source: ArchaeologySourceSelector::Path {
@@ -1041,7 +1043,8 @@ fn selective_search_and_reverse_work_stay_bounded_with_irrelevant_catalog_noise(
         ))
         .expect("seed reverse fanout");
     let (fanout, fanout_callbacks) =
-        counted_sqlite_progress(&connection, PROGRESS_INTERVAL, || {
+        counted_sqlite_progress(&mut connection, PROGRESS_INTERVAL, |connection| {
+            let service = ArchaeologyReadService::new(connection);
             service.execute(ArchaeologyReadRequest::ReverseSource {
                 repository_id: REPO.into(),
                 source: ArchaeologySourceSelector::Path {
@@ -1070,21 +1073,25 @@ fn selective_search_and_reverse_work_stay_bounded_with_irrelevant_catalog_noise(
 }
 
 fn counted_sqlite_progress<T>(
-    connection: &Connection,
+    connection: &mut Connection,
     interval: i32,
-    operation: impl FnOnce() -> T,
+    operation: impl FnOnce(&Connection) -> T,
 ) -> (T, usize) {
     let callbacks = Arc::new(AtomicUsize::new(0));
     let observed = Arc::clone(&callbacks);
-    connection.progress_handler(
-        interval,
-        Some(move || {
-            observed.fetch_add(1, Ordering::Relaxed);
-            false
-        }),
-    );
-    let result = operation();
-    connection.progress_handler(0, None::<fn() -> bool>);
+    connection
+        .progress_handler(
+            interval,
+            Some(move || {
+                observed.fetch_add(1, Ordering::Relaxed);
+                false
+            }),
+        )
+        .expect("install SQLite progress counter");
+    let result = operation(connection);
+    connection
+        .progress_handler(0, None::<fn() -> bool>)
+        .expect("clear SQLite progress counter");
     (result, callbacks.load(Ordering::Relaxed))
 }
 
