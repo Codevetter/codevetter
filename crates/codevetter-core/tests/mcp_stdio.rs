@@ -82,6 +82,131 @@ fn fresh_cli_history_index_enables_a_working_mcp_scope_without_the_app() {
 }
 
 #[test]
+fn stdio_requires_initialize_before_2026_inline_requests() {
+    assert_inline_requires_initialize("2026-07-28");
+}
+
+#[test]
+fn stdio_requires_initialize_before_2025_inline_requests() {
+    assert_inline_requires_initialize("2025-11-25");
+}
+
+fn assert_inline_requires_initialize(version: &str) {
+    let fixture = McpFixture::new();
+    let mut sidecar = McpProcess::spawn(&fixture.database, fixture.repo_id);
+    let response = sidecar.request(inline_request(1, "tools/list", version));
+    assert!(
+        response.get("result").is_none(),
+        "inline {version}: {response}"
+    );
+    let expected_code = if version == "2026-07-28" {
+        -32022
+    } else {
+        -32600
+    };
+    assert_eq!(
+        response["error"]["code"], expected_code,
+        "inline {version}: {response}"
+    );
+    if version == "2025-11-25" {
+        sidecar.notify(json!({"jsonrpc": "2.0", "method": "notifications/initialized"}));
+        let spoofed = sidecar.request(json!({
+            "jsonrpc": "2.0", "id": 2, "method": "initialize",
+            "params": {"protocolVersion": version, "capabilities": {},
+                "clientInfo": {"name": "inline-fixture", "version": "1"}}
+        }));
+        assert!(spoofed.get("result").is_none(), "{spoofed}");
+        let retry = sidecar.request(inline_request(3, "tools/list", version));
+        assert!(retry.get("result").is_none(), "{retry}");
+    }
+}
+
+#[test]
+fn stdio_discovery_does_not_open_a_lifecycle_or_expose_capabilities() {
+    let fixture = McpFixture::new();
+    let mut sidecar = McpProcess::spawn(&fixture.database, fixture.repo_id);
+    let ping = sidecar.request(json!({"jsonrpc": "2.0", "id": 1, "method": "ping"}));
+    assert_eq!(ping["result"], json!({}), "{ping}");
+    for (index, version) in ["2026-07-28", "2025-11-25"].into_iter().enumerate() {
+        let response = sidecar.request(inline_request(
+            index as i64 + 10,
+            "server/discover",
+            version,
+        ));
+        assert_eq!(response["error"]["code"], -32601, "{response}");
+        assert!(response.get("result").is_none(), "{response}");
+    }
+    let initialized = sidecar.request(json!({
+        "jsonrpc": "2.0", "id": 20, "method": "initialize",
+        "params": {"protocolVersion": "2025-11-25", "capabilities": {},
+            "clientInfo": {"name": "lifecycle-fixture", "version": "1"}}
+    }));
+    assert_eq!(initialized["result"]["protocolVersion"], "2025-11-25");
+    sidecar.notify(json!({"jsonrpc": "2.0", "method": "notifications/initialized"}));
+    let tools = sidecar.request(json!({"jsonrpc": "2.0", "id": 21, "method": "tools/list"}));
+    assert_eq!(tools["result"]["tools"].as_array().map(Vec::len), Some(29));
+    let discovery = sidecar.request(inline_request(23, "server/discover", "2025-11-25"));
+    assert_eq!(discovery["error"]["code"], -32601, "{discovery}");
+    assert!(discovery.get("result").is_none(), "{discovery}");
+    let unsupported = sidecar.request(inline_request(22, "tools/list", "2026-07-28"));
+    assert!(unsupported.get("result").is_none(), "{unsupported}");
+    assert_eq!(unsupported["error"]["code"], -32022, "{unsupported}");
+    sidecar.close();
+}
+
+#[test]
+fn stdio_initialize_negotiates_supported_and_fallback_versions() {
+    let fixture = McpFixture::new();
+    for (requested, expected) in [
+        ("2024-11-05", "2024-11-05"),
+        ("2025-06-18", "2025-06-18"),
+        ("2025-11-25", "2025-11-25"),
+        ("2026-07-28", "2025-11-25"),
+        ("2099-01-01", "2025-11-25"),
+    ] {
+        let mut sidecar = McpProcess::spawn(&fixture.database, fixture.repo_id);
+        let initialized = sidecar.request(json!({
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": requested, "capabilities": {},
+                "clientInfo": {"name": "negotiation-fixture", "version": "1"}}
+        }));
+        assert_eq!(
+            initialized["result"]["protocolVersion"], expected,
+            "{initialized}"
+        );
+        sidecar.notify(json!({"jsonrpc": "2.0", "method": "notifications/initialized"}));
+        let tools = sidecar.request(json!({"jsonrpc": "2.0", "id": 2, "method": "tools/list"}));
+        assert_eq!(tools["result"]["tools"].as_array().map(Vec::len), Some(29));
+        if requested == "2026-07-28" {
+            let renegotiated = sidecar.request(json!({
+                "jsonrpc": "2.0", "id": 3, "method": "initialize",
+                "params": {"protocolVersion": requested, "capabilities": {},
+                    "clientInfo": {"name": "negotiation-fixture", "version": "1"}}
+            }));
+            assert_eq!(renegotiated["result"]["protocolVersion"], expected);
+            let tools = sidecar.request(json!({"jsonrpc": "2.0", "id": 4, "method": "tools/list"}));
+            assert_eq!(tools["result"]["tools"].as_array().map(Vec::len), Some(29));
+            assert!(
+                tools["result"].get("resultType").is_none(),
+                "fallback retained a newer response shape: {tools}"
+            );
+        }
+        sidecar.close();
+    }
+}
+
+fn inline_request(id: i64, method: &str, version: &str) -> Value {
+    json!({
+        "jsonrpc": "2.0", "id": id, "method": method,
+        "params": {"_meta": {
+            "io.modelcontextprotocol/protocolVersion": version,
+            "io.modelcontextprotocol/clientInfo": {"name": "inline-fixture", "version": "1"},
+            "io.modelcontextprotocol/clientCapabilities": {}
+        }}
+    })
+}
+
+#[test]
 fn stdio_boundary_is_json_only_scoped_and_paginated() {
     let fixture = McpFixture::new();
     let connection = &fixture.connection;
