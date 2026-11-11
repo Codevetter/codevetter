@@ -280,10 +280,10 @@ fn archaeology_changed_unit_stage_diagnostic() {
         .and_then(|value| value.parse::<usize>().ok())
         .filter(|value| (1..=64).contains(value))
         .unwrap_or(1);
-    let fixture = Fixture::new(files);
+    let mut fixture = Fixture::new(files);
     let cold = run_refresh(&fixture.connection, fixture.refresh_input()).expect("cold refresh");
     continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: cold.job_id.expect("cold job"),
             max_steps: 64,
@@ -314,7 +314,7 @@ fn archaeology_changed_unit_stage_diagnostic() {
         };
         let started = Instant::now();
         let after = continue_refresh(
-            &fixture.connection,
+            &mut fixture.connection,
             ArchaeologyRefreshContinueInput {
                 job_id: job_id.clone(),
                 max_steps,
@@ -694,7 +694,7 @@ fn archaeology_concurrent_endurance_qualification() {
     configure_write_connection(&fixture.connection);
     let cold = run_refresh(&fixture.connection, fixture.refresh_input()).expect("cold refresh");
     continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: cold.job_id.expect("cold job"),
             max_steps: 64,
@@ -746,7 +746,7 @@ fn archaeology_concurrent_endurance_qualification() {
                     &counters,
                 );
                 continue_refresh_to_ready(
-                    &fixture.connection,
+                    &mut fixture.connection,
                     refresh.job_id.as_deref().expect("changed job"),
                 );
                 changed_publications += 1;
@@ -784,7 +784,7 @@ fn archaeology_concurrent_endurance_qualification() {
                     .expect("recovery refresh");
                 let job_id = refresh.job_id.expect("recovery job");
                 continue_refresh(
-                    &fixture.connection,
+                    &mut fixture.connection,
                     ArchaeologyRefreshContinueInput {
                         job_id: job_id.clone(),
                         max_steps: 1,
@@ -814,7 +814,7 @@ fn archaeology_concurrent_endurance_qualification() {
                     &chrono::Utc::now().to_rfc3339(),
                 )
                 .expect("recover stale owner");
-                continue_refresh_to_ready(&fixture.connection, &job_id);
+                continue_refresh_to_ready(&mut fixture.connection, &job_id);
                 recoveries += 1;
             }
             _ => {
@@ -845,7 +845,7 @@ fn archaeology_concurrent_endurance_qualification() {
                     &counters,
                 );
                 continue_refresh_to_ready(
-                    &fixture.connection,
+                    &mut fixture.connection,
                     refresh.job_id.as_deref().expect("global job"),
                 );
                 global_publications += 1;
@@ -1042,7 +1042,7 @@ fn run_external_qualification(config: &ExternalQualificationConfig) -> Result<Va
     let state = tempfile::tempdir()
         .map_err(|error| format!("Create external qualification state: {error}"))?;
     let db_path = state.path().join("external-qualification.sqlite");
-    let connection = Connection::open(&db_path)
+    let mut connection = Connection::open(&db_path)
         .map_err(|error| format!("Open external qualification database: {error}"))?;
     crate::db::archaeology_schema::run_migration(&connection)
         .map_err(|error| format!("Migrate external archaeology database: {error}"))?;
@@ -1058,7 +1058,7 @@ fn run_external_qualification(config: &ExternalQualificationConfig) -> Result<Va
         .map_err(|error| format!("Start external cold refresh: {error}"))?;
     let cold_generation = cold.repository_generation_id.clone();
     complete_external_refresh(
-        &connection,
+        &mut connection,
         cold.job_id
             .as_deref()
             .ok_or_else(|| "Cold qualification unexpectedly reused a generation".to_string())?,
@@ -1080,7 +1080,7 @@ fn run_external_qualification(config: &ExternalQualificationConfig) -> Result<Va
         && no_op.changed_path_count == 0;
 
     let clean_db_path = state.path().join("external-clean-rebuild.sqlite");
-    let clean_connection = Connection::open(&clean_db_path)
+    let mut clean_connection = Connection::open(&clean_db_path)
         .map_err(|error| format!("Open external clean-rebuild database: {error}"))?;
     crate::db::archaeology_schema::run_migration(&clean_connection)
         .map_err(|error| format!("Migrate external clean-rebuild database: {error}"))?;
@@ -1090,7 +1090,7 @@ fn run_external_qualification(config: &ExternalQualificationConfig) -> Result<Va
     let global = run_refresh(&clean_connection, refresh_input())
         .map_err(|error| format!("Start external clean rebuild: {error}"))?;
     complete_external_refresh(
-        &clean_connection,
+        &mut clean_connection,
         global
             .job_id
             .as_deref()
@@ -1292,7 +1292,7 @@ fn external_input_kind_name(kind: ArchaeologyGenerationInputKind) -> &'static st
     }
 }
 
-fn complete_external_refresh(connection: &Connection, job_id: &str) -> Result<(), String> {
+fn complete_external_refresh(connection: &mut Connection, job_id: &str) -> Result<(), String> {
     for _ in 0..1_024 {
         let lifecycle = continue_refresh(
             connection,
@@ -2012,11 +2012,11 @@ fn max_storage_attribution_comes_from_same_first_max_observation() {
 }
 
 fn run_cold_index_observation(files: usize) -> ColdIndexObservation {
-    let fixture = Fixture::new(files);
+    let mut fixture = Fixture::new(files);
     let started = Instant::now();
     let refresh = run_refresh(&fixture.connection, fixture.refresh_input()).expect("cold refresh");
     let lifecycle = continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: refresh.job_id.expect("cold job"),
             max_steps: 64,
@@ -2044,12 +2044,12 @@ fn archaeology_sqlite_storage_diagnostic() {
         .ok()
         .and_then(|value| value.parse::<usize>().ok())
         .unwrap_or(16);
-    let fixture = Fixture::new(files);
+    let mut fixture = Fixture::new(files);
     let cold_started = Instant::now();
     let refresh = run_refresh(&fixture.connection, fixture.refresh_input()).expect("cold refresh");
     let generation_id = refresh.repository_generation_id.clone();
     continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: refresh.job_id.expect("cold job"),
             max_steps: 64,
@@ -2088,6 +2088,7 @@ fn archaeology_sqlite_storage_diagnostic() {
     {
         eprintln!("DBSTAT_CLEAN\t{:?}", row.expect("dbstat row"));
     }
+    drop(objects);
     for table in [
         "archaeology_source_units",
         "archaeology_source_spans",
@@ -2130,7 +2131,7 @@ fn archaeology_sqlite_storage_diagnostic() {
     let changed = run_refresh(&fixture.connection, fixture.refresh_input())
         .expect("second-generation refresh");
     continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: changed.job_id.expect("second-generation job"),
             max_steps: 64,
@@ -2173,11 +2174,11 @@ fn archaeology_sqlite_storage_diagnostic() {
 }
 
 fn run_endurance_gate(files: usize) -> Value {
-    let fixture = Fixture::new(files);
+    let mut fixture = Fixture::new(files);
     let cold = run_refresh(&fixture.connection, fixture.refresh_input()).expect("cold refresh");
     let cold_job = cold.job_id.clone().expect("cold job");
     continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: cold_job,
             max_steps: 64,
@@ -2200,7 +2201,7 @@ fn run_endurance_gate(files: usize) -> Value {
         let started = Instant::now();
         let refresh = run_refresh(&fixture.connection, fixture.refresh_input()).expect("changed");
         continue_refresh(
-            &fixture.connection,
+            &mut fixture.connection,
             ArchaeologyRefreshContinueInput {
                 job_id: refresh.job_id.expect("changed job"),
                 max_steps: 64,
@@ -2222,7 +2223,7 @@ fn run_endurance_gate(files: usize) -> Value {
         run_refresh(&fixture.connection, fixture.refresh_input()).expect("resume refresh");
     let resume_job = resume_refresh.job_id.expect("resume job");
     continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: resume_job.clone(),
             max_steps: 1,
@@ -2231,7 +2232,7 @@ fn run_endurance_gate(files: usize) -> Value {
     .expect("first resumable step");
     let resume = timed_once(|| {
         continue_refresh(
-            &fixture.connection,
+            &mut fixture.connection,
             ArchaeologyRefreshContinueInput {
                 job_id: resume_job.clone(),
                 max_steps: 64,
@@ -2292,7 +2293,7 @@ fn run_endurance_gate(files: usize) -> Value {
     )
     .expect("recover stale owner");
     continue_refresh(
-        &fixture.connection,
+        &mut fixture.connection,
         ArchaeologyRefreshContinueInput {
             job_id: recovery_job,
             max_steps: 64,
@@ -2323,7 +2324,7 @@ fn run_endurance_gate(files: usize) -> Value {
             run_refresh(&fixture.connection, fixture.refresh_input()).expect("global refresh");
         assert_eq!(refresh.mode, "global_rebuild");
         continue_refresh(
-            &fixture.connection,
+            &mut fixture.connection,
             ArchaeologyRefreshContinueInput {
                 job_id: refresh.job_id.expect("global job"),
                 max_steps: 64,
@@ -2880,7 +2881,7 @@ fn run_review_iteration(
     }
 }
 
-fn continue_refresh_to_ready(connection: &Connection, job_id: &str) {
+fn continue_refresh_to_ready(connection: &mut Connection, job_id: &str) {
     for _ in 0..64 {
         let lifecycle = continue_refresh(
             connection,

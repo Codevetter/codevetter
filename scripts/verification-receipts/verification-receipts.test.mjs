@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { compareReceiptDocuments, ingestReceiptDocument } from './analyze.mjs';
 import { adaptVaultE2eReceipt } from './adapters.mjs';
 import {
@@ -16,7 +17,7 @@ import {
 import { runCli } from './cli.mjs';
 import { createMcpHandler } from './mcp.mjs';
 
-const ROOT = new URL('../..', import.meta.url).pathname.replace(/\/$/, '');
+const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
 test('ingestion is deterministic and keeps observed graph evidence separate', () => {
   const receipt = makeReceipt();

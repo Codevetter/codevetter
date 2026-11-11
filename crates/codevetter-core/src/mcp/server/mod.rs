@@ -27,18 +27,21 @@ use crate::{
 };
 use rmcp::{
     model::{
-        Annotations, CallToolRequestParams, CallToolResult, ContentBlock, ErrorData,
-        Implementation, ListResourceTemplatesResult, ListResourcesResult, ListToolsResult,
-        PaginatedRequestParams, ProtocolVersion, ReadResourceRequestParams, ReadResourceResult,
-        Resource, ResourceContents, ResourceTemplate, ServerCapabilities, ServerInfo, Tool,
+        Annotations, CallToolRequestParams, CallToolResponse, CallToolResult, ClientNotification,
+        ClientRequest, ContentBlock, DiscoverRequestMethod, ErrorData, Implementation,
+        InitializeRequestParams, ListResourceTemplatesResult, ListResourcesResult, ListToolsResult,
+        PaginatedRequestParams, ProtocolVersion, ReadResourceRequestParams, ReadResourceResponse,
+        ReadResourceResult, Resource, ResourceContents, ResourceTemplate, ServerCapabilities,
+        ServerConfig, ServerResult, Tool,
     },
-    service::RequestContext,
+    service::{NotificationContext, RequestContext},
     RoleServer, ServerHandler,
 };
 use rusqlite::{Connection, InterruptHandle, OpenFlags};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Map, Value};
 use std::{
+    borrow::Cow,
     path::PathBuf,
     sync::{Arc, Mutex, OnceLock},
     time::{Duration, Instant},
@@ -123,6 +126,11 @@ struct RepositoryFreshness {
 }
 
 impl CodeVetterMcpServer {
+    /// Retain the initialize-bound contract when the SDK offers inline sessions.
+    pub fn into_initialize_required_service(self) -> impl rmcp::Service<RoleServer> {
+        InitializeRequiredService(self)
+    }
+
     /// Ledger access is configured by the local server owner, never by tool arguments.
     pub fn with_invocation_ledger(
         mut self,
@@ -473,9 +481,67 @@ impl CodeVetterMcpServer {
     }
 }
 
+struct InitializeRequiredService(CodeVetterMcpServer);
+
+impl rmcp::Service<RoleServer> for InitializeRequiredService {
+    async fn handle_request(
+        &self,
+        request: ClientRequest,
+        context: RequestContext<RoleServer>,
+    ) -> Result<ServerResult, ErrorData> {
+        if matches!(&request, ClientRequest::DiscoverRequest(_)) {
+            return Err(ErrorData::method_not_found::<DiscoverRequestMethod>());
+        }
+        if context.peer.peer_info().is_none() {
+            return Err(ErrorData::invalid_request(
+                "MCP initialize is required",
+                None,
+            ));
+        }
+        rmcp::Service::handle_request(&self.0, request, context).await
+    }
+
+    async fn handle_notification(
+        &self,
+        notification: ClientNotification,
+        context: NotificationContext<RoleServer>,
+    ) -> Result<(), ErrorData> {
+        if context.peer.peer_info().is_none() {
+            return Err(ErrorData::invalid_request(
+                "MCP initialize is required",
+                None,
+            ));
+        }
+        rmcp::Service::handle_notification(&self.0, notification, context).await
+    }
+
+    fn get_info(&self) -> ServerConfig {
+        ServerHandler::get_info(&self.0)
+    }
+
+    fn supported_protocol_versions(&self) -> Cow<'static, [ProtocolVersion]> {
+        ServerHandler::supported_protocol_versions(&self.0)
+    }
+}
+
 impl ServerHandler for CodeVetterMcpServer {
-    fn get_info(&self) -> ServerInfo {
-        ServerInfo::new(
+    async fn initialize(
+        &self,
+        mut request: InitializeRequestParams,
+        context: RequestContext<RoleServer>,
+    ) -> Result<ServerConfig, ErrorData> {
+        let info = self.negotiate_initialize(&request)?;
+        request.protocol_version = info.protocol_version.clone();
+        context.peer.set_peer_info(request);
+        Ok(info)
+    }
+
+    fn supported_protocol_versions(&self) -> Cow<'static, [ProtocolVersion]> {
+        Cow::Borrowed(ProtocolVersion::known_up_to(&ProtocolVersion::V_2025_11_25))
+    }
+
+    fn get_info(&self) -> ServerConfig {
+        ServerConfig::new(
             ServerCapabilities::builder()
                 .enable_tools()
                 .enable_resources()
@@ -507,14 +573,17 @@ impl ServerHandler for CodeVetterMcpServer {
         &self,
         request: CallToolRequestParams,
         _context: RequestContext<RoleServer>,
-    ) -> Result<CallToolResult, ErrorData> {
+    ) -> Result<CallToolResponse, ErrorData> {
         if !self.tools.iter().any(|tool| tool.name == request.name) {
             return Err(self.invalid_params("Unknown CodeVetter history tool".to_string()));
         }
         let arguments = request.arguments.unwrap_or_default();
         validate_tool_arguments(&request.name, &arguments)
             .map_err(|message| self.invalid_params(message))?;
-        Ok(self.execute_tool(request.name.to_string(), arguments).await)
+        Ok(self
+            .execute_tool(request.name.to_string(), arguments)
+            .await
+            .into())
     }
 
     async fn list_resources(
@@ -553,6 +622,7 @@ impl ServerHandler for CodeVetterMcpServer {
             meta: None,
             next_cursor,
             resources: page,
+            ..Default::default()
         })
     }
 
@@ -602,8 +672,8 @@ impl ServerHandler for CodeVetterMcpServer {
         &self,
         request: ReadResourceRequestParams,
         _context: RequestContext<RoleServer>,
-    ) -> Result<ReadResourceResult, ErrorData> {
-        self.read_scoped_resource(request.uri).await
+    ) -> Result<ReadResourceResponse, ErrorData> {
+        self.read_scoped_resource(request.uri).await.map(Into::into)
     }
 }
 

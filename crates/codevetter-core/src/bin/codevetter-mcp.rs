@@ -22,6 +22,7 @@ async fn run() -> Result<(), String> {
         );
     }
     let service = server
+        .into_initialize_required_service()
         .serve(rmcp::transport::stdio())
         .await
         .map_err(|error| format!("Start stdio transport: {error}"))?;

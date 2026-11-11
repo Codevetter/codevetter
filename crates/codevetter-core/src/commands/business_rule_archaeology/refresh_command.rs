@@ -237,7 +237,7 @@ fn lifecycle_result(
 }
 
 fn continue_refresh(
-    connection: &rusqlite::Connection,
+    connection: &mut rusqlite::Connection,
     input: ArchaeologyRefreshContinueInput,
 ) -> Result<ArchaeologyRefreshLifecycleResult, String> {
     if input.max_steps == 0 || input.max_steps > 64 {
@@ -438,8 +438,8 @@ pub async fn continue_business_rule_archaeology_refresh(
 ) -> Result<ArchaeologyRefreshLifecycleResult, String> {
     let database = Arc::clone(&db.0);
     tokio::task::spawn_blocking(move || {
-        let connection = open_archaeology_worker_connection(&database)?;
-        continue_refresh(&connection, input)
+        let mut connection = open_archaeology_worker_connection(&database)?;
+        continue_refresh(&mut connection, input)
     })
     .await
     .map_err(|error| format!("Archaeology refresh continuation worker failed: {error}"))?
@@ -920,7 +920,7 @@ mod tests {
 
     #[test]
     fn production_entrypoint_reuses_noop_and_selects_changed_and_global_work() {
-        let connection = rusqlite::Connection::open_in_memory().expect("database");
+        let mut connection = rusqlite::Connection::open_in_memory().expect("database");
         run_migration(&connection).expect("schema");
         crate::db::history_graph_schema::run_migration(&connection).expect("history schema");
         let repository = tempdir().expect("repository");
@@ -945,7 +945,7 @@ mod tests {
         assert_eq!(initial.mode, "global_rebuild");
         let initial_job = initial.job_id.clone().expect("initial job");
         let initial_lifecycle = continue_refresh(
-            &connection,
+            &mut connection,
             ArchaeologyRefreshContinueInput {
                 job_id: initial_job,
                 max_steps: 64,
@@ -1002,7 +1002,7 @@ mod tests {
         assert_eq!(changed.next_stage, "parse");
         assert_eq!(changed.changed_path_count, 1);
         let changed_lifecycle = continue_refresh(
-            &connection,
+            &mut connection,
             ArchaeologyRefreshContinueInput {
                 job_id: changed.job_id.clone().expect("changed job"),
                 max_steps: 64,
@@ -1012,12 +1012,12 @@ mod tests {
         assert!(changed_lifecycle.ready);
         assert_eq!(changed_lifecycle.job.state, ArchaeologyJobState::Completed);
         let changed_ready = changed.repository_generation_id;
-        let clean = rusqlite::Connection::open_in_memory().expect("clean database");
+        let mut clean = rusqlite::Connection::open_in_memory().expect("clean database");
         run_migration(&clean).expect("clean schema");
         crate::db::history_graph_schema::run_migration(&clean).expect("clean history schema");
         let clean_refresh = run_refresh(&clean, command()).expect("clean changed-head refresh");
         continue_refresh(
-            &clean,
+            &mut clean,
             ArchaeologyRefreshContinueInput {
                 job_id: clean_refresh.job_id.clone().expect("clean job"),
                 max_steps: 64,
@@ -1049,7 +1049,7 @@ mod tests {
         assert!(!global.reused_ready_generation);
         assert_ne!(global.repository_generation_id, changed_ready);
         let global_lifecycle = continue_refresh(
-            &connection,
+            &mut connection,
             ArchaeologyRefreshContinueInput {
                 job_id: global.job_id.expect("global job"),
                 max_steps: 64,

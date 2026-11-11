@@ -265,10 +265,10 @@ struct PersistedRuleRelation<'a> {
     to_rule_id: &'a str,
     kind: &'static str,
 }
-struct ArchaeologySqliteProgress<'a>(&'a Connection);
+struct ArchaeologySqliteProgress<'a>(&'a mut Connection);
 impl Drop for ArchaeologySqliteProgress<'_> {
     fn drop(&mut self) {
-        self.0.progress_handler(0, None::<fn() -> bool>);
+        let _ = self.0.progress_handler(0, None::<fn() -> bool>);
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1139,7 +1139,7 @@ pub(crate) fn execute_incremental_parse_batch(
 }
 
 pub(crate) fn execute_incremental_parse_and_link_batch(
-    connection: &Connection,
+    connection: &mut Connection,
     input: ArchaeologyLinkStage<'_>,
     plan_identity: &str,
     max_items: usize,
@@ -1168,7 +1168,7 @@ pub(crate) fn execute_incremental_parse_and_link_batch(
 /// Resolve one persisted parser generation and publish its linker patch in the
 /// same owner-checked transaction as the Link -> Derive checkpoint.
 pub(crate) fn link_generation(
-    connection: &Connection,
+    connection: &mut Connection,
     input: ArchaeologyLinkStage<'_>,
 ) -> Result<ArchaeologyJobStatus, String> {
     validate_owned_generation(
@@ -1183,8 +1183,11 @@ pub(crate) fn link_generation(
         return Err("Archaeology linker cancelled".to_string());
     }
     let sqlite_cancellation = input.cancellation.clone();
-    connection.progress_handler(2_048, Some(move || sqlite_cancellation.is_cancelled()));
-    let _sqlite_progress = ArchaeologySqliteProgress(connection);
+    connection
+        .progress_handler(2_048, Some(move || sqlite_cancellation.is_cancelled()))
+        .map_err(|error| format!("Install archaeology SQLite cancellation: {error}"))?;
+    let sqlite_progress = ArchaeologySqliteProgress(connection);
+    let connection = &*sqlite_progress.0;
     let manifest = parse_parser_manifest(input.identity.parser)?;
     let receipt = digest_identity(
         format!(
@@ -1444,7 +1447,7 @@ pub(crate) fn link_generation(
 /// Derive -> Synthesize checkpoint. Evidence packets are deliberately not
 /// cached: persisted facts and edges remain the source of truth on retry.
 pub(crate) fn derive_template_candidates(
-    connection: &Connection,
+    connection: &mut Connection,
     input: ArchaeologyDeriveStage<'_>,
 ) -> Result<ArchaeologyJobStatus, String> {
     let profiling = std::env::var_os("CODEVETTER_ARCHAEOLOGY_PROFILE").is_some();
@@ -1475,8 +1478,11 @@ pub(crate) fn derive_template_candidates(
         "archaeology-derive-cluster:v1:",
     );
     let sqlite_cancellation = input.cancellation.clone();
-    connection.progress_handler(2_048, Some(move || sqlite_cancellation.is_cancelled()));
-    let _sqlite_progress = ArchaeologySqliteProgress(connection);
+    connection
+        .progress_handler(2_048, Some(move || sqlite_cancellation.is_cancelled()))
+        .map_err(|error| format!("Install archaeology SQLite cancellation: {error}"))?;
+    let sqlite_progress = ArchaeologySqliteProgress(connection);
+    let connection = &*sqlite_progress.0;
     let transaction = connection
         .unchecked_transaction()
         .map_err(|error| format!("Start archaeology derivation transaction: {error}"))?;
@@ -1851,14 +1857,14 @@ pub(crate) fn derive_template_candidates(
 /// Synthesize -> Validate checkpoint. This is the only supported way across
 /// that stage boundary.
 pub(crate) fn finalize_synthesis_catalog(
-    connection: &Connection,
+    connection: &mut Connection,
     input: ArchaeologySynthesisCatalogStage<'_>,
 ) -> Result<ArchaeologyJobStatus, String> {
     finalize_synthesis_catalog_impl(connection, input, None)
 }
 
 pub(crate) fn finalize_model_synthesis_catalog(
-    connection: &Connection,
+    connection: &mut Connection,
     input: ArchaeologySynthesisCatalogStage<'_>,
     model: ArchaeologyModelSynthesisCatalog<'_>,
 ) -> Result<ArchaeologyJobStatus, String> {
@@ -1872,7 +1878,7 @@ pub(crate) fn finalize_model_synthesis_catalog(
 }
 
 fn finalize_synthesis_catalog_impl(
-    connection: &Connection,
+    connection: &mut Connection,
     input: ArchaeologySynthesisCatalogStage<'_>,
     model: Option<ArchaeologyModelSynthesisCatalog<'_>>,
 ) -> Result<ArchaeologyJobStatus, String> {
@@ -1888,8 +1894,11 @@ fn finalize_synthesis_catalog_impl(
     )?;
     synthesis_catalog_cancelled(input.cancellation)?;
     let sqlite_cancellation = input.cancellation.clone();
-    connection.progress_handler(2_048, Some(move || sqlite_cancellation.is_cancelled()));
-    let _sqlite_progress = ArchaeologySqliteProgress(connection);
+    connection
+        .progress_handler(2_048, Some(move || sqlite_cancellation.is_cancelled()))
+        .map_err(|error| format!("Install archaeology SQLite cancellation: {error}"))?;
+    let sqlite_progress = ArchaeologySqliteProgress(connection);
+    let connection = &*sqlite_progress.0;
     let transaction = connection
         .unchecked_transaction()
         .map_err(|error| format!("Start archaeology synthesis catalog transaction: {error}"))?;
@@ -6062,10 +6071,10 @@ mod tests {
 
     #[test]
     fn valid_progress_pause_resume_and_completion_are_explicit() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:one", "generation:staging", OWNER);
         let status = checkpoint(
-            &connection,
+            &mut connection,
             "job:one",
             ArchaeologyJobStage::Inventory,
             ArchaeologyJobStage::Parse,
@@ -6108,7 +6117,7 @@ mod tests {
                 6,
             ),
         ] {
-            checkpoint(&connection, "job:one", current, next, completed);
+            checkpoint(&mut connection, "job:one", current, next, completed);
         }
         seed_publishable_generation(&connection, "generation:staging");
         assert_eq!(
@@ -6140,7 +6149,7 @@ mod tests {
 
     #[test]
     fn invalid_transitions_and_two_owner_contention_fail_closed() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:one", "generation:staging", OWNER);
         assert!(start_job(
             &connection,
@@ -6187,7 +6196,7 @@ mod tests {
         )
         .is_err());
         checkpoint(
-            &connection,
+            &mut connection,
             "job:one",
             ArchaeologyJobStage::Inventory,
             ArchaeologyJobStage::Parse,
@@ -6223,7 +6232,7 @@ mod tests {
 
     #[test]
     fn synthesis_catalog_materializes_zero_model_rules_with_exact_fts_parity() {
-        let connection = synthesis_catalog_fixture("zero-model");
+        let mut connection = synthesis_catalog_fixture("zero-model");
         assert!(checkpoint_job(
             &connection,
             "job:zero-model",
@@ -6240,7 +6249,7 @@ mod tests {
         .contains("atomically validate and materialize"));
         let cancellation = StructuralGraphCancellation::default();
         let status = finalize_synthesis_catalog(
-            &connection,
+            &mut connection,
             synthesis_catalog_input(
                 "job:zero-model",
                 "generation:zero-model",
@@ -6281,11 +6290,11 @@ mod tests {
 
     #[test]
     fn synthesis_catalog_accepts_mixed_deterministic_and_valid_model_rules() {
-        let connection = synthesis_catalog_fixture("mixed");
+        let mut connection = synthesis_catalog_fixture("mixed");
         seed_model_rule(&connection, "generation:mixed");
         let cancellation = StructuralGraphCancellation::default();
         finalize_synthesis_catalog(
-            &connection,
+            &mut connection,
             synthesis_catalog_input("job:mixed", "generation:mixed", OWNER, &cancellation),
         )
         .unwrap();
@@ -6320,7 +6329,7 @@ mod tests {
 
     #[test]
     fn synthesis_catalog_rejects_self_referential_alias_relations() {
-        let connection = synthesis_catalog_fixture("alias-incompatible");
+        let mut connection = synthesis_catalog_fixture("alias-incompatible");
         let generation = "generation:alias-incompatible";
         seed_model_rule(&connection, generation);
         connection
@@ -6342,7 +6351,7 @@ mod tests {
 
         let cancellation = StructuralGraphCancellation::default();
         let error = finalize_synthesis_catalog(
-            &connection,
+            &mut connection,
             synthesis_catalog_input("job:alias-incompatible", generation, OWNER, &cancellation),
         )
         .unwrap_err();
@@ -6365,7 +6374,7 @@ mod tests {
 
     #[test]
     fn synthesis_catalog_rejects_model_evidence_drift() {
-        let connection = synthesis_catalog_fixture("model-drift");
+        let mut connection = synthesis_catalog_fixture("model-drift");
         seed_model_rule(&connection, "generation:model-drift");
         connection
             .execute_batch(
@@ -6384,7 +6393,7 @@ mod tests {
             .unwrap();
         let cancellation = StructuralGraphCancellation::default();
         let error = finalize_synthesis_catalog(
-            &connection,
+            &mut connection,
             synthesis_catalog_input(
                 "job:model-drift",
                 "generation:model-drift",
@@ -6449,12 +6458,12 @@ mod tests {
             ),
         ];
         for (name, mutation) in mutations {
-            let connection = synthesis_catalog_fixture(name);
+            let mut connection = synthesis_catalog_fixture(name);
             let generation = format!("generation:{name}");
             connection.execute(mutation, [&generation]).unwrap();
             let cancellation = StructuralGraphCancellation::default();
             assert!(finalize_synthesis_catalog(
-                &connection,
+                &mut connection,
                 synthesis_catalog_input(&format!("job:{name}"), &generation, OWNER, &cancellation,),
             )
             .is_err());
@@ -6475,12 +6484,12 @@ mod tests {
 
     #[test]
     fn synthesis_catalog_rejects_stale_search_and_retries_idempotently() {
-        let connection = synthesis_catalog_fixture("retry");
+        let mut connection = synthesis_catalog_fixture("retry");
         let cancellation = StructuralGraphCancellation::default();
         let input =
             || synthesis_catalog_input("job:retry", "generation:retry", OWNER, &cancellation);
-        let first = finalize_synthesis_catalog(&connection, input()).unwrap();
-        let second = finalize_synthesis_catalog(&connection, input()).unwrap();
+        let first = finalize_synthesis_catalog(&mut connection, input()).unwrap();
+        let second = finalize_synthesis_catalog(&mut connection, input()).unwrap();
         assert_eq!(first.checkpoint_identity, second.checkpoint_identity);
         assert_eq!(second.stage, ArchaeologyJobStage::Validate);
         connection
@@ -6490,7 +6499,7 @@ mod tests {
                 [],
             )
             .unwrap();
-        assert!(finalize_synthesis_catalog(&connection, input())
+        assert!(finalize_synthesis_catalog(&mut connection, input())
             .unwrap_err()
             .contains("FTS linkage"));
     }
@@ -6501,14 +6510,14 @@ mod tests {
             ("wrong-owner", "owner:other", false),
             ("cancelled", OWNER, true),
         ] {
-            let connection = synthesis_catalog_fixture(name);
+            let mut connection = synthesis_catalog_fixture(name);
             let generation = format!("generation:{name}");
             let cancellation = StructuralGraphCancellation::default();
             if cancelled {
                 cancellation.cancel();
             }
             assert!(finalize_synthesis_catalog(
-                &connection,
+                &mut connection,
                 synthesis_catalog_input(&format!("job:{name}"), &generation, owner, &cancellation,),
             )
             .is_err());
@@ -6529,10 +6538,10 @@ mod tests {
 
     #[test]
     fn link_stage_persists_unique_relationships_and_retry_is_idempotent() {
-        let connection = link_fixture("job:link", "generation:link", false);
+        let mut connection = link_fixture("job:link", "generation:link", false);
         let cancellation = StructuralGraphCancellation::default();
         let linked = link_generation(
-            &connection,
+            &mut connection,
             link_input(
                 "job:link",
                 "generation:link",
@@ -6568,7 +6577,7 @@ mod tests {
         );
         assert_eq!(
             link_generation(
-                &connection,
+                &mut connection,
                 link_input(
                     "job:link",
                     "generation:link",
@@ -6593,10 +6602,10 @@ mod tests {
 
     #[test]
     fn link_stage_retains_ambiguous_reference_as_cited_unresolved_fact() {
-        let connection = link_fixture("job:ambiguous", "generation:ambiguous", true);
+        let mut connection = link_fixture("job:ambiguous", "generation:ambiguous", true);
         let cancellation = StructuralGraphCancellation::default();
         link_generation(
-            &connection,
+            &mut connection,
             link_input(
                 "job:ambiguous",
                 "generation:ambiguous",
@@ -6627,10 +6636,10 @@ mod tests {
 
     #[test]
     fn link_stage_scope_bounds_and_cancellation_roll_back() {
-        let connection = link_fixture("job:rollback", "generation:rollback", false);
+        let mut connection = link_fixture("job:rollback", "generation:rollback", false);
         let cancellation = StructuralGraphCancellation::default();
         assert!(link_generation(
-            &connection,
+            &mut connection,
             link_input(
                 "job:rollback",
                 "generation:rollback",
@@ -6645,7 +6654,7 @@ mod tests {
             ..Default::default()
         };
         assert!(link_generation(
-            &connection,
+            &mut connection,
             link_input(
                 "job:rollback",
                 "generation:rollback",
@@ -6672,7 +6681,7 @@ mod tests {
             ..Default::default()
         };
         assert!(link_generation(
-            &connection,
+            &mut connection,
             link_input(
                 "job:rollback",
                 "generation:rollback",
@@ -6685,7 +6694,7 @@ mod tests {
         let delayed = StructuralGraphCancellation::default();
         delayed.cancel_after_checks(3);
         assert!(link_generation(
-            &connection,
+            &mut connection,
             link_input(
                 "job:rollback",
                 "generation:rollback",
@@ -6699,7 +6708,7 @@ mod tests {
             load_job(&connection, "job:rollback").unwrap().stage,
             ArchaeologyJobStage::Link
         );
-        let wrong_stage = fixture();
+        let mut wrong_stage = fixture();
         start(
             &wrong_stage,
             "job:parse-only",
@@ -6707,14 +6716,14 @@ mod tests {
             OWNER,
         );
         checkpoint(
-            &wrong_stage,
+            &mut wrong_stage,
             "job:parse-only",
             ArchaeologyJobStage::Inventory,
             ArchaeologyJobStage::Parse,
             1,
         );
         assert!(link_generation(
-            &wrong_stage,
+            &mut wrong_stage,
             link_input(
                 "job:parse-only",
                 "generation:parse-only",
@@ -6725,7 +6734,7 @@ mod tests {
         )
         .is_err());
 
-        let progress = link_fixture("job:progress", "generation:progress", false);
+        let mut progress = link_fixture("job:progress", "generation:progress", false);
         progress.execute_batch("WITH RECURSIVE n(value) AS (VALUES(1) UNION ALL SELECT value+1 FROM n WHERE value<5000)
             INSERT INTO archaeology_source_spans
             (generation_id,span_id,source_unit_id,revision_sha,start_byte,end_byte,start_line,start_column,end_line,end_column)
@@ -6733,7 +6742,7 @@ mod tests {
         let sqlite_cancel = StructuralGraphCancellation::default();
         sqlite_cancel.cancel_after_checks(2);
         assert!(link_generation(
-            &progress,
+            &mut progress,
             link_input(
                 "job:progress",
                 "generation:progress",
@@ -6751,10 +6760,10 @@ mod tests {
 
     #[test]
     fn derive_stage_persists_exact_candidate_evidence_and_retry_is_idempotent() {
-        let connection = derive_fixture("job:derive", "generation:derive");
+        let mut connection = derive_fixture("job:derive", "generation:derive");
         let cancellation = StructuralGraphCancellation::default();
         let first = derive_template_candidates(
-            &connection,
+            &mut connection,
             derive_input(
                 "job:derive",
                 "generation:derive",
@@ -6860,7 +6869,7 @@ mod tests {
             ),
         );
         let retry = derive_template_candidates(
-            &connection,
+            &mut connection,
             derive_input(
                 "job:derive",
                 "generation:derive",
@@ -6895,11 +6904,11 @@ mod tests {
 
     #[test]
     fn independent_clean_derivations_publish_byte_identical_bounded_rows() {
-        let first = derive_fixture("job:derive", "generation:derive");
-        let second = derive_fixture("job:derive", "generation:derive");
+        let mut first = derive_fixture("job:derive", "generation:derive");
+        let mut second = derive_fixture("job:derive", "generation:derive");
         let cancellation = StructuralGraphCancellation::default();
         let limits = ArchaeologyDeterministicLimits::default();
-        for connection in [&first, &second] {
+        for connection in [&mut first, &mut second] {
             derive_template_candidates(
                 connection,
                 derive_input(
@@ -6939,11 +6948,11 @@ mod tests {
     #[test]
     fn no_op_incremental_refresh_returns_the_ready_generation_identity() {
         let cancellation = StructuralGraphCancellation::default();
-        let incremental = derive_fixture("job:prior", "generation:prior");
+        let mut incremental = derive_fixture("job:prior", "generation:prior");
         remove_derive_retry_sentinel(&incremental, "generation:prior");
         make_derive_sources_publishable(&incremental, "generation:prior");
         derive_template_candidates(
-            &incremental,
+            &mut incremental,
             derive_input(
                 "job:prior",
                 "generation:prior",
@@ -7023,10 +7032,10 @@ mod tests {
 
     #[test]
     fn derive_stage_is_owner_scoped_and_every_write_rolls_back() {
-        let connection = derive_fixture("job:derive", "generation:derive");
+        let mut connection = derive_fixture("job:derive", "generation:derive");
         let cancellation = StructuralGraphCancellation::default();
         assert!(derive_template_candidates(
-            &connection,
+            &mut connection,
             derive_input(
                 "job:derive",
                 "generation:derive",
@@ -7044,7 +7053,7 @@ mod tests {
             ArchaeologyDeterministicLimits::default(),
         );
         wrong_identity.identity.parser = "parser-manifest:v1:parser:other@1";
-        assert!(derive_template_candidates(&connection, wrong_identity).is_err());
+        assert!(derive_template_candidates(&mut connection, wrong_identity).is_err());
         connection
             .execute_batch(
                 "CREATE TEMP TRIGGER reject_deterministic_rule
@@ -7054,7 +7063,7 @@ mod tests {
             )
             .unwrap();
         assert!(derive_template_candidates(
-            &connection,
+            &mut connection,
             derive_input(
                 "job:derive",
                 "generation:derive",
@@ -7107,14 +7116,14 @@ mod tests {
 
     #[test]
     fn derive_stage_bounds_utf8_privacy_and_sql_cancellation_fail_closed() {
-        let bounded = derive_fixture("job:bounded", "generation:bounded");
+        let mut bounded = derive_fixture("job:bounded", "generation:bounded");
         let cancellation = StructuralGraphCancellation::default();
         let limits = ArchaeologyDeterministicLimits {
             max_facts: 1,
             ..Default::default()
         };
         assert!(derive_template_candidates(
-            &bounded,
+            &mut bounded,
             derive_input(
                 "job:bounded",
                 "generation:bounded",
@@ -7129,10 +7138,10 @@ mod tests {
             ArchaeologyJobStage::Derive
         );
 
-        let secret = derive_fixture("job:secret", "generation:secret");
+        let mut secret = derive_fixture("job:secret", "generation:secret");
         secret.execute("UPDATE archaeology_facts SET label='password=correct-horse-battery-staple' WHERE generation_id=?1 AND fact_id='fact:predicate'",["generation:secret"]).unwrap();
         assert!(derive_template_candidates(
-            &secret,
+            &mut secret,
             derive_input(
                 "job:secret",
                 "generation:secret",
@@ -7144,7 +7153,7 @@ mod tests {
         .unwrap_err()
         .contains("privacy"));
 
-        let tampered = derive_fixture("job:semantic-tamper", "generation:semantic-tamper");
+        let mut tampered = derive_fixture("job:semantic-tamper", "generation:semantic-tamper");
         tampered
             .execute(
                 "UPDATE archaeology_facts SET attributes_json='[]'
@@ -7153,7 +7162,7 @@ mod tests {
             )
             .unwrap();
         assert!(derive_template_candidates(
-            &tampered,
+            &mut tampered,
             derive_input(
                 "job:semantic-tamper",
                 "generation:semantic-tamper",
@@ -7168,10 +7177,10 @@ mod tests {
             ArchaeologyJobStage::Derive
         );
 
-        let invalid = derive_fixture("job:utf8", "generation:utf8");
+        let mut invalid = derive_fixture("job:utf8", "generation:utf8");
         invalid.execute("UPDATE archaeology_facts SET label=CAST(X'80' AS TEXT) WHERE generation_id=?1 AND fact_id='fact:predicate'",["generation:utf8"]).unwrap();
         assert!(derive_template_candidates(
-            &invalid,
+            &mut invalid,
             derive_input(
                 "job:utf8",
                 "generation:utf8",
@@ -7187,7 +7196,7 @@ mod tests {
             ArchaeologyJobStage::Derive
         );
 
-        let progress = derive_fixture("job:progress-derive", "generation:progress-derive");
+        let mut progress = derive_fixture("job:progress-derive", "generation:progress-derive");
         progress.execute_batch(
             "WITH RECURSIVE n(value) AS (VALUES(1) UNION ALL SELECT value+1 FROM n WHERE value<5000)
              INSERT INTO archaeology_source_spans
@@ -7205,7 +7214,7 @@ mod tests {
         let delayed = StructuralGraphCancellation::default();
         delayed.cancel_after_checks(2);
         assert!(derive_template_candidates(
-            &progress,
+            &mut progress,
             derive_input(
                 "job:progress-derive",
                 "generation:progress-derive",
@@ -7305,16 +7314,16 @@ mod tests {
             ArchaeologyJobStage::Cleanup,
         ];
         for (target_index, target) in stages.iter().enumerate() {
-            let connection = fixture();
+            let mut connection = fixture();
             let job = format!("job:cancel:{target_index}");
             let generation = format!("generation:cancel:{target_index}");
             start(&connection, &job, &generation, OWNER);
             if target_index >= stage_index(&ArchaeologyJobStage::Publish).unwrap() {
-                advance_to_publish(&connection, &job, &generation);
+                advance_to_publish(&mut connection, &job, &generation);
             } else {
                 for index in 0..target_index {
                     checkpoint(
-                        &connection,
+                        &mut connection,
                         &job,
                         stages[index].clone(),
                         stages[index + 1].clone(),
@@ -7500,9 +7509,9 @@ mod tests {
 
     #[test]
     fn publication_is_atomic_owner_checked_and_idempotent() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:publish", "generation:publish", OWNER);
-        advance_to_publish(&connection, "job:publish", "generation:publish");
+        advance_to_publish(&mut connection, "job:publish", "generation:publish");
 
         let mut wrong_identity = publication("job:publish", "generation:publish");
         wrong_identity.identity.config = "config:changed";
@@ -7570,14 +7579,14 @@ mod tests {
 
     #[test]
     fn compatible_publications_persist_a_partial_before_after_delta() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:first", "generation:first", OWNER);
-        advance_to_publish(&connection, "job:first", "generation:first");
+        advance_to_publish(&mut connection, "job:first", "generation:first");
         publish(&connection, "job:first", "generation:first");
         complete_job(&connection, "job:first", OWNER, T1).unwrap();
 
         start(&connection, "job:second", "generation:second", OWNER);
-        advance_to_publish(&connection, "job:second", "generation:second");
+        advance_to_publish(&mut connection, "job:second", "generation:second");
         publish(&connection, "job:second", "generation:second");
 
         assert_eq!(
@@ -7621,13 +7630,13 @@ mod tests {
             ("introduced", false, true, "introduced"),
             ("removed", true, false, "removed"),
         ] {
-            let connection = fixture();
+            let mut connection = fixture();
             let (a, b, c) = (revision('a'), revision('b'), revision('c'));
             seed_exact_job_history(&connection, &b, &a, 1, "v1.0.0");
             let first_job = format!("job:{name}:first");
             let first_generation = format!("generation:{name}:first");
             start(&connection, &first_job, &first_generation, OWNER);
-            advance_to_validate(&connection, &first_job);
+            advance_to_validate(&mut connection, &first_job);
             seed_publishable_generation(&connection, &first_generation);
             if baseline_extra {
                 seed_additional_publishable_rule(&connection, &first_generation, &b);
@@ -7644,7 +7653,7 @@ mod tests {
             let second_job = format!("job:{name}:second");
             let second_generation = format!("generation:{name}:second");
             start_at(&connection, &second_job, &second_generation, OWNER, &c);
-            advance_to_validate_at(&connection, &second_job, &c);
+            advance_to_validate_at(&mut connection, &second_job, &c);
             seed_publishable_generation_at(&connection, &second_generation, &c);
             if current_extra {
                 seed_additional_publishable_rule(&connection, &second_generation, &c);
@@ -7684,7 +7693,7 @@ mod tests {
 
     #[test]
     fn exact_history_does_not_rebase_stale_accepted_evidence() {
-        let connection = fixture();
+        let mut connection = fixture();
         let (a, b, c) = (revision('a'), revision('b'), revision('c'));
         seed_exact_job_history(&connection, &b, &a, 1, "v1.0.0");
         start(
@@ -7694,7 +7703,7 @@ mod tests {
             OWNER,
         );
         advance_to_publish(
-            &connection,
+            &mut connection,
             "job:accepted:first",
             "generation:accepted:first",
         );
@@ -7766,7 +7775,7 @@ mod tests {
             OWNER,
             &c,
         );
-        advance_to_validate_at(&connection, "job:accepted:second", &c);
+        advance_to_validate_at(&mut connection, "job:accepted:second", &c);
         seed_publishable_generation_at(&connection, "generation:accepted:second", &c);
         validate_generation_for_publication(
             &connection,
@@ -7804,10 +7813,10 @@ mod tests {
 
     #[test]
     fn publication_rolls_back_every_write_when_pointer_swap_fails() {
-        let connection = fixture();
+        let mut connection = fixture();
         seed_exact_job_history(&connection, REVISION, &revision('a'), 1, "v1.0.0");
         start(&connection, "job:publish", "generation:publish", OWNER);
-        advance_to_publish(&connection, "job:publish", "generation:publish");
+        advance_to_publish(&mut connection, "job:publish", "generation:publish");
         connection
             .execute_batch(
                 "CREATE TEMP TRIGGER reject_archaeology_pointer
@@ -7856,14 +7865,14 @@ mod tests {
 
     #[test]
     fn publication_requires_a_dedicated_receipt_and_proven_empty_inventory() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(
             &connection,
             "job:empty-rejected",
             "generation:empty-rejected",
             OWNER,
         );
-        advance_to_validate(&connection, "job:empty-rejected");
+        advance_to_validate(&mut connection, "job:empty-rejected");
         assert!(checkpoint_job(
             &connection,
             "job:empty-rejected",
@@ -7885,12 +7894,12 @@ mod tests {
         .unwrap_err()
         .contains("completed inventory with total zero"));
 
-        let connection = fixture();
+        let mut connection = fixture();
         set_repository_current(&connection, "generation:empty-proven");
         let mut empty_job = new_job("job:empty-proven", "generation:empty-proven", OWNER);
         empty_job.total_units = Some(0);
         start_job(&connection, empty_job).unwrap();
-        advance_empty_to_validate(&connection, "job:empty-proven");
+        advance_empty_to_validate(&mut connection, "job:empty-proven");
         connection
             .execute(
                 "UPDATE archaeology_generations SET coverage_json = ?2
@@ -7919,9 +7928,9 @@ mod tests {
 
     #[test]
     fn validation_rejects_tampered_receipts_uncited_clauses_and_search_drift() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:tampered", "generation:tampered", OWNER);
-        advance_to_publish(&connection, "job:tampered", "generation:tampered");
+        advance_to_publish(&mut connection, "job:tampered", "generation:tampered");
         connection
             .execute(
                 "UPDATE archaeology_jobs SET checkpoint_json = checkpoint_json || ' '
@@ -7936,14 +7945,18 @@ mod tests {
         .unwrap_err()
         .contains("receipt identity"));
 
-        let connection = fixture();
+        let mut connection = fixture();
         start(
             &connection,
             "job:post-validate",
             "generation:post-validate",
             OWNER,
         );
-        advance_to_publish(&connection, "job:post-validate", "generation:post-validate");
+        advance_to_publish(
+            &mut connection,
+            "job:post-validate",
+            "generation:post-validate",
+        );
         connection
             .execute(
                 "UPDATE archaeology_facts SET label = 'same-count mutation'
@@ -8149,11 +8162,11 @@ mod tests {
             ),
         ];
         for (name, mutation, expected) in cases {
-            let connection = fixture();
+            let mut connection = fixture();
             let job = format!("job:{name}");
             let generation = format!("generation:{name}");
             start(&connection, &job, &generation, OWNER);
-            advance_to_validate(&connection, &job);
+            advance_to_validate(&mut connection, &job);
             seed_publishable_generation(&connection, &generation);
             connection.execute(mutation, [&generation]).unwrap();
             let error =
@@ -8165,14 +8178,14 @@ mod tests {
 
     #[test]
     fn hashed_zero_span_partial_unit_reconciles_as_indexed_inventory() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(
             &connection,
             "job:hashed-zero-span",
             "generation:hashed-zero-span",
             OWNER,
         );
-        advance_to_validate(&connection, "job:hashed-zero-span");
+        advance_to_validate(&mut connection, "job:hashed-zero-span");
         seed_publishable_generation(&connection, "generation:hashed-zero-span");
         connection
             .execute_batch(
@@ -8247,12 +8260,12 @@ mod tests {
                 "recovery span does not belong",
             ),
         ] {
-            let connection = fixture();
+            let mut connection = fixture();
             let job = format!("job:{name}");
             let generation = format!("generation:{name}");
             let cross_unit = opaque_test_id("archaeology-source-unit", &format!("{name}:cross"));
             start(&connection, &job, &generation, OWNER);
-            advance_to_validate(&connection, &job);
+            advance_to_validate(&mut connection, &job);
             seed_publishable_generation(&connection, &generation);
             connection
                 .execute(
@@ -8294,10 +8307,10 @@ mod tests {
 
     #[test]
     fn metadata_link_validation_is_set_based_at_the_4096_entry_bound() {
-        let connection = fixture();
+        let mut connection = fixture();
         let (job, generation) = ("job:metadata-scale", "generation:metadata-scale");
         start(&connection, job, generation, OWNER);
-        advance_to_validate(&connection, job);
+        advance_to_validate(&mut connection, job);
         seed_publishable_generation(&connection, generation);
         for index in 0..4 {
             let unit = opaque_test_id("archaeology-source-unit", &format!("metadata:{index}"));
@@ -8406,9 +8419,9 @@ mod tests {
 
     #[test]
     fn stale_repository_blocks_publish_and_terminal_retry_is_read_only() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:stale", "generation:stale", OWNER);
-        advance_to_publish(&connection, "job:stale", "generation:stale");
+        advance_to_publish(&mut connection, "job:stale", "generation:stale");
         connection
             .execute(
                 "UPDATE archaeology_repositories
@@ -8444,9 +8457,9 @@ mod tests {
 
     #[test]
     fn protected_only_catalog_publishes_with_explicit_bounded_gap_coverage() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:protected", "generation:protected", OWNER);
-        advance_to_validate(&connection, "job:protected");
+        advance_to_validate(&mut connection, "job:protected");
         connection
             .execute(
                 "UPDATE archaeology_generations SET coverage_json = ?2
@@ -8578,9 +8591,9 @@ mod tests {
 
     #[test]
     fn validation_bounds_coverage_and_search_payloads_before_hashing_or_aggregation() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:bounds", "generation:bounds", OWNER);
-        advance_to_validate(&connection, "job:bounds");
+        advance_to_validate(&mut connection, "job:bounds");
         seed_publishable_generation(&connection, "generation:bounds");
         connection
             .execute(
@@ -8707,9 +8720,9 @@ mod tests {
 
     #[test]
     fn cleanup_dry_run_and_apply_are_scoped_retryable_and_preserve_reviews() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:publish", "generation:publish", OWNER);
-        advance_to_publish(&connection, "job:publish", "generation:publish");
+        advance_to_publish(&mut connection, "job:publish", "generation:publish");
         publish(&connection, "job:publish", "generation:publish");
         seed_superseded(&connection, "generation:old", "2020-01-01T00:00:00Z");
         connection
@@ -8841,9 +8854,9 @@ mod tests {
 
     #[test]
     fn cleanup_is_bounded_and_never_removes_the_ready_generation() {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, "job:publish", "generation:publish", OWNER);
-        advance_to_publish(&connection, "job:publish", "generation:publish");
+        advance_to_publish(&mut connection, "job:publish", "generation:publish");
         publish(&connection, "job:publish", "generation:publish");
         for index in 0..=MAX_CLEANUP_GENERATIONS {
             seed_superseded(
@@ -8903,17 +8916,17 @@ mod tests {
     }
 
     fn link_fixture(job: &str, generation: &str, ambiguous: bool) -> Connection {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, job, generation, OWNER);
         checkpoint(
-            &connection,
+            &mut connection,
             job,
             ArchaeologyJobStage::Inventory,
             ArchaeologyJobStage::Parse,
             1,
         );
         checkpoint(
-            &connection,
+            &mut connection,
             job,
             ArchaeologyJobStage::Parse,
             ArchaeologyJobStage::Link,
@@ -9027,7 +9040,7 @@ mod tests {
     }
 
     fn derive_fixture(job: &str, generation: &str) -> Connection {
-        let connection = fixture();
+        let mut connection = fixture();
         start(&connection, job, generation, OWNER);
         for (current, next, completed) in [
             (
@@ -9038,7 +9051,7 @@ mod tests {
             (ArchaeologyJobStage::Parse, ArchaeologyJobStage::Link, 2),
             (ArchaeologyJobStage::Link, ArchaeologyJobStage::Derive, 3),
         ] {
-            checkpoint(&connection, job, current, next, completed);
+            checkpoint(&mut connection, job, current, next, completed);
         }
         connection
             .execute(
@@ -9679,7 +9692,7 @@ mod tests {
     }
 
     fn checkpoint(
-        connection: &Connection,
+        connection: &mut Connection,
         job: &str,
         current: ArchaeologyJobStage,
         next: ArchaeologyJobStage,
@@ -9689,7 +9702,7 @@ mod tests {
     }
 
     fn checkpoint_at(
-        connection: &Connection,
+        connection: &mut Connection,
         job: &str,
         current: ArchaeologyJobStage,
         next: ArchaeologyJobStage,
@@ -9724,17 +9737,17 @@ mod tests {
         .unwrap()
     }
 
-    fn advance_to_publish(connection: &Connection, job: &str, generation: &str) {
+    fn advance_to_publish(connection: &mut Connection, job: &str, generation: &str) {
         advance_to_validate(connection, job);
         seed_publishable_generation(connection, generation);
         validate_generation_for_publication(connection, publication(job, generation)).unwrap();
     }
 
-    fn advance_to_validate(connection: &Connection, job: &str) {
+    fn advance_to_validate(connection: &mut Connection, job: &str) {
         advance_to_validate_at(connection, job, REVISION);
     }
 
-    fn advance_to_validate_at(connection: &Connection, job: &str, revision_sha: &str) {
+    fn advance_to_validate_at(connection: &mut Connection, job: &str, revision_sha: &str) {
         let stages = [
             ArchaeologyJobStage::Inventory,
             ArchaeologyJobStage::Parse,
@@ -9755,7 +9768,7 @@ mod tests {
         }
     }
 
-    fn advance_empty_to_validate(connection: &Connection, job: &str) {
+    fn advance_empty_to_validate(connection: &mut Connection, job: &str) {
         let stages = [
             ArchaeologyJobStage::Inventory,
             ArchaeologyJobStage::Parse,

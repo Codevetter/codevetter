@@ -319,6 +319,7 @@ async fn verification_learning_mcp_receipt_stays_bounded_scoped_and_live_revocab
     let (server_transport, client_transport) = tokio::io::duplex(64 * 1024);
     let server_task = tokio::spawn(async move {
         server
+            .into_initialize_required_service()
             .serve(server_transport)
             .await
             .expect("serve")
