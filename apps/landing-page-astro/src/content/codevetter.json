@@ -1,7 +1,7 @@
 {
   "template": "workbench",
   "page": {
-    "title": "CodeVetter — Execution-backed agent verification",
+    "title": "CodeVetter — Verify AI-generated code with executable evidence",
     "description": "Verify whether a coding agent completed its task. CodeVetter binds the exact change to executable checks, evidence, limitations, and a measurable verdict.",
     "theme": "ink",
     "icon": "/favicon.svg",
@@ -39,7 +39,7 @@
     },
     {
       "label": "Evidence",
-      "href": "#evidence"
+      "href": "/benchmark"
     },
     {
       "label": "Availability",
@@ -67,7 +67,7 @@
     "lede": "CodeVetter binds the requested task to the exact change, runs your repository's own checks, and keeps a pass, fail, or unverified verdict with the evidence and limits behind it.",
     "primary": {
       "label": "Run a verification",
-      "href": "#how"
+      "href": "/verify-ai-generated-code"
     },
     "secondary": {
       "label": "Get the macOS build",
