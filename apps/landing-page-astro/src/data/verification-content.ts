@@ -1,3 +1,5 @@
+import { recipesForPage } from './verification-recipes';
+
 export interface EditorialContent {
   title: string;
   seoTitle?: string;
@@ -8,6 +10,27 @@ export interface EditorialContent {
   internalLinks: string[];
   markdown: string;
   html: string;
+}
+
+const closingSections: Record<string, string> = {
+  '/coding-agent-verification': 'Use the loop on your next change',
+  '/verify-ai-generated-code': 'Decide what is ready to ship',
+  '/ai-code-validation': 'What to inspect next',
+  '/verification-evidence-bundle': 'Reproduce the check, then keep the right evidence',
+};
+
+function insertBeforeClosing(content: EditorialContent, extra: { markdown: string; html: string }) {
+  const heading = closingSections[content.path];
+  const markdownMarker = heading ? `## ${heading}` : '**CTA:**';
+  const htmlMarker = heading ? `<h2>${heading}</h2>` : '<p><strong>CTA:</strong>';
+  if (!content.markdown.includes(markdownMarker) || !content.html.includes(htmlMarker)) {
+    throw new Error(`Missing closing section for ${content.path}`);
+  }
+  content.markdown = content.markdown.replace(
+    markdownMarker,
+    () => `${extra.markdown}\n\n${markdownMarker}`
+  );
+  content.html = content.html.replace(htmlMarker, () => `${extra.html}${htmlMarker}`);
 }
 
 export const verificationContent: Record<string, EditorialContent> = {
@@ -233,10 +256,11 @@ verificationContent['/verify-ai-generated-code'].html = verificationContent[
 
 for (const path of ['/verify-ai-generated-code', '/ai-code-review-vs-verification']) {
   const content = verificationContent[path];
-  content.markdown +=
-    '\n\n## A public-repository case\n\n[Inspect a React hydration visibility regression](/articles/react-hydration-hidden-root-regression): one CodeVetter review finding, two failing visibility cases before repair, and four passing checks afterward. The article links pinned public source, a redacted evidence summary and a focused replay. This is one observed case, not a catch-rate benchmark.\n';
-  content.html +=
-    '<h2>A public-repository case</h2><p><a href="/articles/react-hydration-hidden-root-regression" data-log="verification_recipe_opened">Inspect a React hydration visibility regression</a>: one CodeVetter review finding, two failing visibility cases before repair, and four passing checks afterward. The article links pinned public source, a redacted evidence summary and a focused replay. This is one observed case, not a catch-rate benchmark.</p>';
+  insertBeforeClosing(content, {
+    markdown:
+      '\n\n## A public-repository case\n\n[Inspect a React hydration visibility regression](/articles/react-hydration-hidden-root-regression): one CodeVetter review finding, two failing visibility cases before repair, and four passing checks afterward. The article links pinned public source, a redacted evidence summary and a focused replay. This is one observed case, not a catch-rate benchmark.\n',
+    html: '<h2>A public-repository case</h2><p><a href="/articles/react-hydration-hidden-root-regression" data-log="verification_recipe_opened">Inspect a React hydration visibility regression</a>: one CodeVetter review finding, two failing visibility cases before repair, and four passing checks afterward. The article links pinned public source, a redacted evidence summary and a focused replay. This is one observed case, not a catch-rate benchmark.</p>',
+  });
 }
 
 const formerAvailabilityClaim = 'Solo desktop tier is $0 with a bring-your-own model key';
@@ -244,6 +268,10 @@ const currentAvailability =
   'Apple-silicon macOS build through GitHub Releases; no CodeVetter subscription is currently declared, and model-provider costs are separate';
 
 for (const content of Object.values(verificationContent)) {
+  const recipes = recipesForPage(content.path);
+  if (recipes.markdown) insertBeforeClosing(content, recipes);
+  content.markdown = recipes.navigationMarkdown + content.markdown;
+  content.html = recipes.navigationHtml + content.html;
   content.markdown = content.markdown
     .replace(
       'Entry price, checked August 2026',
