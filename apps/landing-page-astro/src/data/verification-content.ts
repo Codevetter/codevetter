@@ -1,3 +1,5 @@
+import { recipesForPage } from './verification-recipes';
+
 export interface EditorialContent {
   title: string;
   seoTitle?: string;
@@ -244,6 +246,9 @@ const currentAvailability =
   'Apple-silicon macOS build through GitHub Releases; no CodeVetter subscription is currently declared, and model-provider costs are separate';
 
 for (const content of Object.values(verificationContent)) {
+  const recipes = recipesForPage(content.path);
+  content.markdown = recipes.navigationMarkdown + content.markdown + recipes.markdown;
+  content.html = recipes.navigationHtml + content.html + recipes.html;
   content.markdown = content.markdown
     .replace(
       'Entry price, checked August 2026',

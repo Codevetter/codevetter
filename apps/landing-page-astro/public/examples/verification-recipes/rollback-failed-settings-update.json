@@ -1,0 +1,46 @@
+{
+  "schema_version": "codevetter.agent-task-qualification.v2",
+  "task_id": "rollback-failed-settings-update",
+  "manifest_sha256": "665f61aaddf7a6646fb54f1094a33f3cc67649e856c6489627d952c697e6513b",
+  "fixture_sha256": "4cf14de8ccd1e5a6756fe330c3237973a389721a2350a8d2f9480a42191b9930",
+  "acceptance_contract_sha256": "851c19794ab6ad427b86bd6015a116d5c4578a7aeaa2a29b7d85fa7fbc0308d3",
+  "known_good_sha256": "c2e8b766ce28566d2cfe81d86c33f38eb36781683f06bc4cbf9a03fbc2c56b4d",
+  "workspace_policy": "public_fixture_and_task_packet_v1",
+  "qualified": true,
+  "baseline": {
+    "status": "intended_failure",
+    "attempts": [
+      {
+        "attempt": 1,
+        "outcome": "intended_failure",
+        "result_sha256": "48656633c0988fd198f03dfb64d8fdd6e203cf1cd42e82a4fb0b2c07a56f4f7e"
+      },
+      {
+        "attempt": 2,
+        "outcome": "intended_failure",
+        "result_sha256": "48656633c0988fd198f03dfb64d8fdd6e203cf1cd42e82a4fb0b2c07a56f4f7e"
+      }
+    ]
+  },
+  "known_good": {
+    "status": "pass",
+    "attempts": [
+      {
+        "attempt": 1,
+        "outcome": "pass",
+        "result_sha256": "1258f003a8457df9483f4369c09c7c2400eedfc322a2e97a96adfebcccdf6e3c"
+      },
+      {
+        "attempt": 2,
+        "outcome": "pass",
+        "result_sha256": "1258f003a8457df9483f4369c09c7c2400eedfc322a2e97a96adfebcccdf6e3c"
+      }
+    ]
+  },
+  "cleanup": {
+    "status": "complete"
+  },
+  "limitations": [
+    "Qualification executes trusted corpus check code without an operating-system sandbox."
+  ]
+}
