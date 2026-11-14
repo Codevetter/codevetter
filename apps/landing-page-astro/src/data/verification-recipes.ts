@@ -1,7 +1,7 @@
 // These examples exercise public synthetic fixtures, not product or agent success rates.
-export const recipeSource = '28ee304927cd431966588136d099cf7659b03087';
+const recipeSource = '28ee304927cd431966588136d099cf7659b03087';
 
-export const verificationRecipes = [
+const verificationRecipes = [
   {
     task: 'enforce-tenant-resource-access',
     page: '/ai-code-validation',
