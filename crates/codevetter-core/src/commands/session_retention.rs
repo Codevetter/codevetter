@@ -170,14 +170,21 @@ pub fn compact_session_archive_with_connection(
     vacuum: bool,
 ) -> Result<Value, String> {
     let conn = connection;
-    checkpoint_session_archive(conn)?;
+    let mut checkpointed = checkpoint_session_archive(conn)?;
     if vacuum {
+        if !checkpointed {
+            return Err(
+                "the WAL checkpoint is busy. Finish other database work before retrying.".into(),
+            );
+        }
         conn.pragma_update(None, "auto_vacuum", crate::db::INCREMENTAL_VACUUM_MODE)
             .map_err(|error| error.to_string())?;
         conn.execute_batch("VACUUM;")
             .map_err(|error| error.to_string())?;
-        checkpoint_session_archive(conn)
-            .map_err(|error| format!("Database compacted, but {error}"))?;
+        checkpointed = checkpoint_session_archive(conn).unwrap_or_else(|error| {
+            log::warn!("Database compacted, but the follow-up WAL checkpoint failed: {error}");
+            false
+        });
     }
     let created_at = Utc::now().to_rfc3339();
     let event_id = format!("retention-event:{}", Uuid::new_v4());
@@ -198,7 +205,7 @@ pub fn compact_session_archive_with_connection(
             params![
                 event_id,
                 run_id,
-                json!({ "vacuum": vacuum }).to_string(),
+                json!({ "vacuum": vacuum, "checkpointed": checkpointed }).to_string(),
                 created_at
             ],
         )
@@ -206,22 +213,17 @@ pub fn compact_session_archive_with_connection(
     }
 
     Ok(json!({
-        "checkpointed": true,
+        "checkpointed": checkpointed,
         "vacuumed": vacuum,
         "createdAt": created_at,
     }))
 }
 
-fn checkpoint_session_archive(conn: &Connection) -> Result<(), String> {
-    let busy: i64 = conn
-        .query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |row| row.get(0))
-        .map_err(|error| error.to_string())?;
-    if busy != 0 {
-        return Err(
-            "the WAL checkpoint is busy. Finish other database work before retrying.".into(),
-        );
-    }
-    Ok(())
+fn checkpoint_session_archive(conn: &Connection) -> Result<bool, String> {
+    conn.query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |row| {
+        Ok(row.get::<_, i64>(0)? == 0)
+    })
+    .map_err(|error| error.to_string())
 }
 
 pub fn run_session_retention_operation(
@@ -707,6 +709,10 @@ mod tests {
             .expect("hold read snapshot");
         conn.execute_batch("INSERT INTO records VALUES('second'); PRAGMA busy_timeout=0;")
             .expect("write new frame");
+        let receipt = compact_session_archive_with_connection(&conn, false)
+            .expect("routine checkpoint can be deferred by a reader");
+        assert_eq!(receipt["checkpointed"], false);
+        assert_eq!(receipt["vacuumed"], false);
         let error =
             compact_session_archive_with_connection(&conn, true).expect_err("busy checkpoint");
         assert!(error.contains("WAL checkpoint is busy"), "{error}");

@@ -316,7 +316,30 @@ pub fn persist_snapshot(
         .map_err(storage_error("commit structural graph snapshot"))
 }
 
-pub fn prune_present_state_snapshots(
+const PRESENT_STATE_SNAPSHOT_RETENTION: usize = 5;
+const PRESENT_STATE_PRUNE_BATCH: u32 = 4;
+
+pub(crate) fn persist_snapshot_with_maintenance(
+    connection: &Connection,
+    snapshot: &StructuralGraphSnapshot,
+) -> Result<(), StructuralGraphError> {
+    persist_snapshot(connection, snapshot)?;
+    let maintenance = prune_present_state_snapshots(
+        connection,
+        PRESENT_STATE_SNAPSHOT_RETENTION,
+        PRESENT_STATE_PRUNE_BATCH,
+    )
+    .and_then(|_| {
+        crate::db::reclaim_free_pages(connection)
+            .map_err(storage_error("reclaim structural graph database pages"))
+    });
+    if let Err(error) = maintenance {
+        log::warn!("Structural graph storage maintenance deferred: {error}");
+    }
+    Ok(())
+}
+
+fn prune_present_state_snapshots(
     connection: &Connection,
     keep_per_repo: usize,
     max_snapshots: u32,
