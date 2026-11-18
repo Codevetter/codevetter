@@ -1170,17 +1170,32 @@ struct PremiumSettingsView: View {
   }
 
   private func retentionOperationCard(_ receipt: SessionRetentionReceipt) -> some View {
-    HStack(spacing: 12) {
-      Image(systemName: "checkmark.seal.fill").foregroundStyle(EvidenceStyle.success)
+    let checkpointDeferred =
+      receipt.operation == .checkpoint && receipt.result?.value(at: "checkpointed")?.boolValue == false
+    let title: String
+    if receipt.operation == .apply {
+      title = "Reviewed plan applied"
+    } else if checkpointDeferred {
+      title = receipt.result?.value(at: "vacuumed")?.boolValue == true
+        ? "Archive compacted. Checkpoint deferred."
+        : "Archive checkpoint deferred"
+    } else {
+      title = "Archive checkpoint complete"
+    }
+    let color = checkpointDeferred ? EvidenceStyle.amber : EvidenceStyle.success
+
+    return HStack(spacing: 12) {
+      Image(systemName: checkpointDeferred ? "clock" : "checkmark.seal.fill")
+        .foregroundStyle(color)
       VStack(alignment: .leading, spacing: 4) {
-        Text(receipt.operation == .apply ? "Reviewed plan applied" : "Archive checkpoint complete")
+        Text(title)
           .font(.system(size: 12, weight: .semibold))
         Text(receipt.generatedAt)
           .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
       Spacer()
-      StatusPill(label: receipt.operation.rawValue.uppercased(), color: EvidenceStyle.success)
+      StatusPill(label: receipt.operation.rawValue.uppercased(), color: color)
     }
     .padding(18)
     .background(EvidenceStyle.surface, in: RoundedRectangle(cornerRadius: 14))

@@ -1228,10 +1228,20 @@ fn render_human_retention(receipt: &SessionRetentionReceipt) -> String {
             "Session retention applied\n{}\n",
             serde_json::to_string_pretty(result).unwrap_or_else(|_| result.to_string())
         ),
-        (SessionRetentionOperation::Checkpoint, _, Some(result)) => format!(
-            "Session archive checkpoint complete\n{}\n",
-            serde_json::to_string_pretty(result).unwrap_or_else(|_| result.to_string())
-        ),
+        (SessionRetentionOperation::Checkpoint, _, Some(result)) => {
+            let heading = match (
+                result["checkpointed"].as_bool(),
+                result["vacuumed"].as_bool(),
+            ) {
+                (Some(false), Some(true)) => "Session archive compacted. Checkpoint deferred.",
+                (Some(false), _) => "Session archive checkpoint deferred",
+                _ => "Session archive checkpoint complete",
+            };
+            format!(
+                "{heading}\n{}\n",
+                serde_json::to_string_pretty(result).unwrap_or_else(|_| result.to_string())
+            )
+        }
         _ => "Session retention returned an incomplete receipt\n".to_string(),
     }
 }

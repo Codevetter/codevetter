@@ -7,7 +7,10 @@ pub(crate) mod structural_graph_schema;
 pub(crate) mod verification_workbench_schema;
 
 use rusqlite::Connection;
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
+
+pub(crate) const INCREMENTAL_VACUUM_MODE: u32 = 2;
+const RECLAIM_PAGE_BATCH: u64 = 256;
 
 /// Open (or create) the SQLite database in the app data directory and run
 /// all migrations so that every table is guaranteed to exist.
@@ -15,6 +18,10 @@ pub fn init_db(app_data_dir: PathBuf) -> Result<Connection, rusqlite::Error> {
     std::fs::create_dir_all(&app_data_dir).ok();
     let db_path = app_data_dir.join("codevetter.db");
     let conn = Connection::open(db_path)?;
+    conn.busy_timeout(Duration::from_secs(30))?;
+    if conn.pragma_query_value(None, "page_count", |row| row.get::<_, u64>(0))? == 0 {
+        conn.pragma_update(None, "auto_vacuum", INCREMENTAL_VACUUM_MODE)?;
+    }
 
     // Performance pragmas ------------------------------------------------
     // mmap_size: up to 256 MB mapped I/O — big speedup for warm reads
@@ -32,7 +39,6 @@ pub fn init_db(app_data_dir: PathBuf) -> Result<Connection, rusqlite::Error> {
         "PRAGMA journal_mode      = WAL;
          PRAGMA synchronous       = NORMAL;
          PRAGMA foreign_keys      = ON;
-         PRAGMA busy_timeout      = 30000;
          PRAGMA mmap_size         = 268435456;
          PRAGMA temp_store        = MEMORY;
          PRAGMA cache_size        = -16384;
@@ -42,6 +48,23 @@ pub fn init_db(app_data_dir: PathBuf) -> Result<Connection, rusqlite::Error> {
     schema::run_migrations(&conn)?;
 
     Ok(conn)
+}
+
+/// Reclaim a bounded number of free pages on databases configured for incremental vacuum.
+pub(crate) fn reclaim_free_pages(conn: &Connection) -> Result<(), rusqlite::Error> {
+    if conn.pragma_query_value(None, "auto_vacuum", |row| row.get::<_, u32>(0))?
+        != INCREMENTAL_VACUUM_MODE
+        || conn.pragma_query_value(None, "freelist_count", |row| row.get::<_, u64>(0))?
+            < RECLAIM_PAGE_BATCH
+    {
+        return Ok(());
+    }
+
+    let mut statement =
+        conn.prepare(&format!("PRAGMA incremental_vacuum({RECLAIM_PAGE_BATCH})"))?;
+    let mut pages = statement.query([])?;
+    while pages.next()?.is_some() {}
+    Ok(())
 }
 
 /// True when SQLite could not acquire a write lock (background indexer contention).
@@ -71,5 +94,51 @@ where
             }
             Err(err) => return Err(err),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_database_reclaims_a_bounded_batch_of_free_pages() {
+        let dir = tempfile::tempdir().expect("temporary database directory");
+        let conn = init_db(dir.path().to_path_buf()).expect("database");
+        assert_eq!(
+            conn.pragma_query_value(None, "auto_vacuum", |row| row.get::<_, u32>(0))
+                .unwrap(),
+            INCREMENTAL_VACUUM_MODE
+        );
+        conn.execute_batch(
+            "CREATE TABLE rebuildable(payload BLOB);
+             WITH RECURSIVE sequence(i) AS (
+                 VALUES(1) UNION ALL SELECT i + 1 FROM sequence WHERE i < 700
+             )
+             INSERT INTO rebuildable SELECT randomblob(4000) FROM sequence;
+             DELETE FROM rebuildable;",
+        )
+        .expect("seed free pages");
+        let page_count = || {
+            conn.pragma_query_value(None, "page_count", |row| row.get::<_, u64>(0))
+                .unwrap()
+        };
+        let starting_pages = page_count();
+        reclaim_free_pages(&conn).expect("reclaim one batch");
+        let reclaimed = starting_pages - page_count();
+        assert!(
+            reclaimed >= RECLAIM_PAGE_BATCH,
+            "reclaimed {reclaimed} pages"
+        );
+        // SQLite may also remove a pointer-map page when the batch crosses its boundary.
+        assert!(
+            reclaimed <= RECLAIM_PAGE_BATCH + 1,
+            "reclaimed {reclaimed} pages"
+        );
+        assert!(
+            conn.pragma_query_value(None, "freelist_count", |row| row.get::<_, u64>(0))
+                .unwrap()
+                > 0
+        );
     }
 }

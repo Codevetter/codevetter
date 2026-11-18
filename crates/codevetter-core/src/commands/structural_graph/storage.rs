@@ -316,24 +316,60 @@ pub fn persist_snapshot(
         .map_err(storage_error("commit structural graph snapshot"))
 }
 
-pub fn prune_present_state_snapshots(
+const PRESENT_STATE_SNAPSHOT_RETENTION: usize = 5;
+const PRESENT_STATE_PRUNE_BATCH: u32 = 4;
+
+pub(crate) fn persist_snapshot_with_maintenance(
     connection: &Connection,
-    repo_path: &str,
-    keep: usize,
-) -> Result<usize, StructuralGraphError> {
-    if repo_path.starts_with("history:") {
-        return Ok(0);
+    snapshot: &StructuralGraphSnapshot,
+) -> Result<(), StructuralGraphError> {
+    persist_snapshot(connection, snapshot)?;
+    let maintenance = prune_present_state_snapshots(
+        connection,
+        PRESENT_STATE_SNAPSHOT_RETENTION,
+        PRESENT_STATE_PRUNE_BATCH,
+    )
+    .and_then(|_| {
+        crate::db::reclaim_free_pages(connection)
+            .map_err(storage_error("reclaim structural graph database pages"))
+    });
+    if let Err(error) = maintenance {
+        log::warn!("Structural graph storage maintenance deferred: {error}");
     }
+    Ok(())
+}
+
+fn prune_present_state_snapshots(
+    connection: &Connection,
+    keep_per_repo: usize,
+    max_snapshots: u32,
+) -> Result<usize, StructuralGraphError> {
     connection
         .execute(
-            "DELETE FROM structural_graph_snapshots
+            "WITH ranked AS (
+                SELECT id, created_at,
+                       row_number() OVER (PARTITION BY repo_path ORDER BY created_at DESC, id DESC) AS age_rank
+                FROM structural_graph_snapshots
+                WHERE status = 'ready'
+                  AND repo_path NOT LIKE 'history:%'
+                  AND repo_path NOT LIKE '%::codevetter-history'
+             )
+             DELETE FROM structural_graph_snapshots
              WHERE id IN (
-                 SELECT id FROM structural_graph_snapshots
-                 WHERE repo_path = ?1 AND status = 'ready'
-                 ORDER BY created_at DESC, id DESC
-                 LIMIT -1 OFFSET ?2
+                 SELECT ranked.id FROM ranked
+                 WHERE ranked.age_rank > ?1
+                   AND NOT EXISTS (
+                       SELECT 1 FROM history_graph_checkpoints checkpoint
+                       WHERE checkpoint.snapshot_id = ranked.id
+                   )
+                   AND NOT EXISTS (
+                       SELECT 1 FROM history_graph_snapshot_blobs blob
+                       WHERE blob.snapshot_id = ranked.id
+                   )
+                 ORDER BY ranked.created_at, ranked.id
+                 LIMIT ?2
              )",
-            params![repo_path, keep.max(1) as i64],
+            params![keep_per_repo.max(1) as i64, max_snapshots],
         )
         .map_err(storage_error("prune structural graph snapshots"))
 }
@@ -1502,11 +1538,19 @@ mod tests {
     }
 
     #[test]
-    fn present_state_retention_keeps_latest_snapshots_and_skips_history_storage() {
+    fn present_state_retention_batches_globally_and_preserves_history() {
         let connection = Connection::open_in_memory().expect("memory db");
         crate::db::schema::run_migrations(&connection).expect("migrations");
-        for (repo_path, count) in [("/repo", 4), ("history:/repo:abc", 4)] {
-            for ordinal in 0..count {
+        connection
+            .execute_batch("PRAGMA foreign_keys = ON")
+            .expect("foreign keys");
+        for repo_path in [
+            "/repo",
+            "/another",
+            "history:/repo:abc",
+            "/repo::codevetter-history",
+        ] {
+            for ordinal in 0..4 {
                 connection
                     .execute(
                         "INSERT INTO structural_graph_snapshots (
@@ -1524,30 +1568,65 @@ mod tests {
             }
         }
 
-        assert_eq!(
-            prune_present_state_snapshots(&connection, "/repo", 2).expect("prune snapshots"),
-            2
-        );
-        assert_eq!(
-            prune_present_state_snapshots(&connection, "history:/repo:abc", 2)
-                .expect("skip history snapshots"),
-            0
-        );
-        let present_count: i64 = connection
+        connection
+            .execute_batch(
+                "INSERT INTO history_graph_repositories
+                   (repo_path, repository_fingerprint, created_at, updated_at)
+                 VALUES('/repo', 'test', '2026-07-13T00:00:00Z', '2026-07-13T00:00:00Z'),
+                       ('/another', 'test', '2026-07-13T00:00:00Z', '2026-07-13T00:00:00Z');
+                 INSERT INTO history_graph_revisions
+                   (repo_path, sha, ordinal, committed_at, author_name, subject)
+                 VALUES('/repo', 'abc', 0, '2026-07-13T00:00:00Z', 'Test', 'fixture'),
+                       ('/another', 'abc', 0, '2026-07-13T00:00:00Z', 'Test', 'fixture');
+                 INSERT INTO history_graph_checkpoints
+                   (repo_path, revision_sha, snapshot_id, engine_id, engine_version, schema_version, created_at)
+                 VALUES('/repo', 'abc', '/repo:0', 'test', '1', 3, '2026-07-13T00:00:00Z');
+                 INSERT INTO history_graph_snapshot_blobs
+                   (snapshot_id, repo_path, revision_sha, encoding, payload, uncompressed_bytes, created_at)
+                 VALUES('/another:0', '/another', 'abc', 'zlib-json-v1', x'01', 1, '2026-07-13T00:00:00Z');
+                 INSERT INTO structural_graph_snapshot_files (snapshot_id, path, disposition)
+                 VALUES('/repo:0', 'protected.rs', 'indexed'),
+                       ('/repo:1', 'old.rs', 'indexed');",
+            )
+            .expect("seed references to present-state snapshots");
+
+        assert_eq!(prune_present_state_snapshots(&connection, 2, 1).unwrap(), 1);
+        assert_eq!(prune_present_state_snapshots(&connection, 2, 8).unwrap(), 1);
+        assert_eq!(prune_present_state_snapshots(&connection, 2, 8).unwrap(), 0);
+        let projected_files: i64 = connection
             .query_row(
-                "SELECT COUNT(*) FROM structural_graph_snapshots WHERE repo_path = '/repo'",
+                "SELECT COUNT(*) FROM structural_graph_snapshot_files",
                 [],
                 |row| row.get(0),
             )
-            .expect("present count");
-        let history_count: i64 = connection
-            .query_row(
-                "SELECT COUNT(*) FROM structural_graph_snapshots WHERE repo_path LIKE 'history:%'",
-                [],
-                |row| row.get(0),
-            )
-            .expect("history count");
-        assert_eq!(present_count, 2);
-        assert_eq!(history_count, 4);
+            .expect("count retained projections");
+        assert_eq!(projected_files, 1);
+        let mut statement = connection
+            .prepare("SELECT id FROM structural_graph_snapshots ORDER BY id")
+            .expect("prepare retained snapshots");
+        let retained: Vec<String> = statement
+            .query_map([], |row| row.get(0))
+            .expect("query retained snapshots")
+            .collect::<Result<_, _>>()
+            .expect("retained snapshots");
+        assert_eq!(
+            retained,
+            [
+                "/another:0",
+                "/another:2",
+                "/another:3",
+                "/repo:0",
+                "/repo:2",
+                "/repo:3",
+                "/repo::codevetter-history:0",
+                "/repo::codevetter-history:1",
+                "/repo::codevetter-history:2",
+                "/repo::codevetter-history:3",
+                "history:/repo:abc:0",
+                "history:/repo:abc:1",
+                "history:/repo:abc:2",
+                "history:/repo:abc:3",
+            ]
+        );
     }
 }

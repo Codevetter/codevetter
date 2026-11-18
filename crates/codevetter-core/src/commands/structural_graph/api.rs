@@ -9,7 +9,7 @@ use super::query::{
 };
 use super::storage::{
     list_snapshot_summaries, load_latest_snapshot, load_latest_snapshot_summary,
-    load_snapshot_by_id, load_snapshot_files, persist_snapshot, prune_present_state_snapshots,
+    load_snapshot_by_id, load_snapshot_files, persist_snapshot_with_maintenance,
     StructuralGraphStoredSummary,
 };
 use super::types::{
@@ -30,7 +30,6 @@ static ACTIVE_BUILDS: OnceLock<Mutex<HashMap<String, StructuralGraphCancellation
     OnceLock::new();
 static SNAPSHOT_CACHE: OnceLock<Mutex<HashMap<String, Arc<StructuralGraphSnapshot>>>> =
     OnceLock::new();
-const PRESENT_STATE_SNAPSHOT_RETENTION: usize = 20;
 const MAX_INDEXED_FILE_BYTES: u64 = 2 * 1024 * 1024;
 type FileRefreshPlan = (Vec<String>, Vec<String>);
 
@@ -188,8 +187,7 @@ pub async fn build_structural_graph(
         let connection = database
             .lock()
             .map_err(|_| "Structural graph database is unavailable".to_string())?;
-        persist_snapshot(&connection, &snapshot).map_err(|error| error.to_string())?;
-        prune_present_state_snapshots(&connection, &worker_key, PRESENT_STATE_SNAPSHOT_RETENTION)
+        persist_snapshot_with_maintenance(&connection, &snapshot)
             .map_err(|error| error.to_string())?;
         cache_snapshot(&worker_key, snapshot.clone());
         Ok::<_, String>(query::metadata(&snapshot))

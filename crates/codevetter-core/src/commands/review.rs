@@ -949,7 +949,7 @@ async fn ensure_trusted_review_graph_context(
     tokio::task::spawn_blocking(move || {
         use crate::commands::structural_graph::{
             extract::BundledTreeSitterEngine,
-            storage::persist_snapshot,
+            storage::persist_snapshot_with_maintenance,
             types::{
                 StructuralGraphBuildInput, StructuralGraphCancellation, StructuralGraphEngine,
             },
@@ -985,7 +985,7 @@ async fn ensure_trusted_review_graph_context(
         let connection = database
             .lock()
             .map_err(|_| "Structural review context database is unavailable".to_string())?;
-        persist_snapshot(&connection, &snapshot)
+        persist_snapshot_with_maintenance(&connection, &snapshot)
             .map_err(|error| format!("Persist exact structural review context: {error}"))?;
         let context = trusted_review_graph_context_from_snapshot(
             &snapshot,
@@ -3822,7 +3822,7 @@ mod tests {
     }
 
     #[test]
-    fn review_builds_exact_head_graph_when_no_index_exists() {
+    fn review_builds_exact_head_graphs_and_retains_five() {
         let root = tempfile::tempdir().expect("fixture repository");
         std::fs::create_dir_all(root.path().join("src")).expect("create source directory");
         std::fs::write(
@@ -3848,28 +3848,42 @@ mod tests {
             String::from_utf8_lossy(&output.stdout).trim().to_string()
         };
         git(&["init", "-q"]);
-        git(&["add", "src/score.ts"]);
-        git(&["commit", "-q", "-m", "fixture"]);
-        let head = git(&["rev-parse", "HEAD"]);
-
         let connection = rusqlite::Connection::open_in_memory().expect("database");
         crate::db::schema::run_migrations(&connection).expect("migrations");
         let db = DbState(Arc::new(Mutex::new(connection)));
         let runtime = tokio::runtime::Runtime::new().expect("runtime");
-        let (context, built) = runtime
-            .block_on(ensure_trusted_review_graph_context(
-                &db,
-                &root.path().to_string_lossy(),
-                &head,
-                &["src/score.ts".to_string()],
-            ))
-            .expect("build exact context");
+        let repo_path = root.path().to_string_lossy();
+        let changed_files = ["src/score.ts".to_string()];
 
-        let context = context.expect("trusted context");
-        assert!(built);
-        assert!(!context.stale);
-        assert_eq!(context.current_head.as_deref(), Some(head.as_str()));
-        assert!(!context.nodes.is_empty());
+        for _ in 0..7 {
+            git(&["add", "src/score.ts"]);
+            git(&["commit", "--allow-empty", "-q", "-m", "fixture"]);
+            let head = git(&["rev-parse", "HEAD"]);
+            let (context, built) = runtime
+                .block_on(ensure_trusted_review_graph_context(
+                    &db,
+                    &repo_path,
+                    &head,
+                    &changed_files,
+                ))
+                .expect("build exact context");
+
+            let context = context.expect("trusted context");
+            assert!(built);
+            assert!(!context.stale);
+            assert_eq!(context.current_head.as_deref(), Some(head.as_str()));
+            assert!(!context.nodes.is_empty());
+        }
+        let count: usize =
+            db.0.lock()
+                .unwrap()
+                .query_row(
+                    "SELECT count(*) FROM structural_graph_snapshots",
+                    [],
+                    |row| row.get(0),
+                )
+                .expect("count retained review graphs");
+        assert_eq!(count, 5);
     }
 
     fn bench_finding(title: &str, line: i64, severity: &str, confidence: f64) -> Value {
