@@ -701,8 +701,12 @@ mod tests {
         let folder = tempfile::tempdir().expect("temporary directory");
         let path = folder.path().join("busy.db");
         let conn = Connection::open(&path).expect("database");
-        conn.execute_batch("PRAGMA journal_mode=WAL; CREATE TABLE records(payload TEXT); INSERT INTO records VALUES('first');")
-            .expect("seed WAL");
+        conn.execute_batch("PRAGMA journal_mode=WAL;").expect("WAL");
+        schema::run_migrations(&conn).expect("schema");
+        conn.execute_batch(
+            "CREATE TABLE records(payload TEXT); INSERT INTO records VALUES('first');",
+        )
+        .expect("seed WAL");
         let reader = Connection::open(&path).expect("reader");
         reader
             .execute_batch("BEGIN; SELECT * FROM records;")
