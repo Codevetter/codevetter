@@ -1,6 +1,7 @@
 use super::*;
 
 const MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES: usize = 256 * 1024 * 1024;
+const COMPACT_HISTORY_BLOB_THRESHOLD: usize = 128 * 1024;
 
 pub(super) fn encode_history_blob<T: Serialize>(value: &T) -> Result<(Vec<u8>, usize), String> {
     let json =
@@ -10,7 +11,12 @@ pub(super) fn encode_history_blob<T: Serialize>(value: &T) -> Result<(Vec<u8>, u
             "History blob exceeds the {MAX_HISTORY_BLOB_UNCOMPRESSED_BYTES} byte limit"
         ));
     }
-    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::fast());
+    let compression = if json.len() >= COMPACT_HISTORY_BLOB_THRESHOLD {
+        Compression::new(4)
+    } else {
+        Compression::fast()
+    };
+    let mut encoder = ZlibEncoder::new(Vec::new(), compression);
     encoder
         .write_all(&json)
         .map_err(|error| format!("Compress history blob: {error}"))?;
@@ -466,6 +472,37 @@ mod tests {
         )
         .expect_err("mismatched size")
         .contains("does not match"));
+    }
+
+    #[test]
+    fn large_history_blobs_use_less_space_and_remain_zlib_compatible() {
+        let value: Vec<_> = (0..4096)
+            .map(|i| {
+                serde_json::json!({
+                    "path": format!("src/domain/feature_{}/handler_{i}.rs", i % 64),
+                    "symbol": format!("RequestHandler{i}"),
+                    "lines": [i, i + 1, i + 2],
+                    "change": (["signature", "call_edge", "documentation"][i % 3])
+                })
+            })
+            .collect();
+        let json = serde_json::to_vec(&value).expect("serialize fixture");
+        assert!(json.len() >= COMPACT_HISTORY_BLOB_THRESHOLD);
+        let mut legacy = ZlibEncoder::new(Vec::new(), Compression::fast());
+        legacy.write_all(&json).expect("legacy compression");
+        let legacy = legacy.finish().expect("legacy payload");
+        let (compact, size) = encode_history_blob(&value).expect("compact payload");
+        assert!(
+            compact.len() < legacy.len(),
+            "{} versus {}",
+            compact.len(),
+            legacy.len()
+        );
+        for payload in [legacy, compact] {
+            let decoded: Vec<serde_json::Value> =
+                decode_history_blob(&payload, size as i64).expect("decode payload");
+            assert_eq!(decoded, value);
+        }
     }
 
     #[test]

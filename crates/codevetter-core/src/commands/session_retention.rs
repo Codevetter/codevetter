@@ -170,11 +170,14 @@ pub fn compact_session_archive_with_connection(
     vacuum: bool,
 ) -> Result<Value, String> {
     let conn = connection;
-    conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")
-        .map_err(|error| error.to_string())?;
+    checkpoint_session_archive(conn)?;
     if vacuum {
+        conn.pragma_update(None, "auto_vacuum", crate::db::INCREMENTAL_VACUUM_MODE)
+            .map_err(|error| error.to_string())?;
         conn.execute_batch("VACUUM;")
             .map_err(|error| error.to_string())?;
+        checkpoint_session_archive(conn)
+            .map_err(|error| format!("Database compacted, but {error}"))?;
     }
     let created_at = Utc::now().to_rfc3339();
     let event_id = format!("retention-event:{}", Uuid::new_v4());
@@ -207,6 +210,18 @@ pub fn compact_session_archive_with_connection(
         "vacuumed": vacuum,
         "createdAt": created_at,
     }))
+}
+
+fn checkpoint_session_archive(conn: &Connection) -> Result<(), String> {
+    let busy: i64 = conn
+        .query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |row| row.get(0))
+        .map_err(|error| error.to_string())?;
+    if busy != 0 {
+        return Err(
+            "the WAL checkpoint is busy. Finish other database work before retrying.".into(),
+        );
+    }
+    Ok(())
 }
 
 pub fn run_session_retention_operation(
@@ -642,6 +657,65 @@ fn bounded_id(value: &str, label: &str) -> Result<String, String> {
 mod tests {
     use super::*;
     use crate::db::schema;
+
+    #[test]
+    fn explicit_compaction_upgrades_legacy_database_and_preserves_records() {
+        let folder = tempfile::tempdir().expect("temporary directory");
+        let path = folder.path().join("legacy.db");
+        let conn = Connection::open(&path).expect("legacy database");
+        conn.execute_batch("PRAGMA journal_mode=WAL;").expect("WAL");
+        schema::run_migrations(&conn).expect("schema");
+        conn.execute_batch(
+            "CREATE TABLE protected(payload TEXT); INSERT INTO protected VALUES('keep');",
+        )
+        .expect("seed record");
+        assert_eq!(
+            conn.pragma_query_value(None, "auto_vacuum", |row| row.get::<_, u32>(0))
+                .unwrap(),
+            0
+        );
+
+        let receipt = compact_session_archive_with_connection(&conn, true).expect("compact");
+        assert_eq!(receipt["vacuumed"], true);
+        drop(conn);
+        let reopened = Connection::open(path).expect("reopen database");
+        assert_eq!(
+            reopened
+                .pragma_query_value(None, "auto_vacuum", |row| row.get::<_, u32>(0))
+                .unwrap(),
+            crate::db::INCREMENTAL_VACUUM_MODE
+        );
+        assert_eq!(
+            reopened
+                .query_row("SELECT payload FROM protected", [], |row| row
+                    .get::<_, String>(0))
+                .unwrap(),
+            "keep"
+        );
+    }
+
+    #[test]
+    fn compaction_does_not_start_when_wal_checkpoint_is_busy() {
+        let folder = tempfile::tempdir().expect("temporary directory");
+        let path = folder.path().join("busy.db");
+        let conn = Connection::open(&path).expect("database");
+        conn.execute_batch("PRAGMA journal_mode=WAL; CREATE TABLE records(payload TEXT); INSERT INTO records VALUES('first');")
+            .expect("seed WAL");
+        let reader = Connection::open(&path).expect("reader");
+        reader
+            .execute_batch("BEGIN; SELECT * FROM records;")
+            .expect("hold read snapshot");
+        conn.execute_batch("INSERT INTO records VALUES('second'); PRAGMA busy_timeout=0;")
+            .expect("write new frame");
+        let error =
+            compact_session_archive_with_connection(&conn, true).expect_err("busy checkpoint");
+        assert!(error.contains("WAL checkpoint is busy"), "{error}");
+        assert_eq!(
+            conn.pragma_query_value(None, "auto_vacuum", |row| row.get::<_, u32>(0))
+                .unwrap(),
+            0
+        );
+    }
 
     fn fixture() -> Connection {
         let conn = Connection::open_in_memory().expect("database");

@@ -30,7 +30,8 @@ static ACTIVE_BUILDS: OnceLock<Mutex<HashMap<String, StructuralGraphCancellation
     OnceLock::new();
 static SNAPSHOT_CACHE: OnceLock<Mutex<HashMap<String, Arc<StructuralGraphSnapshot>>>> =
     OnceLock::new();
-const PRESENT_STATE_SNAPSHOT_RETENTION: usize = 20;
+const PRESENT_STATE_SNAPSHOT_RETENTION: usize = 5;
+const PRESENT_STATE_PRUNE_BATCH: u32 = 4;
 const MAX_INDEXED_FILE_BYTES: u64 = 2 * 1024 * 1024;
 type FileRefreshPlan = (Vec<String>, Vec<String>);
 
@@ -189,8 +190,18 @@ pub async fn build_structural_graph(
             .lock()
             .map_err(|_| "Structural graph database is unavailable".to_string())?;
         persist_snapshot(&connection, &snapshot).map_err(|error| error.to_string())?;
-        prune_present_state_snapshots(&connection, &worker_key, PRESENT_STATE_SNAPSHOT_RETENTION)
-            .map_err(|error| error.to_string())?;
+        let maintenance = prune_present_state_snapshots(
+            &connection,
+            PRESENT_STATE_SNAPSHOT_RETENTION,
+            PRESENT_STATE_PRUNE_BATCH,
+        )
+        .map_err(|error| error.to_string())
+        .and_then(|_| {
+            crate::db::reclaim_free_pages(&connection).map_err(|error| error.to_string())
+        });
+        if let Err(error) = maintenance {
+            log::warn!("Structural graph storage maintenance deferred: {error}");
+        }
         cache_snapshot(&worker_key, snapshot.clone());
         Ok::<_, String>(query::metadata(&snapshot))
     })
