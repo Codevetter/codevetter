@@ -314,8 +314,12 @@ export function createPerformanceCapsule({
   const playwrightTest = playwrightTimingObservation(adapter, measured, name);
   const metricsExecutions = sanitizedExecutions.filter((entry) => entry.phase === 'metrics');
   const profileExecution = sanitizedExecutions.find((entry) => entry.phase === 'profile');
+  const playwrightMetrics =
+    adapter === 'playwright' ? playwrightConsoleMetrics(measured, name, [root, lexicalRoot]) : null;
+  redactionCount += playwrightMetrics?.redactionCount ?? 0;
   const consoleMetrics =
-    metricsExecutions.length > 0
+    playwrightMetrics?.observations ??
+    (metricsExecutions.length > 0
       ? summarizeConsoleBenchmarkMetrics(
           metricsExecutions.map((entry) => `${entry.stdout}\n${entry.stderr}`)
         )
@@ -327,7 +331,7 @@ export function createPerformanceCapsule({
         : parseConsoleBenchmarkMetrics(
             profileExecution ? `${profileExecution.stdout}\n${profileExecution.stderr}` : '',
             'profile_execution_stdout'
-          );
+          ));
   const executionComplete = requiredExecutionsCompleted(sanitizedExecutions, adapter, name);
   const limitations = [];
   limitations.push(...(profileEvidence.limitations ?? []));
@@ -348,6 +352,11 @@ export function createPerformanceCapsule({
   if (outputTruncated) limitations.push('Runner output was truncated before normalization.');
   limitations.push(...executionGovernanceLimitations(executionReceipt));
   limitations.push(...playwrightLimitations(adapter, playwrightTest));
+  if (playwrightMetrics?.incomplete) {
+    limitations.push(
+      'Playwright interaction metrics were missing or incomplete in measured samples.'
+    );
+  }
   if (adapter === 'go-bench' && goBenchmarks.length === 0) {
     limitations.push('No matching Go benchmark measurement was captured.');
   }
@@ -864,10 +873,46 @@ function parsePlaywrightSample(output, exactName, sampleNumber) {
     Number(result?.retry ?? 0) === 0 &&
     Number.isFinite(Number(result?.duration));
   return valid
-    ? { duration: [Number(result.duration)] }
+    ? {
+        duration: [Number(result.duration)],
+        benchmarkOutput: Array.isArray(result.stdout)
+          ? result.stdout
+              .map((entry) => (typeof entry?.text === 'string' ? entry.text : ''))
+              .join('')
+          : '',
+      }
     : {
         limitation: `Playwright sample ${sampleNumber} did not contain one passing, unretried duration.`,
       };
+}
+
+function playwrightConsoleMetrics(measured, name, repositoryRoots) {
+  let redactionCount = 0;
+  let benchmarkReported = false;
+  const outputs = measured.map(({ execution }, index) => {
+    const sample = parsePlaywrightSample(execution, name, index + 1);
+    if (sample.limitation) {
+      benchmarkReported ||= String(execution.stdout).includes('[benchmark]');
+      return '';
+    }
+    benchmarkReported ||= sample.benchmarkOutput.includes('[benchmark]');
+    const redacted = redactText(sample.benchmarkOutput, {
+      repositoryRoot: repositoryRoots[0],
+      repositoryRoots,
+      environmentValues: execution.environmentValues,
+      limit: LIMITS.summaryCharacters,
+    });
+    redactionCount += redacted.redaction_count;
+    return redacted.text;
+  });
+  const observations = summarizeConsoleBenchmarkMetrics(outputs, 'playwright_json_reporter_stdout');
+  const incomplete =
+    benchmarkReported &&
+    (!observations.length ||
+      observations.some(({ metrics }) =>
+        metrics.some((metric) => metric.sample_count < measured.length)
+      ));
+  return { observations, redactionCount, incomplete };
 }
 
 function visitPlaywrightSuites(suites, visit) {

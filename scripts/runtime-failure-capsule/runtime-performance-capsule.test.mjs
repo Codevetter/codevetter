@@ -282,6 +282,95 @@ test('normalizes one exact passing unretried Playwright result per sample', () =
   assert.equal(result.provenance, 'playwright_json_reporter');
 });
 
+test('retains interaction metrics only from the exact passing Playwright test', () => {
+  const root = '/tmp/codevetter-playwright-fixture';
+  const capsule = createPerformanceCapsule({
+    root,
+    git: { repository_revision: 'abc123', dirty: false, changed_lines: new Map() },
+    adapter: 'playwright',
+    target: 'interaction.spec.ts',
+    name: 'target flow',
+    samples: 3,
+    warmups: 0,
+    executions: [10, 15, null].map((value, index) => ({
+      phase: 'measurement',
+      index,
+      execution: {
+        status: 'exited',
+        exitCode: 0,
+        durationMs: 250,
+        stdout: JSON.stringify({
+          config: { metadata: 'x'.repeat(10_000) },
+          suites: [
+            {
+              specs: [
+                {
+                  title: 'other flow',
+                  tests: [
+                    {
+                      results: [
+                        {
+                          status: 'passed',
+                          duration: 20,
+                          stdout: [{ text: '[benchmark] unrelated=42ms' }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  title: 'target flow',
+                  tests: [
+                    {
+                      results: [
+                        {
+                          status: 'passed',
+                          duration: 50,
+                          stdout:
+                            value === null
+                              ? []
+                              : [{ text: '[benchmark] chart.task=' }, { text: `${value}ms\n` }],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+        stderr: '',
+        operationalError: '',
+        environmentValues: [],
+        truncated: false,
+      },
+    })),
+    profileEvidence: {
+      kind: 'playwright_reporter_timing',
+      hotspots: [],
+      profile_files: 0,
+      profile_bytes: 0,
+      profile_samples: 0,
+      truncated: false,
+      redaction_count: 0,
+    },
+  });
+  assert.equal(capsule.observed.playwright_test.complete, true);
+  assert.ok(
+    capsule.limitations.includes(
+      'Playwright interaction metrics were missing or incomplete in measured samples.'
+    )
+  );
+  assert.deepEqual(capsule.observed.console_metrics, [
+    {
+      kind: 'console_benchmark_metrics',
+      metrics: [{ name: 'chart.task', value: 10, unit: 'ms', sample_count: 2 }],
+      iterations: null,
+      provenance: 'playwright_json_reporter_stdout',
+    },
+  ]);
+});
+
 test('fails Playwright timing closed for retries, ambiguity, and truncation', () => {
   const ambiguous = JSON.stringify({
     suites: [
