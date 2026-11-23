@@ -312,28 +312,14 @@ export function createPerformanceCapsule({
       : [];
   const vitestExecutionShare = summarizeVitestExecutionShare(vitestTests, timing);
   const playwrightTest = playwrightTimingObservation(adapter, measured, name);
-  const metricsExecutions = sanitizedExecutions.filter((entry) => entry.phase === 'metrics');
-  const profileExecution = sanitizedExecutions.find((entry) => entry.phase === 'profile');
-  const playwrightMetrics =
-    adapter === 'playwright' ? playwrightConsoleMetrics(measured, name, [root, lexicalRoot]) : null;
-  redactionCount += playwrightMetrics?.redactionCount ?? 0;
-  const consoleMetrics =
-    playwrightMetrics?.observations ??
-    (metricsExecutions.length > 0
-      ? summarizeConsoleBenchmarkMetrics(
-          metricsExecutions.map((entry) => `${entry.stdout}\n${entry.stderr}`)
-        )
-      : ['node-test', 'node-script', 'vitest'].includes(adapter) && measured.length > 0
-        ? summarizeConsoleBenchmarkMetrics(
-            measured.map((entry) => `${entry.stdout}\n${entry.stderr}`),
-            'unprofiled_measurement_execution_median'
-          )
-        : parseConsoleBenchmarkMetrics(
-            profileExecution ? `${profileExecution.stdout}\n${profileExecution.stderr}` : '',
-            'profile_execution_stdout'
-          ));
+  const benchmark = collectConsoleMetrics(adapter, measured, sanitizedExecutions, name, [
+    root,
+    lexicalRoot,
+  ]);
+  redactionCount += benchmark.redactionCount;
+  const consoleMetrics = benchmark.observations;
   const executionComplete = requiredExecutionsCompleted(sanitizedExecutions, adapter, name);
-  const limitations = [];
+  const limitations = [...benchmark.limitations];
   limitations.push(...(profileEvidence.limitations ?? []));
   limitations.push(...functionCoverageLimitations(functionCoverage, sanitizedExecutions));
   if (!executionComplete)
@@ -352,11 +338,6 @@ export function createPerformanceCapsule({
   if (outputTruncated) limitations.push('Runner output was truncated before normalization.');
   limitations.push(...executionGovernanceLimitations(executionReceipt));
   limitations.push(...playwrightLimitations(adapter, playwrightTest));
-  if (playwrightMetrics?.incomplete) {
-    limitations.push(
-      'Playwright interaction metrics were missing or incomplete in measured samples.'
-    );
-  }
   if (adapter === 'go-bench' && goBenchmarks.length === 0) {
     limitations.push('No matching Go benchmark measurement was captured.');
   }
@@ -886,6 +867,24 @@ function parsePlaywrightSample(output, exactName, sampleNumber) {
       };
 }
 
+function collectConsoleMetrics(adapter, measured, executions, name, repositoryRoots) {
+  if (adapter === 'playwright') return playwrightConsoleMetrics(measured, name, repositoryRoots);
+
+  const metrics = executions.filter((entry) => entry.phase === 'metrics');
+  const profile = executions.find((entry) => entry.phase === 'profile');
+  const output = (entry) => `${entry.stdout}\n${entry.stderr}`;
+  const observations =
+    metrics.length > 0
+      ? summarizeConsoleBenchmarkMetrics(metrics.map(output))
+      : ['node-test', 'node-script', 'vitest'].includes(adapter) && measured.length > 0
+        ? summarizeConsoleBenchmarkMetrics(
+            measured.map(output),
+            'unprofiled_measurement_execution_median'
+          )
+        : parseConsoleBenchmarkMetrics(profile ? output(profile) : '', 'profile_execution_stdout');
+  return { observations, redactionCount: 0, limitations: [] };
+}
+
 function playwrightConsoleMetrics(measured, name, repositoryRoots) {
   let redactionCount = 0;
   let benchmarkReported = false;
@@ -912,7 +911,13 @@ function playwrightConsoleMetrics(measured, name, repositoryRoots) {
       observations.some(({ metrics }) =>
         metrics.some((metric) => metric.sample_count < measured.length)
       ));
-  return { observations, redactionCount, incomplete };
+  return {
+    observations,
+    redactionCount,
+    limitations: incomplete
+      ? ['Playwright interaction metrics were missing or incomplete in measured samples.']
+      : [],
+  };
 }
 
 function visitPlaywrightSuites(suites, visit) {
