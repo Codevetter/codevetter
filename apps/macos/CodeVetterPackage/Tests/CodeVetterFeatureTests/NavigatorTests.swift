@@ -147,7 +147,10 @@ private func navigatorFixture() throws -> (URL, String, String) {
   #expect(model.selectedPath == "README.md")
   model.quickQuery = "ssn"
   model.quickFind()
-  try await Task.sleep(for: .milliseconds(100))
+  let searchDeadline = ContinuousClock.now.advanced(by: .seconds(5))
+  while model.quickPaths.isEmpty && ContinuousClock.now < searchDeadline {
+    try await Task.sleep(for: .milliseconds(20))
+  }
   #expect(model.quickPaths.contains("src/session.ts"))
 }
 
