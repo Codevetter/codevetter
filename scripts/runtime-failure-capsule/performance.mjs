@@ -894,14 +894,18 @@ function playwrightConsoleMetrics(measured, name, repositoryRoots) {
       benchmarkReported ||= String(execution.stdout).includes('[benchmark]');
       return [];
     }
-    benchmarkReported ||= sample.benchmarkOutput.includes('[benchmark]');
-    const redacted = redactText(sample.benchmarkOutput, {
+    const lines = sample.benchmarkOutput
+      .split(/\r?\n/)
+      .filter((line) => line.includes('[benchmark]'));
+    benchmarkReported ||= lines.length > 0;
+    const redacted = redactText(lines.join('\n'), {
       repositoryRoot: repositoryRoots[0],
       repositoryRoots,
       environmentValues: execution.environmentValues,
       limit: LIMITS.summaryCharacters,
     });
     redactionCount += redacted.redaction_count;
+    if (redacted.truncated || redacted.redaction_count > 0) return [];
     const observations = parseConsoleBenchmarkMetrics(redacted.text);
     const names = observations.flatMap(({ metrics }) => metrics.map(({ name }) => name));
     return new Set(names).size === names.length ? observations : [];

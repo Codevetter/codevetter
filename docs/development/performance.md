@@ -62,6 +62,8 @@ Use `measureBrowserInteraction` from
 `scripts/runtime-failure-capsule/browser-interaction.mjs` in a headless
 Chromium Playwright workload. Load and settle the test page first. Wrap one
 interaction and assert that the intended result occurred inside the callback.
+The probe needs at least two animation-frame callbacks during the measurement.
+It fails the workload if it cannot observe an interval.
 
 ```js
 const result = await measureBrowserInteraction(page, 'chart-scrub', async () => {
@@ -74,9 +76,12 @@ console.log(result.benchmark);
 Pass the exact spec and test title to `codevetter performance --operation diagnose`
 with the Playwright adapter. The receipt retains the reported interaction
 metrics separately from test duration. Each metric name must appear once per
-sample. A repeated metric name excludes that sample's benchmark output and
-leaves an incompleteness warning in the receipt. When comparing revisions, keep
-the same viewport, CPU throttle, fixture, input sequence and asserted outcome.
+sample. Repeated metric names, clipped output and redacted benchmark lines
+exclude that sample's metrics and leave an incompleteness warning in the
+receipt. Paired verification uses Playwright test duration and process wall
+time. To compare the interaction metrics across revisions, review the recorded
+receipts with the same viewport, CPU throttle, fixture, input sequence and
+asserted outcome.
 A CPU-profile run (`cpuProfile: true`) returns a Chromium profile for local
 inspection. Record it in a separate run so the profiler does not affect the
 timing baseline.

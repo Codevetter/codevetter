@@ -3,6 +3,7 @@ import { readFile, realpath } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { repositoryRelative } from './contracts.mjs';
+import { extractBenchmarkSeries } from './performance-diagnosis.mjs';
 import { createPerformanceCapsule } from './performance.mjs';
 import { inspectGitDiff } from './git-diff.mjs';
 import { verifyOptimizationCapsules } from './optimization-verification.mjs';
@@ -159,7 +160,7 @@ async function runSide({
   });
 }
 
-function pairedCapsule({
+export function pairedCapsule({
   root,
   git,
   adapter,
@@ -193,7 +194,9 @@ function pairedCapsule({
     viteArtifact,
   });
   const usesWorkloadMetric =
-    capsule.observed.console_metrics.length > 0 || capsule.observed.go_benchmarks.length > 0;
+    adapter === 'playwright'
+      ? extractBenchmarkSeries(capsule.observed.console_metrics) !== null
+      : capsule.observed.console_metrics.length > 0 || capsule.observed.go_benchmarks.length > 0;
   capsule.limitations = capsule.limitations.filter(
     (limitation) =>
       !DIAGNOSTIC_ONLY_LIMITATIONS.has(limitation) &&

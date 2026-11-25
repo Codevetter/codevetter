@@ -321,6 +321,30 @@ test('discards a Playwright benchmark sample with ambiguous repeated metric name
   );
 });
 
+test('parses Playwright benchmark lines after verbose test output', () => {
+  const output = ['diagnostic output '.repeat(550), '\n[benchmark] chart.task=20ms\n'];
+  const capsule = playwrightBenchmarkCapsule([output, output, output]);
+  assert.deepEqual(capsule.observed.console_metrics[0]?.metrics, [
+    { name: 'chart.task', value: 20, unit: 'ms', sample_count: 3 },
+  ]);
+});
+
+test('reports incomplete Playwright metrics when a benchmark line is clipped or redacted', () => {
+  const capsule = playwrightBenchmarkCapsule([
+    [`[benchmark] chart.task=10ms ${' '.repeat(8_000)}\n`],
+    ['[benchmark] chart.task=15ms auth.token=2ms\n'],
+    ['[benchmark] chart.task=20ms\n'],
+  ]);
+  assert.deepEqual(capsule.observed.console_metrics[0]?.metrics, [
+    { name: 'chart.task', value: 20, unit: 'ms', sample_count: 1 },
+  ]);
+  assert.ok(
+    capsule.limitations.includes(
+      'Playwright interaction metrics were missing or incomplete in measured samples.'
+    )
+  );
+});
+
 function playwrightBenchmarkCapsule(sampleOutputs) {
   const root = '/tmp/codevetter-playwright-fixture';
   return createPerformanceCapsule({
