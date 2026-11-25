@@ -6,7 +6,6 @@ settings:
 
 overrides:
   '@babel/core': 7.29.6
-  '@tailwindcss/vite>vite': 8.3.8
   astro>esbuild: 0.28.1
   brace-expansion: 5.0.9
   browserslist: 4.28.7
@@ -122,10 +121,6 @@ importers:
       wrangler:
         specifier: ^4.158.0
         version: 4.168.0(@types/node@26.2.0)
-    optionalDependencies:
-      '@rollup/rollup-linux-x64-gnu':
-        specifier: ^4.68.0
-        version: 4.68.8
 
 packages:
 
@@ -2075,12 +2070,6 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@rollup/rollup-linux-x64-gnu@4.68.8':
-    resolution: {integrity: sha512-mDufoUJ6fnKZnCyjV3sGEDvXQQkM6j1UmINHheGX4Emau3TZWJzX3sCVmbzkNB+W2G84BiFQdDCcF09lv0i0VA==}
-    cpu: [x64]
-    os: [linux]
-    libc: [glibc]
-
   '@saas-maker/motion@https://codeload.github.com/sass-maker/ui-library/tar.gz/f61aad320ba3bed99c48df40fc16a7f55f508ba5#path:/packages/motion':
     resolution: {path: /packages/motion, tarball: https://codeload.github.com/sass-maker/ui-library/tar.gz/f61aad320ba3bed99c48df40fc16a7f55f508ba5}
     version: 0.1.18
@@ -2265,7 +2254,7 @@ packages:
   '@tailwindcss/vite@4.3.5':
     resolution: {integrity: sha512-BCNiY0a1ZjdOHVqw7kyb7U72BwfMF3dfUuN+tQsLWky/J5JOI/r7abibglXfygrZhVO/3u3V+E25kkKTeMkXaQ==}
     peerDependencies:
-      vite: 8.3.8
+      vite: ^5.2.0 || ^6 || ^7 || ^8
 
   '@tanstack/react-store@0.11.2':
     resolution: {integrity: sha512-oj5O5DmiMWE+ih+SioX2ayC1kbK7d3fpLx0B75fPJr9nY3zU+hoW010yr64qXsY/9fyiLVE2bn5mGNV3owm8RQ==}
@@ -5484,9 +5473,6 @@ snapshots:
     optional: true
 
   '@rolldown/pluginutils@1.0.1': {}
-
-  '@rollup/rollup-linux-x64-gnu@4.68.8':
-    optional: true
 
   '@saas-maker/motion@https://codeload.github.com/sass-maker/ui-library/tar.gz/f61aad320ba3bed99c48df40fc16a7f55f508ba5#path:/packages/motion(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
