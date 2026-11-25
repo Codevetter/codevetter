@@ -23,6 +23,40 @@ fn local_check_parity_fixture() -> Value {
     serde_json::from_str(LOCAL_CHECK_PARITY_FIXTURE).expect("local-check parity fixture")
 }
 
+#[test]
+fn resource_annotations_preserve_the_timestamp_wire_format() {
+    let cases = [
+        (
+            Some("2026-11-25T18:25:00.12+05:30"),
+            Some("2026-11-25T12:55:00.120+00:00"),
+        ),
+        (
+            Some("2016-12-31T23:59:60Z"),
+            Some("2016-12-31T23:59:60+00:00"),
+        ),
+        (Some("invalid"), None),
+        (None, None),
+    ];
+    for (input, expected) in cases {
+        let item = resource(
+            "repo_0123456789abcdef",
+            "repository",
+            "overview",
+            "Repository",
+            input,
+        )
+        .expect("resource");
+        let payload = serde_json::to_value(item).expect("resource JSON");
+        let expected = expected.map(|timestamp| {
+            json!({
+                "priority": 0.5,
+                "lastModified": timestamp,
+            })
+        });
+        assert_eq!(payload.get("annotations"), expected.as_ref(), "{input:?}");
+    }
+}
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn timed_out_sql_workers_release_all_query_capacity() {
     let semaphore = Arc::new(Semaphore::new(4));

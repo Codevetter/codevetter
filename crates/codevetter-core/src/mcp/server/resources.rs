@@ -137,7 +137,9 @@ pub(super) fn resource(
         .and_then(|value| chrono::DateTime::parse_from_rfc3339(value).ok())
         .map(|value| value.with_timezone(&chrono::Utc))
     {
-        resource = resource.with_annotations(Annotations::for_resource(0.5, timestamp));
+        let mut annotations = Annotations::default().with_priority(0.5);
+        annotations.last_modified = Some(timestamp.to_rfc3339());
+        resource = resource.with_annotations(annotations);
     }
     Ok(resource)
 }
