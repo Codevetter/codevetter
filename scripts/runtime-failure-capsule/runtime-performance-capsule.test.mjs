@@ -283,16 +283,55 @@ test('normalizes one exact passing unretried Playwright result per sample', () =
 });
 
 test('retains interaction metrics only from the exact passing Playwright test', () => {
+  const capsule = playwrightBenchmarkCapsule([
+    ['[benchmark] chart.task=', '10ms\n'],
+    ['[benchmark] chart.task=', '15ms\n'],
+    [],
+  ]);
+  assert.equal(capsule.observed.playwright_test.complete, true);
+  assert.ok(
+    capsule.limitations.includes(
+      'Playwright interaction metrics were missing or incomplete in measured samples.'
+    )
+  );
+  assert.deepEqual(capsule.observed.console_metrics, [
+    {
+      kind: 'console_benchmark_metrics',
+      metrics: [{ name: 'chart.task', value: 10, unit: 'ms', sample_count: 2 }],
+      iterations: null,
+      provenance: 'playwright_json_reporter_stdout',
+    },
+  ]);
+});
+
+test('discards a Playwright benchmark sample with ambiguous repeated metric names', () => {
+  const capsule = playwrightBenchmarkCapsule([
+    ['[benchmark] chart.task=50ms chart.task=100ms\n'],
+    ['[benchmark] chart.task=20ms\n'],
+    [],
+  ]);
+  assert.equal(capsule.observed.playwright_test.complete, true);
+  assert.deepEqual(capsule.observed.console_metrics[0]?.metrics, [
+    { name: 'chart.task', value: 20, unit: 'ms', sample_count: 1 },
+  ]);
+  assert.ok(
+    capsule.limitations.includes(
+      'Playwright interaction metrics were missing or incomplete in measured samples.'
+    )
+  );
+});
+
+function playwrightBenchmarkCapsule(sampleOutputs) {
   const root = '/tmp/codevetter-playwright-fixture';
-  const capsule = createPerformanceCapsule({
+  return createPerformanceCapsule({
     root,
     git: { repository_revision: 'abc123', dirty: false, changed_lines: new Map() },
     adapter: 'playwright',
     target: 'interaction.spec.ts',
     name: 'target flow',
-    samples: 3,
+    samples: sampleOutputs.length,
     warmups: 0,
-    executions: [10, 15, null].map((value, index) => ({
+    executions: sampleOutputs.map((stdout, index) => ({
       phase: 'measurement',
       index,
       execution: {
@@ -326,10 +365,7 @@ test('retains interaction metrics only from the exact passing Playwright test', 
                         {
                           status: 'passed',
                           duration: 50,
-                          stdout:
-                            value === null
-                              ? []
-                              : [{ text: '[benchmark] chart.task=' }, { text: `${value}ms\n` }],
+                          stdout: stdout.map((text) => ({ text })),
                         },
                       ],
                     },
@@ -355,21 +391,7 @@ test('retains interaction metrics only from the exact passing Playwright test', 
       redaction_count: 0,
     },
   });
-  assert.equal(capsule.observed.playwright_test.complete, true);
-  assert.ok(
-    capsule.limitations.includes(
-      'Playwright interaction metrics were missing or incomplete in measured samples.'
-    )
-  );
-  assert.deepEqual(capsule.observed.console_metrics, [
-    {
-      kind: 'console_benchmark_metrics',
-      metrics: [{ name: 'chart.task', value: 10, unit: 'ms', sample_count: 2 }],
-      iterations: null,
-      provenance: 'playwright_json_reporter_stdout',
-    },
-  ]);
-});
+}
 
 test('fails Playwright timing closed for retries, ambiguity, and truncation', () => {
   const ambiguous = JSON.stringify({

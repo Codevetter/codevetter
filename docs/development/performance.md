@@ -73,9 +73,11 @@ console.log(result.benchmark);
 
 Pass the exact spec and test title to `codevetter performance --operation diagnose`
 with the Playwright adapter. The receipt retains the reported interaction
-metrics separately from test duration. Keep the same viewport, CPU throttle,
-fixture, input sequence and asserted outcome when comparing revisions. A
-CPU-profile run (`cpuProfile: true`) returns a Chromium profile for local
+metrics separately from test duration. Each metric name must appear once per
+sample. A repeated metric name excludes that sample's benchmark output and
+leaves an incompleteness warning in the receipt. When comparing revisions, keep
+the same viewport, CPU throttle, fixture, input sequence and asserted outcome.
+A CPU-profile run (`cpuProfile: true`) returns a Chromium profile for local
 inspection. Record it in a separate run so the profiler does not affect the
 timing baseline.
 

@@ -888,11 +888,11 @@ function collectConsoleMetrics(adapter, measured, executions, name, repositoryRo
 function playwrightConsoleMetrics(measured, name, repositoryRoots) {
   let redactionCount = 0;
   let benchmarkReported = false;
-  const outputs = measured.map(({ execution }, index) => {
+  const samples = measured.map(({ execution }, index) => {
     const sample = parsePlaywrightSample(execution, name, index + 1);
     if (sample.limitation) {
       benchmarkReported ||= String(execution.stdout).includes('[benchmark]');
-      return '';
+      return [];
     }
     benchmarkReported ||= sample.benchmarkOutput.includes('[benchmark]');
     const redacted = redactText(sample.benchmarkOutput, {
@@ -902,9 +902,11 @@ function playwrightConsoleMetrics(measured, name, repositoryRoots) {
       limit: LIMITS.summaryCharacters,
     });
     redactionCount += redacted.redaction_count;
-    return redacted.text;
+    const observations = parseConsoleBenchmarkMetrics(redacted.text);
+    const names = observations.flatMap(({ metrics }) => metrics.map(({ name }) => name));
+    return new Set(names).size === names.length ? observations : [];
   });
-  const observations = summarizeConsoleBenchmarkMetrics(outputs, 'playwright_json_reporter_stdout');
+  const observations = summarizeParsedBenchmarkMetrics(samples, 'playwright_json_reporter_stdout');
   const incomplete =
     benchmarkReported &&
     (!observations.length ||
@@ -956,6 +958,10 @@ export function summarizeConsoleBenchmarkMetrics(
   const parsed = outputs.map((output) =>
     parseConsoleBenchmarkMetrics(output, 'unprofiled_metrics_execution_stdout')
   );
+  return summarizeParsedBenchmarkMetrics(parsed, provenance);
+}
+
+function summarizeParsedBenchmarkMetrics(parsed, provenance) {
   const maximumObservations = Math.max(0, ...parsed.map((observations) => observations.length));
   const summaries = [];
   for (let observationIndex = 0; observationIndex < maximumObservations; observationIndex += 1) {
