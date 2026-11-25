@@ -312,24 +312,14 @@ export function createPerformanceCapsule({
       : [];
   const vitestExecutionShare = summarizeVitestExecutionShare(vitestTests, timing);
   const playwrightTest = playwrightTimingObservation(adapter, measured, name);
-  const metricsExecutions = sanitizedExecutions.filter((entry) => entry.phase === 'metrics');
-  const profileExecution = sanitizedExecutions.find((entry) => entry.phase === 'profile');
-  const consoleMetrics =
-    metricsExecutions.length > 0
-      ? summarizeConsoleBenchmarkMetrics(
-          metricsExecutions.map((entry) => `${entry.stdout}\n${entry.stderr}`)
-        )
-      : ['node-test', 'node-script', 'vitest'].includes(adapter) && measured.length > 0
-        ? summarizeConsoleBenchmarkMetrics(
-            measured.map((entry) => `${entry.stdout}\n${entry.stderr}`),
-            'unprofiled_measurement_execution_median'
-          )
-        : parseConsoleBenchmarkMetrics(
-            profileExecution ? `${profileExecution.stdout}\n${profileExecution.stderr}` : '',
-            'profile_execution_stdout'
-          );
+  const benchmark = collectConsoleMetrics(adapter, measured, sanitizedExecutions, name, [
+    root,
+    lexicalRoot,
+  ]);
+  redactionCount += benchmark.redactionCount;
+  const consoleMetrics = benchmark.observations;
   const executionComplete = requiredExecutionsCompleted(sanitizedExecutions, adapter, name);
-  const limitations = [];
+  const limitations = [...benchmark.limitations];
   limitations.push(...(profileEvidence.limitations ?? []));
   limitations.push(...functionCoverageLimitations(functionCoverage, sanitizedExecutions));
   if (!executionComplete)
@@ -864,10 +854,76 @@ function parsePlaywrightSample(output, exactName, sampleNumber) {
     Number(result?.retry ?? 0) === 0 &&
     Number.isFinite(Number(result?.duration));
   return valid
-    ? { duration: [Number(result.duration)] }
+    ? {
+        duration: [Number(result.duration)],
+        benchmarkOutput: Array.isArray(result.stdout)
+          ? result.stdout
+              .map((entry) => (typeof entry?.text === 'string' ? entry.text : ''))
+              .join('')
+          : '',
+      }
     : {
         limitation: `Playwright sample ${sampleNumber} did not contain one passing, unretried duration.`,
       };
+}
+
+function collectConsoleMetrics(adapter, measured, executions, name, repositoryRoots) {
+  if (adapter === 'playwright') return playwrightConsoleMetrics(measured, name, repositoryRoots);
+
+  const metrics = executions.filter((entry) => entry.phase === 'metrics');
+  const profile = executions.find((entry) => entry.phase === 'profile');
+  const output = (entry) => `${entry.stdout}\n${entry.stderr}`;
+  const observations =
+    metrics.length > 0
+      ? summarizeConsoleBenchmarkMetrics(metrics.map(output))
+      : ['node-test', 'node-script', 'vitest'].includes(adapter) && measured.length > 0
+        ? summarizeConsoleBenchmarkMetrics(
+            measured.map(output),
+            'unprofiled_measurement_execution_median'
+          )
+        : parseConsoleBenchmarkMetrics(profile ? output(profile) : '', 'profile_execution_stdout');
+  return { observations, redactionCount: 0, limitations: [] };
+}
+
+function playwrightConsoleMetrics(measured, name, repositoryRoots) {
+  let redactionCount = 0;
+  let benchmarkReported = false;
+  const samples = measured.map(({ execution }, index) => {
+    const sample = parsePlaywrightSample(execution, name, index + 1);
+    if (sample.limitation) {
+      benchmarkReported ||= String(execution.stdout).includes('[benchmark]');
+      return [];
+    }
+    const lines = sample.benchmarkOutput
+      .split(/\r?\n/)
+      .filter((line) => line.includes('[benchmark]'));
+    benchmarkReported ||= lines.length > 0;
+    const redacted = redactText(lines.join('\n'), {
+      repositoryRoot: repositoryRoots[0],
+      repositoryRoots,
+      environmentValues: execution.environmentValues,
+      limit: LIMITS.summaryCharacters,
+    });
+    redactionCount += redacted.redaction_count;
+    if (redacted.truncated || redacted.redaction_count > 0) return [];
+    const observations = parseConsoleBenchmarkMetrics(redacted.text);
+    const names = observations.flatMap(({ metrics }) => metrics.map(({ name }) => name));
+    return new Set(names).size === names.length ? observations : [];
+  });
+  const observations = summarizeParsedBenchmarkMetrics(samples, 'playwright_json_reporter_stdout');
+  const incomplete =
+    benchmarkReported &&
+    (!observations.length ||
+      observations.some(({ metrics }) =>
+        metrics.some((metric) => metric.sample_count < measured.length)
+      ));
+  return {
+    observations,
+    redactionCount,
+    limitations: incomplete
+      ? ['Playwright interaction metrics were missing or incomplete in measured samples.']
+      : [],
+  };
 }
 
 function visitPlaywrightSuites(suites, visit) {
@@ -906,6 +962,10 @@ export function summarizeConsoleBenchmarkMetrics(
   const parsed = outputs.map((output) =>
     parseConsoleBenchmarkMetrics(output, 'unprofiled_metrics_execution_stdout')
   );
+  return summarizeParsedBenchmarkMetrics(parsed, provenance);
+}
+
+function summarizeParsedBenchmarkMetrics(parsed, provenance) {
   const maximumObservations = Math.max(0, ...parsed.map((observations) => observations.length));
   const summaries = [];
   for (let observationIndex = 0; observationIndex < maximumObservations; observationIndex += 1) {

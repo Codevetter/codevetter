@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
-import { verifyPairedRepositories } from './paired-verification.mjs';
+import { pairedCapsule, verifyPairedRepositories } from './paired-verification.mjs';
+import { verifyOptimizationCapsules } from './optimization-verification.mjs';
 
 const execute = promisify(execFile);
 
@@ -59,6 +60,52 @@ test('fails closed when one paired workload does not complete', async (context) 
 
   assert.equal(report.verdict.status, 'no_confidence');
   assert.ok(report.current_capsule.limitations.some((entry) => entry.includes('failed')));
+});
+
+test('retains the wall-time noise blocker when Playwright reports interaction metrics', () => {
+  const name = 'chart interaction';
+  const capsule = (duration, wallTimes) => {
+    const result = {
+      status: 'passed',
+      duration,
+      stdout: [{ text: '[benchmark] chart.task=20ms' }],
+    };
+    const spec = { title: name, tests: [{ results: [result] }] };
+    const stdout = JSON.stringify({ suites: [{ specs: [spec] }] });
+    return pairedCapsule({
+      root: '/tmp/codevetter-paired-playwright-fixture',
+      git: { repository_revision: 'fixture', dirty: false, changed_lines: new Map() },
+      adapter: 'playwright',
+      target: 'chart.spec.ts',
+      name,
+      samples: wallTimes.length,
+      warmups: 0,
+      executions: wallTimes.map((durationMs, index) => ({
+        phase: 'measurement',
+        index,
+        execution: {
+          status: 'exited',
+          exitCode: 0,
+          durationMs,
+          stdout,
+          stderr: '',
+          operationalError: '',
+          environmentValues: [],
+          truncated: false,
+        },
+      })),
+    });
+  };
+  const baseline = capsule(100, Array(10).fill(400));
+  const current = capsule(50, [200, ...Array(8).fill(400), 900]);
+  const report = verifyOptimizationCapsules(baseline, current);
+  assert.equal(report.verdict.status, 'confirmed');
+  assert.equal(report.observed[0]?.kind, 'playwright_flow_comparison');
+  assert.equal(current.observed.console_metrics[0]?.metrics[0]?.sample_count, 10);
+  assert.ok(
+    report.limitations.some((limitation) => limitation.startsWith('Wall-time samples varied by'))
+  );
+  assert.equal(report.decisions.shipping_recommended, false);
 });
 
 async function repositoryFixture(root, values) {

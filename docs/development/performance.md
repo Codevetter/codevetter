@@ -56,6 +56,41 @@ Timing assertions apply only to named calibrated hardware. Shared runners
 preserve correctness and resource reporting without pretending their absolute
 timings are comparable.
 
+## Chromium interactions
+
+Use `measureBrowserInteraction` from
+`scripts/runtime-failure-capsule/browser-interaction.mjs` in a headless
+Chromium Playwright workload. Load and settle the test page first. Wrap one
+interaction and assert that the intended result occurred inside the callback.
+The probe needs at least two animation-frame callbacks during the measurement.
+It fails the workload if it cannot observe an interval.
+
+```js
+const result = await measureBrowserInteraction(page, 'chart-scrub', async () => {
+  await scrubChart(page);
+  await expect(selectedReading).toHaveText(expectedReading);
+}, { cpuRate: 4 });
+console.log(result.benchmark);
+```
+
+Pass the exact spec and test title to `codevetter performance --operation diagnose`
+with the Playwright adapter. The receipt retains the reported interaction
+metrics separately from test duration. Each metric name must appear once per
+sample. Repeated metric names, clipped output and redacted benchmark lines
+exclude that sample's metrics and leave an incompleteness warning in the
+receipt. Paired verification uses Playwright test duration and process wall
+time. To compare the interaction metrics across revisions, review the recorded
+receipts with the same viewport, CPU throttle, fixture, input sequence and
+asserted outcome.
+A CPU-profile run (`cpuProfile: true`) returns a Chromium profile for local
+inspection. Record it in a separate run so the profiler does not affect the
+timing baseline.
+
+The probe observes renderer task, script, layout and style time, plus gaps
+between animation-frame callbacks. The timing counters can overlap. Animation
+callbacks do not count displayed or dropped frames, and CPU throttling does not
+model a phone's GPU, temperature, battery or native app runtime.
+
 ## MCP
 
 ```bash
